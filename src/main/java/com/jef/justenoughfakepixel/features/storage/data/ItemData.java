@@ -2,13 +2,8 @@ package com.jef.justenoughfakepixel.features.storage.data;
 
 import com.google.gson.annotations.SerializedName;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompressedStreamTools;
+import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTTagCompound;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Base64;
 
 public class ItemData {
 
@@ -26,15 +21,9 @@ public class ItemData {
 
         ItemData item = new ItemData();
 
-        try {
-            NBTTagCompound compound = new NBTTagCompound();
-            stack.writeToNBT(compound);
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            CompressedStreamTools.writeCompressed(compound, outputStream);
-            item.data = Base64.getEncoder().encodeToString(outputStream.toByteArray());
-        } catch (IOException e) {
-            return null;
-        }
+        NBTTagCompound compound = new NBTTagCompound();
+        stack.writeToNBT(compound);
+        item.data = compound.toString();
 
         item.displayName = stack.getDisplayName();
 
@@ -45,8 +34,7 @@ public class ItemData {
         if (data == null || data.isEmpty()) return null;
 
         try {
-            byte[] bytes = Base64.getDecoder().decode(data);
-            NBTTagCompound nbt = CompressedStreamTools.readCompressed(new ByteArrayInputStream(bytes));
+            NBTTagCompound nbt = JsonToNBT.getTagFromJson(data);
             return ItemStack.loadItemStackFromNBT(nbt);
         } catch (Exception e) {
             return null;
