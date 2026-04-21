@@ -1,17 +1,140 @@
 package com.jef.justenoughfakepixel.core.config.utils;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL14;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public final class RenderUtils {
 
+    private static final ResourceLocation SEARCH_BAR_TEX = new ResourceLocation("justenoughfakepixel", "textures/gui/search_bar.png");
+    private static final ResourceLocation SEARCH_BAR_TEX_GOLD = new ResourceLocation("justenoughfakepixel", "textures/gui/search_bar_gold.png");
+    private static final Map<ResourceLocation, Boolean> RESOURCE_CACHE = new HashMap<>();
+
     private RenderUtils() {
+    }
+
+    public static void drawSearchBar(GuiTextField field, boolean useTexture) {
+        drawSearchBar(field, useTexture, false);
+    }
+
+    public static void drawSearchBar(GuiTextField field, boolean useTexture, boolean useGoldTexture) {
+        if (field == null) return;
+
+        int x = field.xPosition;
+        int y = field.yPosition;
+        int w = field.width;
+        int h = field.height;
+
+        GlStateManager.color(1f, 1f, 1f, 1f);
+
+        ResourceLocation texture = useGoldTexture ? SEARCH_BAR_TEX_GOLD : SEARCH_BAR_TEX;
+        if (useTexture && drawSearchBarTexture(texture, x, y, w, h)) {
+        } else {
+            Gui.drawRect(x, y, x + w, y + h, 0xFF2C2C2C);
+            Gui.drawRect(x + 1, y + 1, x + w - 1, y + h - 1, 0xFF111111);
+        }
+
+        Minecraft mc = Minecraft.getMinecraft();
+        FontRenderer fr = mc.fontRendererObj;
+        String text = field.getText();
+        int textY = y - 4 + h / 2;
+        int maxWidth = Math.max(8, w - 10);
+        String display = fr.trimStringToWidth(text, maxWidth);
+
+        if (field.isFocused()) {
+            String toDisplay = display.isEmpty() ? "§7Search..." : display;
+            fr.drawStringWithShadow(toDisplay, x + 5, textY, display.isEmpty() ? 0x8F8F8F : 0xFFFFFFFF);
+
+            if (System.currentTimeMillis() % 1000 > 500) {
+                int cursor = Math.min(field.getCursorPosition(), text.length());
+                String beforeCursor = text.substring(0, cursor);
+                int beforeWidth = fr.getStringWidth(fr.trimStringToWidth(beforeCursor, maxWidth));
+                Gui.drawRect(x + 5 + beforeWidth, y - 5 + h / 2, x + 6 + beforeWidth, y + 4 + h / 2, 0xFFFFFFFF);
+            }
+        } else {
+            String toDisplay = display.isEmpty() ? "§7Search..." : display;
+            fr.drawString(toDisplay, x + 5, textY, 0x8F8F8F);
+        }
+    }
+
+    private static boolean drawSearchBarTexture(ResourceLocation texture, int x, int y, int w, int h) {
+        if (!resourceExists(texture)) return false;
+
+        Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
+        GlStateManager.enableBlend();
+        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+
+        for (int yi = 0; yi <= 2; yi++) {
+            for (int xi = 0; xi <= 2; xi++) {
+                float uMin = 0f, uMax = 4f / 20f;
+                int px = x, pw = 4;
+                if (xi == 1) {
+                    px += 4;
+                    uMin = 4f / 20f;
+                    uMax = 16f / 20f;
+                    pw = w - 8;
+                } else if (xi == 2) {
+                    px += w - 4;
+                    uMin = 16f / 20f;
+                    uMax = 1f;
+                }
+
+                float vMin = 0f, vMax = 4f / 20f;
+                int py = y, ph = 4;
+                if (yi == 1) {
+                    py += 4;
+                    vMin = 4f / 20f;
+                    vMax = 16f / 20f;
+                    ph = h - 8;
+                } else if (yi == 2) {
+                    py += h - 4;
+                    vMin = 16f / 20f;
+                    vMax = 1f;
+                }
+
+                drawSearchBarTexturedRect(px, py, pw, ph, uMin, uMax, vMin, vMax);
+            }
+        }
+
+        GlStateManager.disableBlend();
+        return true;
+    }
+
+    private static void drawSearchBarTexturedRect(int x, int y, int w, int h, float uMin, float uMax, float vMin, float vMax) {
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+
+        Tessellator tessellator = Tessellator.getInstance();
+        WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+        worldrenderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+        worldrenderer.pos(x, y + h, 0).tex(uMin, vMax).endVertex();
+        worldrenderer.pos(x + w, y + h, 0).tex(uMax, vMax).endVertex();
+        worldrenderer.pos(x + w, y, 0).tex(uMax, vMin).endVertex();
+        worldrenderer.pos(x, y, 0).tex(uMin, vMin).endVertex();
+        tessellator.draw();
+    }
+
+    private static boolean resourceExists(ResourceLocation location) {
+        return RESOURCE_CACHE.computeIfAbsent(location, loc -> {
+            try {
+                Minecraft.getMinecraft().getResourceManager().getResource(loc);
+                return true;
+            } catch (Exception ignored) {
+                return false;
+            }
+        });
     }
 
     public static void drawWorldCircle(double radius, int steps, float lineWidth, float r, float g, float b, float a) {

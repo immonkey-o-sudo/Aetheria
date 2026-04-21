@@ -2,6 +2,7 @@ package com.jef.justenoughfakepixel.features.misc.invbuttons;
 
 import com.jef.justenoughfakepixel.core.JefConfig;
 import com.jef.justenoughfakepixel.events.GuiContainerRenderButtonsEvent;
+import com.jef.justenoughfakepixel.features.storage.StorageManager;
 import com.jef.justenoughfakepixel.init.RegisterEvents;
 import com.jef.justenoughfakepixel.utils.Utils;
 import com.jef.justenoughfakepixel.utils.chat.ChatUtils;
@@ -75,6 +76,7 @@ public class InvButtonRenderer {
     @SubscribeEvent
     public void onRenderButtons(GuiContainerRenderButtonsEvent event) {
         if (!isEnabled() || isGuiEditor()) return;
+        if (StorageManager.isOverlayActive()) return;
 
         GuiContainer gui = event.gui;
         int gl = gui.guiLeft, gt = gui.guiTop, gw = gui.xSize, gh = gui.ySize;
@@ -132,6 +134,7 @@ public class InvButtonRenderer {
     @SubscribeEvent
     public void onMouseInput(GuiScreenEvent.MouseInputEvent.Pre event) {
         if (!isEnabled() || isGuiEditor()) return;
+        if (StorageManager.isOverlayActive()) return;
         if (Mouse.getEventButton() < 0) return;
         if (!(event.gui instanceof GuiContainer)) return;
 

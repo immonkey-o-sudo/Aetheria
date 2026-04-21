@@ -1,4 +1,4 @@
-package com.jef.justenoughfakepixel.features.storage;
+package com.jef.justenoughfakepixel.features.storage.utils;
 
 import lombok.AllArgsConstructor;
 

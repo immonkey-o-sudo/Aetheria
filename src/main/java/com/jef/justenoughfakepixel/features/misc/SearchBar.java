@@ -1,9 +1,10 @@
 package com.jef.justenoughfakepixel.features.misc;
 
 import com.jef.justenoughfakepixel.core.JefConfig;
+import com.jef.justenoughfakepixel.features.storage.StorageManager;
 import com.jef.justenoughfakepixel.init.RegisterEvents;
+import lombok.Getter;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.ScaledResolution;
@@ -11,15 +12,10 @@ import net.minecraft.client.gui.inventory.GuiChest;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.WorldRenderer;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.GL11;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -31,12 +27,8 @@ public class SearchBar {
 
     private static final Minecraft MC = Minecraft.getMinecraft();
 
-    private static final ResourceLocation TEX_NORMAL = new ResourceLocation("justenoughfakepixel", "textures/gui/search_bar.png");
-    private static final ResourceLocation TEX_GOLD = new ResourceLocation("justenoughfakepixel", "textures/gui/search_bar_gold.png");
-
     private static final DecimalFormat CALC_FORMAT = new DecimalFormat("#,##0.##########");
     private static final Set<Character> CALC_SYMBOLS = new HashSet<>(Arrays.asList('+', '-', '*', '/', 'x', '(', ')'));
-    private static final Map<ResourceLocation, Boolean> RESOURCE_CACHE = new HashMap<>();
 
     private static final SearchBar INSTANCE = new SearchBar();
     private static final int BAR_WIDTH = 170;
@@ -45,6 +37,10 @@ public class SearchBar {
     private static String searchText = "";
     private static String lastCalcInput = "";
     private static String lastCalcResult = null;
+
+    private static GuiTextField storageSearchBar;
+    @Getter
+    private static String storageSearchText = "";
 
     public static SearchBar getInstance() {
         return INSTANCE;
@@ -60,6 +56,35 @@ public class SearchBar {
         return false;
     }
 
+    public static GuiTextField createStorageSearchBar(int x, int y, int width) {
+        storageSearchBar = new GuiTextField(1, MC.fontRendererObj, x, y, width, BAR_HEIGHT);
+        storageSearchBar.setCanLoseFocus(false);
+        storageSearchBar.setMaxStringLength(50);
+        storageSearchBar.setEnableBackgroundDrawing(false);
+        storageSearchBar.setFocused(true);
+        storageSearchBar.setText(storageSearchText);
+        return storageSearchBar;
+    }
+
+    public static void drawStorageSearchBar(GuiTextField field) {
+        if (field == null) return;
+        com.jef.justenoughfakepixel.core.config.utils.RenderUtils.drawSearchBar(field, true);
+        storageSearchText = field.getText();
+    }
+
+    public static boolean handleStorageKeyTyped(GuiTextField field, char typedChar, int keyCode) {
+        if (field == null) return false;
+        boolean consumed = field.textboxKeyTyped(typedChar, keyCode);
+        storageSearchText = field.getText();
+        return consumed;
+    }
+
+    public static boolean handleStorageMouseClick(GuiTextField field, int mouseX, int mouseY) {
+        if (field == null) return false;
+        field.mouseClicked(mouseX, mouseY, 0);
+        return mouseX >= field.xPosition && mouseX <= field.xPosition + field.width && mouseY >= field.yPosition && mouseY <= field.yPosition + field.height;
+    }
+
     private static boolean isEnabled() {
         return JefConfig.feature != null && JefConfig.feature.misc.searchBar;
     }
@@ -69,32 +94,26 @@ public class SearchBar {
     }
 
     private static void drawSearchBar(GuiTextField field, String text) {
-        int x = field.xPosition, y = field.yPosition;
-        int w = field.width, h = field.height;
-
-        GlStateManager.color(1f, 1f, 1f, 1f);
-
         String suffix = calcSuffix(text);
-        if (!drawTexture(suffix != null ? TEX_GOLD : TEX_NORMAL, x, y, w, h)) {
-            Gui.drawRect(x, y, x + w, y + h, 0xFF2C2C2C);
-            Gui.drawRect(x + 1, y + 1, x + w - 1, y + h - 1, 0xFF111111);
-        }
+        boolean useGoldTexture = suffix != null;
 
-        FontRenderer fr = MC.fontRendererObj;
-        int textY = y - 4 + h / 2;
-        int maxWidth = Math.max(8, w - 10);
-        String display = fr.trimStringToWidth(suffix != null ? text + " " + suffix : text, maxWidth);
+        if (useGoldTexture) {
+            int x = field.xPosition, y = field.yPosition;
+            int w = field.width, h = field.height;
 
-        if (field.isFocused()) {
-            fr.drawStringWithShadow(display, x + 5, textY, 0xFFFFFFFF);
-            if (System.currentTimeMillis() % 1000 > 500) {
-                int cursor = Math.min(field.getCursorPosition(), text.length());
-                int beforeWidth = fr.getStringWidth(fr.trimStringToWidth(text.substring(0, cursor), maxWidth));
-                Gui.drawRect(x + 5 + beforeWidth, y - 5 + h / 2, x + 6 + beforeWidth, y + 4 + h / 2, 0xFFFFFFFF);
-            }
+            GlStateManager.color(1f, 1f, 1f, 1f);
+            com.jef.justenoughfakepixel.core.config.utils.RenderUtils.drawSearchBar(createTempFieldWithText(field, text + " " + suffix), true, true);
         } else {
-            fr.drawString(display, x + 5, textY, 0x8F8F8F);
+            com.jef.justenoughfakepixel.core.config.utils.RenderUtils.drawSearchBar(field, true, false);
         }
+    }
+
+    private static GuiTextField createTempFieldWithText(GuiTextField original, String text) {
+        GuiTextField temp = new GuiTextField(original.getId(), MC.fontRendererObj, original.xPosition, original.yPosition, original.width, original.height);
+        temp.setText(text);
+        temp.setFocused(original.isFocused());
+        temp.setCursorPosition(original.getCursorPosition());
+        return temp;
     }
 
     private static String calcSuffix(String text) {
@@ -110,73 +129,6 @@ public class SearchBar {
         return lastCalcResult == null ? null : "§e= §a" + lastCalcResult;
     }
 
-    private static boolean drawTexture(ResourceLocation texture, int x, int y, int w, int h) {
-        if (!resourceExists(texture)) return false;
-
-        MC.getTextureManager().bindTexture(texture);
-        GlStateManager.enableBlend();
-        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-
-        for (int yi = 0; yi <= 2; yi++) {
-            for (int xi = 0; xi <= 2; xi++) {
-                float uMin = 0f, uMax = 4f / 20f;
-                int px = x, pw = 4;
-                if (xi == 1) {
-                    px += 4;
-                    uMin = 4f / 20f;
-                    uMax = 16f / 20f;
-                    pw = w - 8;
-                } else if (xi == 2) {
-                    px += w - 4;
-                    uMin = 16f / 20f;
-                    uMax = 1f;
-                }
-
-                float vMin = 0f, vMax = 4f / 20f;
-                int py = y, ph = 4;
-                if (yi == 1) {
-                    py += 4;
-                    vMin = 4f / 20f;
-                    vMax = 16f / 20f;
-                    ph = h - 8;
-                } else if (yi == 2) {
-                    py += h - 4;
-                    vMin = 16f / 20f;
-                    vMax = 1f;
-                }
-
-                drawTexturedRect(px, py, pw, ph, uMin, uMax, vMin, vMax);
-            }
-        }
-
-        GlStateManager.disableBlend();
-        return true;
-    }
-
-    private static void drawTexturedRect(int x, int y, int w, int h, float uMin, float uMax, float vMin, float vMax) {
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-
-        WorldRenderer wr = Tessellator.getInstance().getWorldRenderer();
-        wr.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-        wr.pos(x, y + h, 0).tex(uMin, vMax).endVertex();
-        wr.pos(x + w, y + h, 0).tex(uMax, vMax).endVertex();
-        wr.pos(x + w, y, 0).tex(uMax, vMin).endVertex();
-        wr.pos(x, y, 0).tex(uMin, vMin).endVertex();
-        Tessellator.getInstance().draw();
-    }
-
-    private static boolean resourceExists(ResourceLocation location) {
-        return RESOURCE_CACHE.computeIfAbsent(location, loc -> {
-            try {
-                MC.getResourceManager().getResource(loc);
-                return true;
-            } catch (Exception ignored) {
-                return false;
-            }
-        });
-    }
-
     public int getOverlayWidth() {
         return BAR_WIDTH;
     }
@@ -184,8 +136,6 @@ public class SearchBar {
     public int getOverlayHeight() {
         return BAR_HEIGHT;
     }
-
-    // drawing
 
     public void render(boolean preview) {
         ScaledResolution sr = new ScaledResolution(MC);
@@ -224,7 +174,8 @@ public class SearchBar {
     @SubscribeEvent
     public void onKeyboardInput(GuiScreenEvent.KeyboardInputEvent.Pre event) {
         if (!isEnabled() || !(event.gui instanceof GuiContainer)) return;
-        if (searchBar == null || !Keyboard.getEventKeyState() || !searchBar.isFocused()) return;
+        if (searchBar == null || !searchBar.isFocused()) return;
+        if (!Keyboard.getEventKeyState()) return;
         if (Keyboard.getEventKey() == Keyboard.KEY_ESCAPE) return;
 
         if (searchBar.textboxKeyTyped(Keyboard.getEventCharacter(), Keyboard.getEventKey())) {
@@ -250,6 +201,11 @@ public class SearchBar {
     @SubscribeEvent
     public void onDrawGui(GuiScreenEvent.DrawScreenEvent.Post event) {
         if (!isEnabled() || !isSupportedGui(event.gui) || searchBar == null) return;
+
+        if (StorageManager.isOverlayActive()) {
+            return;
+        }
+
         drawSearchBar(searchBar, searchBar.getText());
     }
 

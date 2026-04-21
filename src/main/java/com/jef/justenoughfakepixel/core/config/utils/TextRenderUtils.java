@@ -117,4 +117,11 @@ public final class TextRenderUtils {
         lines.add(text);
         drawHoveringText(lines, mouseX, mouseY, font);
     }
+
+    public static void drawItemTooltip(net.minecraft.item.ItemStack stack, int mouseX, int mouseY, FontRenderer font) {
+        if (stack == null) return;
+        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getMinecraft();
+        java.util.List<String> tooltip = stack.getTooltip(mc.thePlayer, mc.gameSettings.advancedItemTooltips);
+        drawHoveringText(tooltip, mouseX, mouseY, font);
+    }
 }

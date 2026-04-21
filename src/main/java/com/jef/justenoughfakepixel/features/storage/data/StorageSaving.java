@@ -1,11 +1,15 @@
-package com.jef.justenoughfakepixel.features.storage;
+package com.jef.justenoughfakepixel.features.storage.data;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.jef.justenoughfakepixel.JefMod;
 import com.jef.justenoughfakepixel.core.JefConfig;
+import com.jef.justenoughfakepixel.features.storage.utils.SContainer;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -13,22 +17,22 @@ public class StorageSaving {
 
     public static Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-    public static HashMap<String,SContainer> loadStorageData(){
-        HashMap<String,SContainer> map = new HashMap<>();
-        File folder = new File(JefConfig.configDirectory,"storage");
-        if(!folder.exists()){
+    public static HashMap<String, SContainer> loadStorageData() {
+        HashMap<String, SContainer> map = new HashMap<>();
+        File folder = new File(JefConfig.configDirectory, "storage");
+        if (!folder.exists()) {
             folder.mkdirs();
             return new HashMap<>();
         }
-        for(File file : folder.listFiles()) {
+        for (File file : folder.listFiles()) {
             try {
-                if(!file.exists()){
+                if (!file.exists()) {
                     file.createNewFile();
                     continue;
                 }
                 SContainer container = gson.fromJson(new FileReader(file), SContainer.class);
-                if(container != null){
-                    map.put(container.id,container);
+                if (container != null) {
+                    map.put(container.id, container);
                 }
             } catch (IOException e) {
                 JefMod.logger.info("Error while trying to load " + file.getName() + " ERROR: " + e.getMessage());
@@ -37,15 +41,16 @@ public class StorageSaving {
         }
         return map;
     }
-    public static void saveStorageData(Collection<SContainer> containers){
-        File folder = new File(JefConfig.configDirectory,"storage");
-        if(!folder.exists()){
+
+    public static void saveStorageData(Collection<SContainer> containers) {
+        File folder = new File(JefConfig.configDirectory, "storage");
+        if (!folder.exists()) {
             folder.mkdirs();
         }
         for (SContainer container : containers) {
-            File file = new File(folder,container.id + ".json");
-            try{
-                if(!file.exists()){
+            File file = new File(folder, container.id + ".json");
+            try {
+                if (!file.exists()) {
                     file.createNewFile();
                 }
                 FileWriter writer = new FileWriter(file);
