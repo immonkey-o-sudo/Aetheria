@@ -29,12 +29,33 @@ public class StorageRenderer extends Gui {
     private static final float SCROLL_LENGTH = 0.2f;
     private static final int SEARCH_BAR_WIDTH = 200;
     private static final int SEARCH_BAR_HEIGHT = 20;
-    private static final ResourceLocation CONTAINER_BG = new ResourceLocation("justenoughfakepixel", "textures/gui/storage_container_bg.png");
-    private static final ResourceLocation SLOT_TEXTURE = new ResourceLocation("justenoughfakepixel", "textures/gui/storage_slot.png");
     private static final int NINE_SLICE_CORNER = 6;
     private static final int NINE_SLICE_SIZE = 18;
     private static final int SLOT_SIZE = 16;
     private static final int SLOTS_PER_ROW = 9;
+
+    /** Number of bundled overlay styles. Indices 0..STYLE_COUNT-1 map to textures/gui/storage/styleN_*.png */
+    public static final int STYLE_COUNT = 5;
+
+    private static final ResourceLocation[] STYLE_BG_TEXTURES   = new ResourceLocation[STYLE_COUNT];
+    private static final ResourceLocation[] STYLE_SLOT_TEXTURES  = new ResourceLocation[STYLE_COUNT];
+
+    static {
+        for (int i = 0; i < STYLE_COUNT; i++) {
+            STYLE_BG_TEXTURES[i]   = new ResourceLocation("justenoughfakepixel", "textures/gui/storage/style" + i + "_bg.png");
+            STYLE_SLOT_TEXTURES[i] = new ResourceLocation("justenoughfakepixel", "textures/gui/storage/style" + i + "_slot.png");
+        }
+    }
+
+    private ResourceLocation getContainerBg() {
+        int style = Math.max(0, Math.min(JefConfig.feature.storage.overlayStyle, STYLE_COUNT - 1));
+        return STYLE_BG_TEXTURES[style];
+    }
+
+    private ResourceLocation getSlotTexture() {
+        int style = Math.max(0, Math.min(JefConfig.feature.storage.overlayStyle, STYLE_COUNT - 1));
+        return STYLE_SLOT_TEXTURES[style];
+    }
 
     private final LinkedHashMap<String, SContainer> containers;
     private final java.util.HashMap<String, Boolean> searchCache = new java.util.HashMap<>();
@@ -81,7 +102,7 @@ public class StorageRenderer extends Gui {
         GlStateManager.color(1f, 1f, 1f, 1f);
         drawRect(x, y, x + width, y + height, 0xFF000000);
         GlStateManager.enableBlend();
-        NineSliceUtils.draw(CONTAINER_BG, x, y, width, height, NINE_SLICE_CORNER, NINE_SLICE_SIZE);
+        NineSliceUtils.draw(getContainerBg(), x, y, width, height, NINE_SLICE_CORNER, NINE_SLICE_SIZE);
     }
 
     private void initSearchBar() {
@@ -226,7 +247,7 @@ public class StorageRenderer extends Gui {
     }
 
     private void renderSlot(int x, int y, ItemStack stack, boolean matchesSearch, int mouseX, int mouseY) {
-        Minecraft.getMinecraft().getTextureManager().bindTexture(SLOT_TEXTURE);
+        Minecraft.getMinecraft().getTextureManager().bindTexture(getSlotTexture());
         GlStateManager.color(matchesSearch && !searchText.isEmpty() ? 0.5f : 1f, 1.0f, 1f, 1f);
         drawModalRectWithCustomSizedTexture(x, y, 0, 0, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE);
         GlStateManager.color(1f, 1f, 1f, 1f);
@@ -495,7 +516,7 @@ public class StorageRenderer extends Gui {
             GlStateManager.color(1.3f, 1.3f, 1.3f, 1f);
         }
 
-        NineSliceUtils.draw(CONTAINER_BG, info.x, info.y, info.width, info.height, NINE_SLICE_CORNER, NINE_SLICE_SIZE);
+        NineSliceUtils.draw(getContainerBg(), info.x, info.y, info.width, info.height, NINE_SLICE_CORNER, NINE_SLICE_SIZE);
         GlStateManager.color(1f, 1f, 1f, 1f);
     }
 

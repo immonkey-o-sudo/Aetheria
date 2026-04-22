@@ -12,6 +12,11 @@ public class Storage {
 
     @Expose
     @ConfigOption(name = "Scroll Speed", desc = "Change how fast or slow the scrolling is")
-    @ConfigEditorSliderAnnotation(minValue = 0.1f,maxValue = 3,minStep = 0.01f)
+    @ConfigEditorSliderAnnotation(minValue = 0.1f, maxValue = 3, minStep = 0.01f)
     public float scrollSpeed = 1f;
+
+    @Expose
+    @ConfigOption(name = "Overlay Style", desc = "Choose the visual style of the storage overlay panels and slots")
+    @ConfigEditorDropdown(values = {"Default", "Dark", "Wooden", "Ender", "Parchment"})
+    public int overlayStyle = 0;
 }
