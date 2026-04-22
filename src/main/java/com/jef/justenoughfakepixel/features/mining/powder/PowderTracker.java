@@ -122,7 +122,7 @@ public class PowderTracker {
 
     @SubscribeEvent
     public void onChat(ClientChatReceivedEvent event) {
-        if (!ChatUtils.isFromServer(event)) return;
+        if (ChatUtils.isFromServer(event)) return;
         if (!isActive()) return;
 
         String msg = ChatUtils.clean(event);

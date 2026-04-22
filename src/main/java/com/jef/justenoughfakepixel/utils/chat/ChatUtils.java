@@ -11,10 +11,10 @@ import java.util.regex.Pattern;
 
 public class ChatUtils {
 
-    private static final Pattern PARTY_MSG = Pattern.compile("^Party > (?:\\[[^]]*])?\\s*(\\w{1,16}):\\s*(.+)$");
-    private static final Pattern PLAYER_MSG = Pattern.compile("^(?:\\[[^\\]]*\\] )?(\\w{1,16}): (.+)$");
-    private static final Pattern MSG_RECEIVED = Pattern.compile("^From (?:\\[[^\\]]*\\] )?(\\w{1,16}) to Me: (.+)$");
-    private static final Pattern MSG_SENT = Pattern.compile("^From Me to (?:\\[[^\\]]*\\] )?(\\w{1,16}): (.+)$");
+    private static final Pattern PARTY_MSG = Pattern.compile("^§.Party §.> .*?(\\w{1,16})§.: (.+)§r$");
+    private static final Pattern PLAYER_MSG = Pattern.compile("^(?:§.\\[[^\\]]*\\] )?§.(\\w{1,16})§.: (.+)§r$");
+    private static final Pattern MSG_RECEIVED = Pattern.compile("^§.From (?:§.\\[[^\\]]*\\] )?§.(\\w{1,16}) §.to Me§.: §.(.+)§r$");
+    private static final Pattern MSG_SENT = Pattern.compile("^§.From Me §.to (?:§.\\[[^\\]]*\\] )?§.(\\w{1,16})§.: §.(.+)§r$");
 
     private ChatUtils() {
     }
@@ -24,7 +24,7 @@ public class ChatUtils {
     }
 
     public static boolean isFromServer(ClientChatReceivedEvent event) {
-        return event.type == 1;
+        return event.type != 1;
     }
 
     public static boolean isPartyMessage(String msg) {

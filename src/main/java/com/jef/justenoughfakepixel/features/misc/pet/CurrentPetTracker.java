@@ -116,7 +116,7 @@ public class CurrentPetTracker {
 
     @SubscribeEvent
     public void onChat(ClientChatReceivedEvent event) {
-        if (!ChatUtils.isFromServer(event)) return;
+        if (ChatUtils.isFromServer(event)) return;
 
         String raw = StringUtils.stripControlCodes(event.message.getUnformattedText()).trim();
 

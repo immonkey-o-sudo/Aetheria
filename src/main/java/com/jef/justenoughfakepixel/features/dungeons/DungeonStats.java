@@ -135,7 +135,7 @@ public class DungeonStats extends Overlay {
 
     @SubscribeEvent
     public void onChat(ClientChatReceivedEvent event) {
-        if (!ChatUtils.isFromServer(event)) return;
+        if (ChatUtils.isFromServer(event)) return;
         if (JefConfig.feature == null || !JefConfig.feature.dungeons.dungeonStats) return;
         if (!timers.isInDungeon()) return;
 

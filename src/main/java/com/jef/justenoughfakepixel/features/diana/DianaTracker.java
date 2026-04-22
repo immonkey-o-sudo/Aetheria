@@ -105,9 +105,15 @@ public class DianaTracker {
     @SubscribeEvent
     public void onChat(ClientChatReceivedEvent event) {
         if (mc.thePlayer == null) return;
-        if (!ChatUtils.isFromServer(event)) return;
+        if (ChatUtils.isFromServer(event)) return;
 
         String msg = ChatUtils.clean(event);
+
+        // Ignore party messages, player messages, and private messages
+        if (ChatUtils.isPartyMessage(msg) || ChatUtils.isPlayerMessage(msg) ||
+                ChatUtils.isMsgReceived(msg) || ChatUtils.isMsgSent(msg)) {
+            return;
+        }
         DianaStats stats = DianaStats.getInstance();
 
         if (LOOT_SHARE.matcher(msg).find() && isInHub()) {
