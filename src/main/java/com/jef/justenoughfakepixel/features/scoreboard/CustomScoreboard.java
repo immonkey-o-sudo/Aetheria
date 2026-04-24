@@ -31,29 +31,32 @@ public class CustomScoreboard extends Overlay {
 
     // ── known line IDs (must match exampleText indices in Scoreboard.java) ───
     private static final int LINE_SERVER       = 0;
-    private static final int LINE_SEASON       = 1;
-    private static final int LINE_TIME         = 2;
-    private static final int LINE_PROFILE_TYPE = 3;
+    private static final int LINE_TIME         = 1;
+    private static final int LINE_PROFILE_TYPE = 2;
+    private static final int LINE_SEASON       = 3;
     private static final int LINE_ISLAND       = 4;
     private static final int LINE_LOCATION     = 5;
     private static final int LINE_EMPTY1       = 6;
     private static final int LINE_PURSE        = 7;
     private static final int LINE_BANK         = 8;
-    private static final int LINE_BITS         = 9;
-    private static final int LINE_POWDER       = 10;
-    private static final int LINE_GEMS         = 11;
-    private static final int LINE_EMPTY2       = 12;
-    private static final int LINE_EVENT        = 13;
-    private static final int LINE_COOKIE       = 14;
+    private static final int LINE_POWDER       = 9;
+    private static final int LINE_HEAT         = 10;
+    private static final int LINE_BITS         = 11;
+    private static final int LINE_GEMS         = 12;
+    private static final int LINE_NORTHSTARS   = 13;
+    private static final int LINE_EVENT        = 14;
     private static final int LINE_POWER        = 15;
-    private static final int LINE_EMPTY3       = 16;
-    private static final int LINE_FETCHUR      = 17;
-    private static final int LINE_SLAYER       = 18;
-    private static final int LINE_EMPTY4       = 19;
-    private static final int LINE_EMPTY5       = 20;
-    private static final int LINE_EMPTY6       = 21;
-    private static final int LINE_EMPTY7       = 22;
-    private static final int LINE_EXTRA        = 23;
+    private static final int LINE_COOKIE       = 16;
+    private static final int LINE_EMPTY3       = 17;
+    private static final int LINE_FETCHUR      = 18;
+    private static final int LINE_SLAYER       = 19;
+    private static final int LINE_EMPTY4       = 20;
+    private static final int LINE_EMPTY5       = 21;
+    private static final int LINE_EMPTY6       = 22;
+    private static final int LINE_EMPTY7       = 23;
+    private static final int LINE_EXTRA        = 24;
+    private static final int LINE_EMPTY2       = 25;
+
 
     private static final String LOC_SYMBOL_NORMAL = "⏣";
     private static final String LOC_SYMBOL_RIFT   = "ф";
@@ -68,7 +71,9 @@ public class CustomScoreboard extends Overlay {
     private static final Pattern EVENT_PATTERN    = Pattern.compile("(?:Fishing Festival|Mining Fiesta|Spooky Festival|Season of Jerry|Traveling Zoo|New Year Celebration|Election|Fallen Star|Festival of Gifts).*");
     private static final Pattern SLAYER_PATTERN   = Pattern.compile("Slayer Quest");
     private static final Pattern COOKIE_SUPPRESS_PATTERN = Pattern.compile("Cookie Buff.*|\\d+d\\s+\\d+h.*");
-    private static final Pattern WEBSITE_PATTERN  = Pattern.compile(".*fakepixel.*");
+    private static final Pattern WEBSITE_PATTERN    = Pattern.compile(".*fakepixel.*");
+    private static final Pattern NORTHSTARS_PATTERN = Pattern.compile("North Stars: [\\d,]+");
+    private static final Pattern HEAT_PATTERN       = Pattern.compile("Heat: .+");
 
     @Getter
     private static CustomScoreboard instance;
@@ -150,6 +155,8 @@ public class CustomScoreboard extends Overlay {
         String bitsRaw        = null;
         String profileTypeRaw = null;
         String websiteRaw     = null;
+        String northStarsRaw  = null;
+        String heatRaw        = null;
         List<String> eventLines  = new ArrayList<>();
         List<String> slayerLines = new ArrayList<>();
         Set<String>  claimed     = new LinkedHashSet<>();
@@ -209,6 +216,12 @@ public class CustomScoreboard extends Overlay {
             }
             if (websiteRaw == null && WEBSITE_PATTERN.matcher(c).find()) {
                 websiteRaw = l; claimed.add(l);
+            }
+            if (northStarsRaw == null && NORTHSTARS_PATTERN.matcher(c).find()) {
+                northStarsRaw = l; claimed.add(l); continue;
+            }
+            if (heatRaw == null && HEAT_PATTERN.matcher(c).find()) {
+                heatRaw = l; claimed.add(l); continue;
             }
         }
 
@@ -324,6 +337,12 @@ public class CustomScoreboard extends Overlay {
 
                 case LINE_EXTRA:
                     for (String ul : unknownLines) { lines.add(ul); rawIndex.add(-1); }
+                    break;
+                case LINE_NORTHSTARS:
+                    if (northStarsRaw != null) { lines.add(northStarsRaw); rawIndex.add(-1); }
+                    break;
+                case LINE_HEAT:
+                    if (heatRaw != null) { lines.add(heatRaw); rawIndex.add(-1); }
                     break;
                 case LINE_EMPTY1: case LINE_EMPTY2: case LINE_EMPTY3: case LINE_EMPTY4:
                 case LINE_EMPTY5: case LINE_EMPTY6: case LINE_EMPTY7:

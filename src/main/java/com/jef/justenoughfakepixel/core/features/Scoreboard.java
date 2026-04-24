@@ -53,33 +53,36 @@ public class Scoreboard {
     @Expose
     @ConfigOption(name = "Scoreboard Lines", desc = "Choose which lines to show and drag to reorder. Unrecognised lines are grouped under 'Extra Lines' — drag it to the bin to hide them all.")
     @ConfigEditorDraggableList(exampleText = {
-            "§e03/15/26 §8hub-67",                                                                                           // 0  SERVER
-            "§fLate Summer §b11th",                                                                                          // 1  SEASON
-            "§f10:40pm",                                                                                                     // 2  TIME
-            "§7♲ Ironman (Profile Type)",                                                                                    // 3  PROFILE_TYPE
+            "§e03/15/26 §8hub-67",
+            "§f10:40pm",
+            "§7♲ Ironman (Profile Type)",
+            "§fLate Summer §b11th",
             "§7㋖ §bSkyblock Hub",                                                                                           // 4  ISLAND
             "§7⏣ §bVillage",                                                                                                 // 5  LOCATION
             "§8─────────────────",                                                                                           // 6  EMPTY
             "§fPurse: §6952,763,737",                                                                                        // 7  PURSE
             "§fBank: §6969M",                                                                                                // 8  BANK
-            "§fBits: §b59,364,034",                                                                                          // 9  BITS
             "§9§lPowder\n §7- §fMithril: §21.2M\n §7- §fGemstone: §d800K\n §7- §fGlacite: §b250K",                         // 10 POWDER
-            "§fGems: §a67,676,767",                                                                                          // 11 GEMS
-            "§8─────────────────",                                                                                           // 12 EMPTY
-            "§6Fishing/Mining Fiesta(variety of Events) §f12m 30s",                                                     // 13 EVENT
-            "§dCookie Buff: §f67d 21h",                                                                                     // 14 COOKIE
-            "§fPower: §dBizzare",                                                                                            // 15 POWER
-            "§8─────────────────",                                                                                           // 16 EMPTY
-            "§fFetchur: §eMilk",                                                                                             // 17 FETCHUR
-            "§fSlayer Quest\n§4Voidgloom Seraph IV\n§7(17/6,767) Combat XP",                                                // 18 SLAYER
-            "§8──────────────────(emptyline)",                                                                               // 19 EMPTY
-            "§8──────────────────(emptyline)",                                                                               // 20 EMPTY
-            "§8──────────────────(emptyline)",                                                                               // 21 EMPTY
-            "§8──────────────────(emptyline)",                                                                               // 22 EMPTY
-            "§8[?] §7Lines that the mod doesnt detect"                                                                             // 23 EXTRA
+            "§cHeat: §c♨ 14",
+            "§fBits: §b59,364,034",
+            "§fGems: §a67,676,767",
+            "§dNorth Stars: §d756",
+            "§6Fishing/Mining Fiesta(variety of Events) §f12m 30s",
+            "§fPower: §dBizzare",
+            "§dCookie Buff: §f67d 21h",
+            "§8─────────────────",
+            "§fFetchur: §eMilk",
+            "§fSlayer Quest\n§4Voidgloom Seraph IV\n§7(17/6,767) Combat XP",
+            "§8──────────────────(emptyline)",
+            "§8──────────────────(emptyline)",
+            "§8──────────────────(emptyline)",
+            "§8──────────────────(emptyline)",
+            "§8[?] §7Lines that the mod doesnt detect",
+            "§8─────────────────",
+
     })
     public List<Integer> scoreboardLines = new ArrayList<>(Arrays.asList(
-            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 23
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 24, 25
     ));
 
     @Expose
