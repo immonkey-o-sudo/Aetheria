@@ -50,12 +50,19 @@ public class StorageListener {
         if (!(event.gui instanceof GuiChest)) {
             if (!switchingContainer) {
                 resetOverlayState();
+                StorageManager.closeOverlay();
             }
             return;
         }
 
         GuiChest guiChest = (GuiChest) event.gui;
-        if (!(guiChest.inventorySlots instanceof ContainerChest)) return;
+        if (!(guiChest.inventorySlots instanceof ContainerChest)) {
+            if (!switchingContainer) {
+                resetOverlayState();
+                StorageManager.closeOverlay();
+            }
+            return;
+        }
 
         ContainerChest chest = (ContainerChest) guiChest.inventorySlots;
         String title = chest.getLowerChestInventory().getDisplayName().getUnformattedText();
@@ -95,6 +102,7 @@ public class StorageListener {
             case OTHER:
                 if (!switchingContainer) {
                     resetOverlayState();
+                    StorageManager.closeOverlay();
                 }
                 break;
         }
