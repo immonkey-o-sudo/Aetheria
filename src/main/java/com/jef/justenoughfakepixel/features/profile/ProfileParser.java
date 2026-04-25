@@ -21,6 +21,8 @@ import com.jef.justenoughfakepixel.features.profile.data.skills.SkillsData;
 import com.jef.justenoughfakepixel.features.profile.data.slayer.Slayer;
 import com.jef.justenoughfakepixel.features.profile.data.slayer.SlayerData;
 import com.jef.justenoughfakepixel.features.profile.data.slayer.SlayersData;
+import com.jef.justenoughfakepixel.features.profile.data.wardrobe.WardrobeData;
+import com.jef.justenoughfakepixel.features.profile.data.wardrobe.WardrobeSet;
 import com.jef.justenoughfakepixel.features.profile.vars.EquipmentSlot;
 import com.jef.justenoughfakepixel.features.profile.vars.ProfileMode;
 import com.jef.justenoughfakepixel.utils.ColorUtils;
@@ -65,6 +67,7 @@ public class ProfileParser {
         final HOTMData[] mountain = new HOTMData[1];
         final DungeonData[] dungeonData = new DungeonData[1];
         final SlayersData[] slayerData = new SlayersData[1];
+        final WardrobeData[] wardrobeData = new WardrobeData[1];
         // Inventory
         GuiWaiter.waitFor("View Inventory",2,8,"View Profile",inv -> {
             inventory[0] = parseInvData(inv);
@@ -127,19 +130,38 @@ public class ProfileParser {
                             }
                             JefMod.logger.info("[ProfileParser] SlayersData parsed for: " + base.playerName);
                         },prof5 -> {
-                            if(!parsing) {
-                                JefMod.logger.info("[ProfileParser] Not Parsing cause one data is null");
-                                JefMod.logger.info("[ProfileParser] Data: Inventory: " +
-                                        (inventory[0] != null) + " | Skills: " + (skill[0] != null) +
-                                        " | HOTM: "+ (mountain[0] != null) + " | Dungeon: " + (dungeonData[0] != null)
-                                + " | Slayer: " + (slayerData[0] != null));
-                                return;
-                            }
-                            ProfileData profile = new ProfileData(base, inventory[0], skill[0],mountain[0], dungeonData[0],slayerData[0]);
-                            profileData.put(base.playerName, profile);
-                            writeToJson(profile);
-                            parsing = false;
-                            JefMod.logger.info("[ProfileParser] Saved profile: " + base.playerName);
+                            windowID = prof5.windowId;
+                            mc.playerController.windowClick(windowID,31,0,0,mc.thePlayer);
+                            HashMap<Integer,WardrobeSet> wardrobe = new HashMap<>();
+                            GuiWaiter.waitForPaged("View Wardrobe",
+                                    2,
+                                    53,
+                                    "Next Page",
+                                    48,
+                                    "View Profile",
+                                    chest -> wardrobe.putAll(parseWardrobe(chest)),
+                                    prof -> {
+                                        if(wardrobe.isEmpty()){
+                                            JefMod.logger.info("[ProfileParser] WardrobeData was null for: " + base.playerName);
+                                            parsing = false;
+                                            return;
+                                        }
+                                        JefMod.logger.info("[ProfileParser] Wardrobe parsed for: " + base.playerName);
+                                        wardrobeData[0] = new WardrobeData(wardrobe);
+                                        if(!parsing) {
+                                            JefMod.logger.info("[ProfileParser] Not Parsing cause one data is null");
+                                            JefMod.logger.info("[ProfileParser] Data: Inventory: " +
+                                                    (inventory[0] != null) + " | Skills: " + (skill[0] != null) +
+                                                    " | HOTM: "+ (mountain[0] != null) + " | Dungeon: " + (dungeonData[0] != null)
+                                                    + " | Slayer: " + (slayerData[0] != null));
+                                            return;
+                                        }
+                                        ProfileData profile = new ProfileData(base, inventory[0], skill[0],mountain[0], dungeonData[0],slayerData[0],wardrobeData[0]);
+                                        profileData.put(base.playerName, profile);
+                                        writeToJson(profile);
+                                        parsing = false;
+                                        JefMod.logger.info("[ProfileParser] Saved profile: " + base.playerName);
+                                    });
                         });
                     });
                 });
@@ -147,6 +169,82 @@ public class ProfileParser {
         });
     }
 
+    public static HashMap<Integer, WardrobeSet> parseWardrobe(ContainerChest container){
+        HashMap<Integer, WardrobeSet> set = new HashMap<>();
+        if (container == null) return set;
+        String title = ColorUtils.stripColor(
+                container.getLowerChestInventory().getDisplayName().getUnformattedText()
+        ).trim();
+        if (!title.equals("View Wardrobe")) return set;
+
+        HashMap<Integer, Integer> parsingSlots = new HashMap<>();
+        int equippedSlot = -1;
+
+        for(int i = 36; i < 45; i++){
+            ItemStack stack = container.getSlot(i).getStack();
+            if(stack == null) continue;
+
+            String name = ColorUtils.stripColor(stack.getDisplayName()).trim();
+
+            int realSlotNumber = (i - 36) + 1;
+            try {
+                String[] words = name.split("[: ]");
+                for (String w : words) {
+                    if (w.matches("\\d+")) {
+                        realSlotNumber = Integer.parseInt(w);
+                        break;
+                    }
+                }
+            } catch (Exception ignored) {}
+
+            if(name.endsWith("Ready")){
+                parsingSlots.put(realSlotNumber, i - 36);
+            }
+            if(name.endsWith("Equipped")){
+                parsingSlots.put(realSlotNumber, i - 36);
+                equippedSlot = realSlotNumber;
+            }
+        }
+
+        for(Map.Entry<Integer, Integer> entry : parsingSlots.entrySet()){
+            int realSlot = entry.getKey();
+            int localCol = entry.getValue();
+
+            ItemStack helm = container.getSlot(localCol).getStack();
+            ItemStack chestplate = container.getSlot(localCol + 9).getStack();
+            ItemStack leggings = container.getSlot(localCol + 18).getStack();
+            ItemStack boots = container.getSlot(localCol + 27).getStack();
+
+            if(helm == null || chestplate == null || leggings == null || boots == null) continue;
+
+            String hName = ColorUtils.stripColor(helm.getDisplayName()).trim();
+            String cName = ColorUtils.stripColor(chestplate.getDisplayName()).trim();
+            String lName = ColorUtils.stripColor(leggings.getDisplayName()).trim();
+            String bName = ColorUtils.stripColor(boots.getDisplayName()).trim();
+
+            String helmString = "";
+            String chestString = "";
+            String legString = "";
+            String bootString = "";
+
+            if(!hName.startsWith("Slot ")){
+                helmString = itemToNBT(helm);
+            }
+            if(!cName.startsWith("Slot ")){
+                chestString = itemToNBT(chestplate);
+            }
+            if(!lName.startsWith("Slot ")){
+                legString = itemToNBT(leggings);
+            }
+            if(!bName.startsWith("Slot ")){
+                bootString = itemToNBT(boots);
+            }
+
+            set.put(realSlot, new WardrobeSet(helmString, chestString, legString, bootString,
+                    equippedSlot == realSlot));
+        }
+        return set;
+    }
     public static SlayersData parseSlayer(ContainerChest container) {
         if (container == null) return null;
         String title = ColorUtils.stripColor(

@@ -5,6 +5,7 @@ import com.jef.justenoughfakepixel.features.profile.data.dungeon.DungeonData;
 import com.jef.justenoughfakepixel.features.profile.data.inventory.InventoryData;
 import com.jef.justenoughfakepixel.features.profile.data.skills.SkillsData;
 import com.jef.justenoughfakepixel.features.profile.data.slayer.SlayersData;
+import com.jef.justenoughfakepixel.features.profile.data.wardrobe.WardrobeData;
 import lombok.AllArgsConstructor;
 
 
@@ -17,5 +18,6 @@ public class ProfileData {
     public HOTMData hotmData;
     public DungeonData dungeonData;
     public SlayersData slayersData;
+    public WardrobeData wardrobeData;
 
 }

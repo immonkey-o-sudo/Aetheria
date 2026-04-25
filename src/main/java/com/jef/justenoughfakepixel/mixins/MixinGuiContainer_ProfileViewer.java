@@ -77,8 +77,9 @@ public class MixinGuiContainer_ProfileViewer extends GuiScreen {
             ContainerChest chest = (ContainerChest) this.inventorySlots;
             IInventory lowerInv = chest.getLowerChestInventory();
             String title = ColorUtils.stripColor(lowerInv.getDisplayName().getUnformattedText()).trim();
-            if (!title.equals(GUI_TITLE)) return;
             if (theSlot == null || !theSlot.getHasStack()) return;
+            JefMod.logger.info("Slot: " + theSlot.slotNumber + " | Window: " + chest.windowId);
+            if (!title.equals(GUI_TITLE)) return;
             ItemStack stack = theSlot.getStack();
             String itemName = ColorUtils.stripColor(stack.getDisplayName()).trim();
 
