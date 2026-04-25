@@ -1,0 +1,43 @@
+name: Send Push Info to Discord
+
+on:
+  push:
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Format commit data
+        id: commits
+        run: |
+          COMMITS=$(jq -r '.commits[] | "• " + .message + " — " + .author.name' <<< '${{ toJson(github.event) }}')
+          echo "commits<<EOF" >> $GITHUB_OUTPUT
+          echo "$COMMITS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Send to Discord
+        run: |
+          curl -H "Content-Type: application/json" \
+          -X POST \
+          -d "{
+            \"embeds\": [{
+              \"title\": \"Push to \`${{ github.ref_name }}\`\",
+              \"description\": \"${{ steps.commits.outputs.commits }}\",
+              \"color\": 5763719,
+              \"fields\": [
+                {
+                  \"name\": \"Pushed by\",
+                  \"value\": \"${{ github.actor }}\",
+                  \"inline\": true
+                },
+                {
+                  \"name\": \"Commit\",
+                  \"value\": \"<https://github.com/${{ github.repository }}/commit/${{ github.sha }}>\",
+                  \"inline\": true
+                }
+              ],
+              \"timestamp\": \"${{ github.event.head_commit.timestamp }}\"
+            }]
+          }" \
+          ${{ secrets.DISCORD_WEBHOOK_PUSH }}
