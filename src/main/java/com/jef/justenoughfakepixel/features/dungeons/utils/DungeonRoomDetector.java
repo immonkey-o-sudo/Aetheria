@@ -38,7 +38,7 @@ public class DungeonRoomDetector {
     @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.START) return;
-        if (JefConfig.feature == null || !JefConfig.feature.dungeons.dungeonRoomOverlay) {
+        if (JefConfig.feature == null || !JefConfig.feature.dungeons.dungeonRoomOverlayConfig.dungeonRoomOverlay) {
             DungeonRoomOverlay.currentRoomName = null;
             DungeonRoomOverlay.currentRoomCategory = null;
             DungeonRoomOverlay.currentRoomNotes = null;

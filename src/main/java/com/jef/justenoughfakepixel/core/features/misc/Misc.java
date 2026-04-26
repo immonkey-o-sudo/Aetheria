@@ -62,33 +62,4 @@ public class Misc {
     @ConfigOption(name = "SkyBlock XP in Chat", desc = "Sends SkyBlock XP gains from the action bar into chat")
     @ConfigEditorBoolean
     public boolean skyblockXpInChat = false;
-
-    // ── flat fields kept for runtime code compatibility ──────────────────────
-    @Expose public boolean performanceHud = false;
-    @Expose public boolean hudShowFps = true;
-    @Expose public boolean hudShowTps = true;
-    @Expose public boolean hudShowPing = true;
-    @Expose public boolean hudShowCoords = false;
-    @Expose public boolean hudShowRotation = false;
-    @Expose public boolean hudVertical = true;
-    @Expose public String hudBgColor = "0:136:0:0:0";
-    @Expose public int hudCornerRadius = 4;
-    @Expose public float hudScale = 1f;
-    @Expose public Position hudPos = new Position(2, 2);
-    @Expose public boolean searchBar = true;
-    @Expose public String searchBarHighlightColor = "0:102:255:0:0";
-    @Expose public Position searchBarPos = new Position(0, -20, true, true);
-    @Expose public boolean showCurrentPet = true;
-    @Expose public String currentPetBgColor = "0:0:0:0:0";
-    @Expose public int currentPetCornerRadius = 4;
-    @Expose public float currentPetScale = 1.5f;
-    @Expose public Position currentPetPos = new Position(18, 14);
-    @Expose public boolean itemPickupLog = true;
-    @Expose public String itemPickupLogBgColor = "160:0:0:0:0";
-    @Expose public int itemPickupLogCornerRadius = 4;
-    @Expose public float itemPickupLogScale = 1f;
-    @Expose public Position itemPickupLogPos = new Position(2, 60);
-    @Expose public boolean enableInvButtons = true;
-    @Expose public int invButtonClickType = 0;
-    @Expose public int invButtonTooltipDelay = 600;
 }

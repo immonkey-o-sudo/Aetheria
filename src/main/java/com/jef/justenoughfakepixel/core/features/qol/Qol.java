@@ -70,43 +70,4 @@ public class Qol {
     @ConfigOption(name = "Confirm Disconnect", desc = "Makes you click twice to disconnect")
     @ConfigEditorBoolean
     public boolean confirmDisconnect = true;
-
-    // ── flat fields kept for runtime code compatibility ──────────────────────
-    @Expose public boolean hideCritSplashes = false;
-    @Expose public boolean hideNonCritSplashes = false;
-    @Expose public boolean enchantHighlight = true;
-    @Expose public int enchantLayout = 0;
-    @Expose public boolean enchantChroma = true;
-    @Expose public int enchantChromaSpeed = 1000;
-    @Expose public int enchantChromaMode = 1;
-    @Expose public float enchantChromaSize = 120f;
-    @Expose public String enchantPoorColor = "0:170:170:170:170";
-    @Expose public String enchantGoodColor = "0:255:85:255:85";
-    @Expose public String enchantGreatColor = "0:255:85:85:255";
-    @Expose public String enchantPerfectColor = "0:255:255:85:255";
-    @Expose public String enchantUltimateColor = "0:255:255:85:255";
-    @Expose public boolean gyroWand = true;
-    @Expose public float gyroWandThickness = 2f;
-    @Expose public boolean itemCooldownOverlay = true;
-    @Expose public String itemCooldownBgColor = "0:136:0:0:0";
-    @Expose public int itemCooldownCornerRadius = 4;
-    @Expose public float itemCooldownScale = 1f;
-    @Expose public boolean itemCooldownShowWhenEmpty = false;
-    @Expose public Position itemCooldownPos = new Position(-4, 4, true, false);
-    @Expose public boolean itemAbilityTimerOverlay = true;
-    @Expose public String itemAbilityTimerBgColor = "0:136:0:0:0";
-    @Expose public int itemAbilityTimerCornerRadius = 4;
-    @Expose public float itemAbilityTimerScale = 1f;
-    @Expose public boolean itemAbilityTimerShowWhenEmpty = false;
-    @Expose public Position itemAbilityTimerPos = new Position(-4, 40, true, false);
-    @Expose public boolean itemInvincibilityOverlay = true;
-    @Expose public String itemInvincibilityBgColor = "0:136:0:0:0";
-    @Expose public int itemInvincibilityCornerRadius = 4;
-    @Expose public float itemInvincibilityScale = 1f;
-    @Expose public boolean itemInvincibilityShowWhenEmpty = false;
-    @Expose public Position itemInvincibilityPos = new Position(-4, 76, true, false);
-    @Expose public boolean blockSelectionOverlay = false;
-    @Expose public int blockSelectionMode = 1;
-    @Expose public float blockSelectionThickness = 2f;
-    @Expose public String blockSelectionColor = "180:255:255:255:255";
 }

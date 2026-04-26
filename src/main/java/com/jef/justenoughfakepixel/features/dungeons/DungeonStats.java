@@ -118,7 +118,7 @@ public class DungeonStats extends Overlay {
     @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END || ++tickCounter % 10 != 0) return;
-        if (JefConfig.feature == null || !JefConfig.feature.dungeons.dungeonStats) return;
+        if (JefConfig.feature == null || !JefConfig.feature.dungeons.dungeonOverlay.dungeonStats) return;
         if (mc.thePlayer == null) return;
 
         if (!timers.isInDungeon()) {
@@ -136,7 +136,7 @@ public class DungeonStats extends Overlay {
     @SubscribeEvent
     public void onChat(ClientChatReceivedEvent event) {
         if (ChatUtils.isFromServer(event)) return;
-        if (JefConfig.feature == null || !JefConfig.feature.dungeons.dungeonStats) return;
+        if (JefConfig.feature == null || !JefConfig.feature.dungeons.dungeonOverlay.dungeonStats) return;
         if (!timers.isInDungeon()) return;
 
         String clean = ChatUtils.clean(event);
@@ -215,22 +215,22 @@ public class DungeonStats extends Overlay {
 
     @Override
     public Position getPosition() {
-        return JefConfig.feature.dungeons.statsPos;
+        return JefConfig.feature.dungeons.dungeonOverlay.statsPos;
     }
 
     @Override
     public float getScale() {
-        return JefConfig.feature.dungeons.statsScale;
+        return JefConfig.feature.dungeons.dungeonOverlay.statsScale;
     }
 
     @Override
     public int getBgColor() {
-        return ChromaColour.specialToChromaRGB(JefConfig.feature.dungeons.statsBgColor);
+        return ChromaColour.specialToChromaRGB(JefConfig.feature.dungeons.dungeonOverlay.statsBgColor);
     }
 
     @Override
     public int getCornerRadius() {
-        return JefConfig.feature.dungeons.statsCornerRadius;
+        return JefConfig.feature.dungeons.dungeonOverlay.statsCornerRadius;
     }
 
     @Override
@@ -245,7 +245,7 @@ public class DungeonStats extends Overlay {
 
     @Override
     protected boolean isEnabled() {
-        return JefConfig.feature.dungeons.dungeonStats;
+        return JefConfig.feature.dungeons.dungeonOverlay.dungeonStats;
     }
 
     @Override

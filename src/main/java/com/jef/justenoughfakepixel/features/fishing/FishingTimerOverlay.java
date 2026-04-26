@@ -20,7 +20,7 @@ public class FishingTimerOverlay {
     private boolean alertPlayed = false;
 
     private boolean isEnabled() {
-        return JefConfig.feature != null && JefConfig.feature.fishing.fishingTimer;
+        return JefConfig.feature != null && JefConfig.feature.fishing.fishingTimerConfig.fishingTimer;
     }
 
     @SubscribeEvent
@@ -38,7 +38,7 @@ public class FishingTimerOverlay {
         }
 
         float seconds = hook.ticksExisted / 20f;
-        int alertTime = JefConfig.feature.fishing.fishingTimerAlertTime;
+        int alertTime = JefConfig.feature.fishing.fishingTimerConfig.fishingTimerAlertTime;
 
         if (seconds >= alertTime && !alertPlayed) {
             alertPlayed = true;
@@ -94,9 +94,9 @@ public class FishingTimerOverlay {
         if (mc.thePlayer == null || mc.thePlayer.fishEntity == null) return 0xFFFFFFFF;
 
         float seconds = mc.thePlayer.fishEntity.ticksExisted / 20f;
-        boolean alerted = seconds >= JefConfig.feature.fishing.fishingTimerAlertTime;
+        boolean alerted = seconds >= JefConfig.feature.fishing.fishingTimerConfig.fishingTimerAlertTime;
 
-        return ChromaColour.specialToChromaRGB(alerted ? JefConfig.feature.fishing.fishingTimerAlertColor : JefConfig.feature.fishing.fishingTimerNormalColor);
+        return ChromaColour.specialToChromaRGB(alerted ? JefConfig.feature.fishing.fishingTimerConfig.fishingTimerAlertColor : JefConfig.feature.fishing.fishingTimerConfig.fishingTimerNormalColor);
     }
 
     private void renderText(double x, double y, double z, String text, int color) {

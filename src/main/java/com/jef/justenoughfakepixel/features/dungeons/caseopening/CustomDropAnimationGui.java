@@ -131,7 +131,7 @@ public class CustomDropAnimationGui extends GuiScreen {
 
     private double velocityFromX(double distanceToStop) {
         double X = Math.max(stopPoint - slowPoint, spacing);
-        double T = Math.max(JefConfig.feature.dungeons.caseOpeningSlowTime, 0.1);
+        double T = Math.max(JefConfig.feature.dungeons.caseOpening.caseOpeningSlowTime, 0.1);
         double fullSpeed = X * 3 / T;
 
         if (distanceToStop <= 0) return 0;          // reached or overshot stop
@@ -156,7 +156,7 @@ public class CustomDropAnimationGui extends GuiScreen {
         this.centerX = screenWidth / 2f;
         this.centerY = screenHeight / 2f;
         this.stopPoint = 41 * spacing + randstop * itemBoxWidth;
-        this.slowPoint = stopPoint - ((JefConfig.feature.dungeons.caseOpeningSlowDistance + randslow) * spacing);
+        this.slowPoint = stopPoint - ((JefConfig.feature.dungeons.caseOpening.caseOpeningSlowDistance + randslow) * spacing);
 
         frameBufferLayer1 = new Framebuffer(screenWidth, screenHeight, true);
         frameBufferLayer2 = new Framebuffer(screenWidth, screenHeight, true);
@@ -330,8 +330,8 @@ public class CustomDropAnimationGui extends GuiScreen {
 
             renderItemImage(i, x, y, size);
 
-            if (JefConfig.feature.dungeons.caseOpeningAllowText) {
-                float textScale = JefConfig.feature.dungeons.caseOpeningTextScale;
+            if (JefConfig.feature.dungeons.caseOpening.caseOpeningAllowText) {
+                float textScale = JefConfig.feature.dungeons.caseOpening.caseOpeningTextScale;
                 float textX = x + itemBoxWidth * size / 2;
                 float textY = y + itemBoxHeight * size * 3 / 4;
                 GL11.glPushMatrix();

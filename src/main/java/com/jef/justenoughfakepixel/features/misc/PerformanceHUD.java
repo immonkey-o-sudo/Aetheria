@@ -66,27 +66,27 @@ public class PerformanceHUD extends Overlay {
 
     @Override
     public Position getPosition() {
-        return JefConfig.feature.misc.hudPos;
+        return JefConfig.feature.misc.performanceHudConfig.hudPos;
     }
 
     @Override
     public float getScale() {
-        return JefConfig.feature.misc.hudScale;
+        return JefConfig.feature.misc.performanceHudConfig.hudScale;
     }
 
     @Override
     public int getBgColor() {
-        return ChromaColour.specialToChromaRGB(JefConfig.feature.misc.hudBgColor);
+        return ChromaColour.specialToChromaRGB(JefConfig.feature.misc.performanceHudConfig.hudBgColor);
     }
 
     @Override
     public int getCornerRadius() {
-        return JefConfig.feature.misc.hudCornerRadius;
+        return JefConfig.feature.misc.performanceHudConfig.hudCornerRadius;
     }
 
     @Override
     protected boolean isEnabled() {
-        return JefConfig.feature.misc.performanceHud;
+        return JefConfig.feature.misc.performanceHudConfig.performanceHud;
     }
 
     @SubscribeEvent
@@ -140,12 +140,12 @@ public class PerformanceHUD extends Overlay {
     @Override
     public List<String> getLines(boolean preview) {
         List<String> out = new ArrayList<>();
-        if (JefConfig.feature.misc.hudShowFps)
+        if (JefConfig.feature.misc.performanceHudConfig.hudShowFps)
             out.add(C_LABEL + "FPS: " + C_VAL + (preview ? 60 : Minecraft.getDebugFPS()));
-        if (JefConfig.feature.misc.hudShowTps)
+        if (JefConfig.feature.misc.performanceHudConfig.hudShowTps)
             out.add(C_LABEL + "TPS: " + C_VAL + (preview ? "20.0" : String.format("%.1f", currentTps)));
-        if (JefConfig.feature.misc.hudShowPing) out.add(C_LABEL + "Ping: " + C_VAL + (preview ? "42ms" : formatPing()));
-        if (JefConfig.feature.misc.hudShowCoords) {
+        if (JefConfig.feature.misc.performanceHudConfig.hudShowPing) out.add(C_LABEL + "Ping: " + C_VAL + (preview ? "42ms" : formatPing()));
+        if (JefConfig.feature.misc.performanceHudConfig.hudShowCoords) {
             if (preview) {
                 out.add(C_LABEL + "XYZ: " + C_VAL + "0 / 64 / 0");
             } else {
@@ -154,7 +154,7 @@ public class PerformanceHUD extends Overlay {
                     out.add(C_LABEL + "XYZ: " + C_VAL + (int) Math.floor(p.posX) + " / " + (int) Math.floor(p.posY) + " / " + (int) Math.floor(p.posZ));
             }
         }
-        if (JefConfig.feature.misc.hudShowRotation) {
+        if (JefConfig.feature.misc.performanceHudConfig.hudShowRotation) {
             if (preview) {
                 out.add(C_LABEL + "Yaw: " + C_VAL + "180.0  " + C_LABEL + "Pitch: " + C_VAL + "0.0");
             } else {
@@ -179,7 +179,7 @@ public class PerformanceHUD extends Overlay {
 
         Minecraft mc = Minecraft.getMinecraft();
         float scale = getScale();
-        boolean vert = JefConfig.feature.misc.hudVertical;
+        boolean vert = JefConfig.feature.misc.performanceHudConfig.hudVertical;
 
         int w = estimateWidth(mc, lines, vert);
         int h = vert ? lines.size() * LINE_HEIGHT + PADDING * 2 : LINE_HEIGHT + PADDING * 2;

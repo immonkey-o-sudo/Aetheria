@@ -38,7 +38,7 @@ public class EnchantProcessor {
     @SubscribeEvent(priority = EventPriority.LOW)
     public void onTooltip(ItemTooltipEvent event) {
         if (event == null || event.itemStack == null || event.toolTip == null || JefConfig.feature == null) return;
-        if (!JefConfig.feature.qol.enchantHighlight) return;
+        if (!JefConfig.feature.qol.enchantParser.enchantHighlight) return;
 
         ensureLoaded();
         if (BY_LORE.isEmpty()) return;
@@ -207,7 +207,7 @@ public class EnchantProcessor {
 
     private List<String> buildLayout(List<FormattedEnchant> enchants, boolean hasLore, int maxWidth) {
         List<String> out = new ArrayList<>();
-        int layout = JefConfig.feature.qol.enchantLayout;
+        int layout = JefConfig.feature.qol.enchantParser.enchantLayout;
 
         if (layout == 1 && enchants.size() > 1) {
             FontRenderer fr = Minecraft.getMinecraft().fontRendererObj;
@@ -264,15 +264,15 @@ public class EnchantProcessor {
 
     private String formatColor(EnchantMeta meta, int level) {
         String color;
-        if (meta.sortType == 0) color = JefConfig.feature.qol.enchantUltimateColor;
-        else if (level >= meta.maxLevel) color = JefConfig.feature.qol.enchantPerfectColor;
-        else if (level > meta.goodLevel) color = JefConfig.feature.qol.enchantGreatColor;
-        else if (level == meta.goodLevel) color = JefConfig.feature.qol.enchantGoodColor;
-        else color = JefConfig.feature.qol.enchantPoorColor;
+        if (meta.sortType == 0) color = JefConfig.feature.qol.enchantParser.enchantUltimateColor;
+        else if (level >= meta.maxLevel) color = JefConfig.feature.qol.enchantParser.enchantPerfectColor;
+        else if (level > meta.goodLevel) color = JefConfig.feature.qol.enchantParser.enchantGreatColor;
+        else if (level == meta.goodLevel) color = JefConfig.feature.qol.enchantParser.enchantGoodColor;
+        else color = JefConfig.feature.qol.enchantParser.enchantPoorColor;
 
         int argb = ChromaColour.specialToSimpleRGB(color);
         String prefix = nearestMcColor(argb);
-        if (JefConfig.feature.qol.enchantChroma && ChromaColour.getSpeed(color) > 0) prefix += "§z";
+        if (JefConfig.feature.qol.enchantParser.enchantChroma && ChromaColour.getSpeed(color) > 0) prefix += "§z";
         if (meta.sortType == 0) prefix += "§l";
         return prefix;
     }

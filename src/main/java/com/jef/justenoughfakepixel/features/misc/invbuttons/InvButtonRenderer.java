@@ -44,7 +44,7 @@ public class InvButtonRenderer {
     private long hoveredSince = 0L;
 
     private static boolean isEnabled() {
-        return JefConfig.feature != null && JefConfig.feature.misc.enableInvButtons;
+        return JefConfig.feature != null && JefConfig.feature.misc.invButtons.enableInvButtons;
     }
 
     private static boolean isGuiEditor() {
@@ -117,7 +117,7 @@ public class InvButtonRenderer {
         HighlightUtils.renderButtonHighlight(bx, by);
         GlStateManager.popMatrix();
 
-        int delay = JefConfig.feature != null ? JefConfig.feature.misc.invButtonTooltipDelay : 600;
+        int delay = JefConfig.feature != null ? JefConfig.feature.misc.invButtons.invButtonTooltipDelay : 600;
         if (now - hoveredSince >= delay && drawHoveringTextMethod != null) {
             String cmd = hovered.command.trim();
             if (!cmd.startsWith("/")) cmd = "/" + cmd;
@@ -151,7 +151,7 @@ public class InvButtonRenderer {
             return;
         }
 
-        int clickType = JefConfig.feature != null ? JefConfig.feature.misc.invButtonClickType : 0;
+        int clickType = JefConfig.feature != null ? JefConfig.feature.misc.invButtons.invButtonClickType : 0;
         boolean fire = (clickType == 0) == Mouse.getEventButtonState();
         if (fire) {
             String cmd = btn.command.trim();

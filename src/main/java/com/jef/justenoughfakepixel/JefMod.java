@@ -70,7 +70,7 @@ public class JefMod {
         TrophyFishStorage.getInstance().load();
 
         new CitManager();
-        if (JefConfig.feature.misc.showCurrentPet) PetCache.getInstance().warmupTextures();
+        if (JefConfig.feature.misc.currentPet.showCurrentPet) PetCache.getInstance().warmupTextures();
 
         MinecraftForge.EVENT_BUS.register(GuiWaiter.INSTANCE);
         MinecraftForge.EVENT_BUS.register(this);

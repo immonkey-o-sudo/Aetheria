@@ -17,13 +17,13 @@ public class HighlightUtils {
     private static final Pattern STRIP_CODES = Pattern.compile("(?i)§.");
 
     public static void renderHighlight(ItemStack stack, int x, int y, String searchText) {
-        if (JefConfig.feature == null || !JefConfig.feature.misc.searchBar) return;
+        if (JefConfig.feature == null || !JefConfig.feature.misc.searchBarConfig.searchBar) return;
         if (SearchBar.isCalcMode()) return;
         if (searchText == null || searchText.trim().isEmpty()) return;
         if (stack == null || stack.getItem() == null) return;
         if (!matches(stack, searchText.trim().toLowerCase(Locale.ROOT))) return;
 
-        int color = ChromaColour.specialToChromaRGB(JefConfig.feature.misc.searchBarHighlightColor);
+        int color = ChromaColour.specialToChromaRGB(JefConfig.feature.misc.searchBarConfig.searchBarHighlightColor);
 
         GlStateManager.disableLighting();
         GlStateManager.disableDepth();

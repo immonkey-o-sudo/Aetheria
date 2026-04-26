@@ -94,7 +94,7 @@ public class SearchBar {
     }
 
     private static boolean isEnabled() {
-        return JefConfig.feature != null && JefConfig.feature.misc.searchBar;
+        return JefConfig.feature != null && JefConfig.feature.misc.searchBarConfig.searchBar;
     }
 
     private static boolean isSupportedGui(Object gui) {
@@ -147,7 +147,7 @@ public class SearchBar {
 
     public void render(boolean preview) {
         ScaledResolution sr = new ScaledResolution(MC);
-        com.jef.justenoughfakepixel.core.config.utils.Position pos = JefConfig.feature.misc.searchBarPos;
+        com.jef.justenoughfakepixel.core.config.utils.Position pos = JefConfig.feature.misc.searchBarConfig.searchBarPos;
         int x = pos.getAbsX(sr, BAR_WIDTH);
         int y = pos.getAbsY(sr, BAR_HEIGHT);
         if (pos.isCenterX()) x -= BAR_WIDTH / 2;
@@ -168,7 +168,7 @@ public class SearchBar {
         int w = BAR_WIDTH, h = BAR_HEIGHT;
 
         ScaledResolution sr = new ScaledResolution(MC);
-        com.jef.justenoughfakepixel.core.config.utils.Position pos = JefConfig.feature.misc.searchBarPos;
+        com.jef.justenoughfakepixel.core.config.utils.Position pos = JefConfig.feature.misc.searchBarConfig.searchBarPos;
         int x = pos.getAbsX(sr, w);
         int y = pos.getAbsY(sr, h);
         if (pos.isCenterX()) x -= w / 2;

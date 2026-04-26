@@ -93,7 +93,7 @@ public class PowderTracker {
     }
 
     public static boolean isEnabled() {
-        return JefConfig.feature != null && JefConfig.feature.mining.powderTracker && PowderStats.getInstance().isTrackingEnabled();
+        return JefConfig.feature != null && JefConfig.feature.mining.powderTrackerConfig.powderTracker && PowderStats.getInstance().isTrackingEnabled();
     }
 
     private static boolean isActive() {
