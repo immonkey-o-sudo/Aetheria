@@ -16,10 +16,12 @@ import org.lwjgl.opengl.GL14;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.jef.justenoughfakepixel.core.config.gui.GuiTextures;
+
 public final class RenderUtils {
 
-    private static final ResourceLocation SEARCH_BAR_TEX = new ResourceLocation("justenoughfakepixel", "textures/gui/search_bar.png");
-    private static final ResourceLocation SEARCH_BAR_TEX_GOLD = new ResourceLocation("justenoughfakepixel", "textures/gui/search_bar_gold.png");
+    private static final ResourceLocation SEARCH_BAR_TEX      = GuiTextures.SEARCH_BAR_TEX;
+    private static final ResourceLocation SEARCH_BAR_TEX_GOLD = GuiTextures.SEARCH_BAR_TEX_GOLD;
     private static final Map<ResourceLocation, Boolean> RESOURCE_CACHE = new HashMap<>();
 
     private RenderUtils() {

@@ -30,11 +30,11 @@ import java.util.List;
 
 import static com.jef.justenoughfakepixel.core.config.gui.GuiTextures.DISCORD;
 import static com.jef.justenoughfakepixel.core.config.gui.GuiTextures.GITHUB;
+import static com.jef.justenoughfakepixel.core.config.gui.GuiTextures.SEARCH_ICON;
 
 public class ConfigEditor extends GuiElement {
     private static final ResourceLocation[] socialsIco = new ResourceLocation[]{DISCORD, GITHUB};
     private static final String[] socialsLink = new String[]{"https://discord.gg/fMNsgPWWrv", "https://github.com/hamlook/JustEnoughFakepixel"};
-    private static final ResourceLocation SEARCH_ICON = new ResourceLocation("justenoughfakepixel:search.png");
     public static ConfigEditor editor = new ConfigEditor(JefConfig.feature);
     private final long openedMillis;
     private final LerpingInteger optionsScroll = new LerpingInteger(0, 150);

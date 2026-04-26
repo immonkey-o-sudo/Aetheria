@@ -21,9 +21,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.jef.justenoughfakepixel.core.config.gui.GuiTextures;
+
 public class CustomDropAnimationGui extends GuiScreen {
 
-    private static final ResourceLocation FADE_SIDE = new ResourceLocation("justenoughfakepixel", "textures/dungeons/caseopening/gui/fade_side.png");
+    private static final ResourceLocation FADE_SIDE  = GuiTextures.CASE_FADE_SIDE;
+    // AUDIO is a Minecraft sound event ResourceLocation – kept inline below where used
     private static final ResourceLocation AUDIO = new ResourceLocation("gui.button.press");
 
     private final Minecraft mc = Minecraft.getMinecraft();
@@ -188,7 +191,7 @@ public class CustomDropAnimationGui extends GuiScreen {
         super.initGui();
         DebugLogger.log("[JEF ANIMATION] initGui called - initializing animation GUI");
         try {
-            blurShader = new ShaderGroup(mc.getTextureManager(), mc.getResourceManager(), mc.getFramebuffer(), new ResourceLocation("justenoughfakepixel", "shaders/post/blur.json"));
+            blurShader = new ShaderGroup(mc.getTextureManager(), mc.getResourceManager(), mc.getFramebuffer(), GuiTextures.CASE_BLUR_SHADER);
             blurShader.createBindFramebuffers(mc.displayWidth, mc.displayHeight);
             DebugLogger.log("[JEF ANIMATION] Blur shader initialized successfully");
         } catch (Exception e) {
