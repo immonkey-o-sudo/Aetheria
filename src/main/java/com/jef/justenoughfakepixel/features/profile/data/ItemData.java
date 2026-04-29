@@ -10,6 +10,5 @@ public class ItemData {
     public String displayName;
     public List<String> lore;
     public String skyblockID;
-    public String item_id;
 
 }

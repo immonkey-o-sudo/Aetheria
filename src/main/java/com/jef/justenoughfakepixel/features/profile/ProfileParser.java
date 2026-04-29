@@ -832,10 +832,9 @@ public class ProfileParser {
     public static ItemData parseItemData(ItemStack stack) {
         if (stack == null) return null;
         String displayName = stack.getDisplayName();
-        String itemID = stack.getItem().getRegistryName();
         String skyblockID = ItemUtils.getInternalName(stack);
         List<String> lore = getLoreColored(stack);
-        return new ItemData(displayName, lore, skyblockID,itemID);
+        return new ItemData(displayName, lore, skyblockID);
     }
 
 
