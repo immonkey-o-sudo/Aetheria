@@ -1,7 +1,6 @@
 package com.jef.justenoughfakepixel.core;
 
 import com.google.gson.annotations.Expose;
-import com.jef.justenoughfakepixel.ModUpdater;
 import com.jef.justenoughfakepixel.core.config.gui.config.ConfigAnnotations.Category;
 import com.jef.justenoughfakepixel.core.features.about.About;
 import com.jef.justenoughfakepixel.core.features.cosmetics.Cosmetics;
@@ -82,8 +81,6 @@ public class Config {
     public void executeRunnable(String runnableId) {
         switch (runnableId) {
             case "reloadRepo": JefConfig.reloadRepo(); break;
-            case "downloadModS": ModUpdater.updateAndRestart(true); break;
-            case "downloadMod": ModUpdater.updateAndRestart(false); break;
             case "openScoreboardEditor": JefConfig.openScoreboardEditor(); break;
             case "openWaypointGroupGui": JefConfig.openWaypointGroupGui(); break;
             case "openStatsEditor": JefConfig.openStatsEditor(); break;
