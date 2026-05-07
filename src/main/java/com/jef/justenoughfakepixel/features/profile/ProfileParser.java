@@ -426,7 +426,7 @@ public class ProfileParser {
             ItemStack stack = container.getLowerChestInventory().getStackInSlot(i);
             if(stack == null)continue;
             String name = ColorUtils.stripColor(stack.getDisplayName()).trim();
-            if(name.isEmpty() || name.equals("Go Back")) continue;
+            if(name.isEmpty() || name.equals("Go Back") || name.equals("Next Page") || name.equals("Previous Page")) continue;
             accessory.add(parseItemData(stack));
         }
         return accessory;
@@ -733,7 +733,9 @@ public class ProfileParser {
 
         Floor floor = Floor.getFloor(ColorUtils.stripColor(stack.getDisplayName()));
         if(floor == null) return null;
-
+        if(floor == Floor.FLOOR_SEVEN){
+            JefMod.logger.info("Parsing Floor Seven");
+        }
         int bossKills = -1,bestScore = -1,totalEnemiesKilled = -1,mostEnemiesKilled = -1;
         long mHDamage = -1,mMDamage = -1,mADamage = -1,mBDamage = -1,mTDamage = -1,mLDamage = -1;
         long fastestTime = -1,fastestSTime = -1,fastestSPlusTime = -1;
@@ -797,8 +799,17 @@ public class ProfileParser {
                 }
             }
         }catch (NumberFormatException ignored){}
+        if(floor == Floor.FLOOR_SEVEN){
+            JefMod.logger.info("Tried Parsing Floor Seven");
+        }
         if(bossKills < 0){
-            return new FloorData(Floor.FLOOR_SEVEN,0,0,0,0,0,0,0,0,0,0,0,0,0);
+            if(floor == Floor.FLOOR_SEVEN){
+                JefMod.logger.info("Error Parsing Floor Seven");
+
+            }
+            FloorData data = new FloorData(Floor.FLOOR_SEVEN,0,0,0,0,0,0,0,0,0,0,0,0,0);
+            System.out.println(GSON.toJson(data));
+            return data;
         }
         return new FloorData(floor,bossKills,fastestTime,fastestSTime,fastestSPlusTime,bestScore,mHDamage,mMDamage,mADamage,mBDamage,mTDamage,mLDamage,totalEnemiesKilled,mostEnemiesKilled);
     }
