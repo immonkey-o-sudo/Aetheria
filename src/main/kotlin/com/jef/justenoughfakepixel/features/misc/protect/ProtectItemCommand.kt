@@ -1,14 +1,14 @@
-package com.jef.justenoughfakepixel.features.misc
+package com.jef.justenoughfakepixel.features.misc.protect
 
 import com.jef.justenoughfakepixel.core.config.command.SimpleCommand
 import com.jef.justenoughfakepixel.init.RegisterCommand
 import com.jef.justenoughfakepixel.utils.item.ItemUtils
 import net.minecraft.client.Minecraft
 import net.minecraft.command.ICommandSender
+import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.util.BlockPos
 import net.minecraft.util.ChatComponentText
 import net.minecraft.util.EnumChatFormatting
-
 
 @RegisterCommand
 class ProtectItemCommand : SimpleCommand() {
@@ -41,7 +41,7 @@ class ProtectItemCommand : SimpleCommand() {
     }
 
 
-    private fun handleListCommand(player: net.minecraft.entity.player.EntityPlayer) {
+    private fun handleListCommand(player: EntityPlayer) {
         val uuids = ProtectedItemStorage.protectedUuids
         if (uuids.isEmpty()) {
             player.addChatMessage(ChatComponentText("$PREFIX${EnumChatFormatting.YELLOW}No protected items."))
@@ -53,7 +53,7 @@ class ProtectItemCommand : SimpleCommand() {
         }
     }
 
-    private fun handleClearCommand(player: net.minecraft.entity.player.EntityPlayer) {
+    private fun handleClearCommand(player: EntityPlayer) {
         val count = ProtectedItemStorage.protectedUuids.size
         ProtectedItemStorage.protectedUuids.clear()
         ProtectedItemStorage.save()
@@ -62,7 +62,7 @@ class ProtectItemCommand : SimpleCommand() {
         )
     }
 
-    private fun handleToggleProtection(player: net.minecraft.entity.player.EntityPlayer) {
+    private fun handleToggleProtection(player: EntityPlayer) {
         val held = player.heldItem
         if (held == null) {
             player.addChatMessage(
@@ -98,7 +98,7 @@ class ProtectItemCommand : SimpleCommand() {
         }
     }
 
-    private fun showUsage(player: net.minecraft.entity.player.EntityPlayer) {
+    private fun showUsage(player: EntityPlayer) {
         player.addChatMessage(
             ChatComponentText("$PREFIX${EnumChatFormatting.RED}Usage: ${getUsage()}")
         )

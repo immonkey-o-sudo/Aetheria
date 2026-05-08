@@ -102,6 +102,9 @@ public final class GuiTextures {
     // -------------------------------------------------------------------------
     public static final ResourceLocation CAPES_UI = new ResourceLocation("justenoughfakepixel", "textures/gui/capesUI.png");
 
+    // DVD Screensaver
+    public static final ResourceLocation DVD_LOGO = new ResourceLocation("justenoughfakepixel", "textures/dvd.png");
+
     // -------------------------------------------------------------------------
     // Storage overlay – indexed by style (0 … STORAGE_STYLE_COUNT-1)
     // -------------------------------------------------------------------------

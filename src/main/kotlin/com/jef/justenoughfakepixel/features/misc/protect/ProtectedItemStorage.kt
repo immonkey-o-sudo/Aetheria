@@ -1,10 +1,10 @@
-package com.jef.justenoughfakepixel.features.misc
+package com.jef.justenoughfakepixel.features.misc.protect
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import net.minecraft.client.Minecraft
+import net.minecraft.util.ChatComponentText
 import java.io.File
-
 
 object ProtectedItemStorage {
 
@@ -25,7 +25,7 @@ object ProtectedItemStorage {
             protectedUuids.addAll(loaded)
         } catch (e: Exception) {
             Minecraft.getMinecraft().thePlayer?.addChatMessage(
-                net.minecraft.util.ChatComponentText("§c[JEF] Failed to load protected items: ${e.message}")
+                ChatComponentText("§c[JEF] Failed to load protected items: ${e.message}")
             )
         }
     }
@@ -35,7 +35,7 @@ object ProtectedItemStorage {
             file.writeText(gson.toJson(protectedUuids))
         } catch (e: Exception) {
             Minecraft.getMinecraft().thePlayer?.addChatMessage(
-                net.minecraft.util.ChatComponentText("§c[JEF] Failed to save protected items: ${e.message}")
+                ChatComponentText("§c[JEF] Failed to save protected items: ${e.message}")
             )
         }
     }

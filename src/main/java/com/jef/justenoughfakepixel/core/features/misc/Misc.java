@@ -2,8 +2,6 @@ package com.jef.justenoughfakepixel.core.features.misc;
 
 import com.google.gson.annotations.Expose;
 import com.jef.justenoughfakepixel.core.config.gui.config.ConfigAnnotations.*;
-import com.jef.justenoughfakepixel.core.config.utils.Position;
-import com.jef.justenoughfakepixel.core.features.misc.*;
 
 public class Misc {
 
@@ -72,5 +70,15 @@ public class Misc {
 
     @ConfigEditorBoolean
     public boolean signCalculator = true;
+
+    @Expose
+    @ConfigOption(name = "DVD", desc = "Description(yes)")
+    @ConfigEditorBoolean
+    public boolean dvdScreensaver = false;
+
+    @Expose
+    @ConfigOption(name = "DVD Size", desc = "Size of the DVD logo (width in pixels)")
+    @ConfigEditorSliderAnnotation(minValue = 50, maxValue = 300, minStep = 10)
+    public int dvdSize = 80;
 }
 

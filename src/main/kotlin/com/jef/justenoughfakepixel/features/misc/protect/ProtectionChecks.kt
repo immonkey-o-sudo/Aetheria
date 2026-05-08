@@ -1,11 +1,10 @@
-package com.jef.justenoughfakepixel.features.misc
+package com.jef.justenoughfakepixel.features.misc.protect
 
 import com.jef.justenoughfakepixel.utils.ColorUtils
 import com.jef.justenoughfakepixel.utils.item.ItemUtils
 import net.minecraft.client.gui.inventory.GuiChest
 import net.minecraft.client.gui.inventory.GuiContainer
 import net.minecraft.inventory.ContainerChest
-
 
 object ProtectionChecks {
 

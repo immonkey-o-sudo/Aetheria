@@ -2,7 +2,7 @@ package com.jef.justenoughfakepixel.mixins;
 
 import com.jef.justenoughfakepixel.core.JefConfig;
 import com.jef.justenoughfakepixel.events.SlotClickEvent;
-import com.jef.justenoughfakepixel.features.misc.ProtectItemFeature;
+import com.jef.justenoughfakepixel.features.misc.protect.ProtectItemFeature;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.inventory.Slot;
 import net.minecraftforge.common.MinecraftForge;

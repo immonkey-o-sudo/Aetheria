@@ -1,4 +1,4 @@
-package com.jef.justenoughfakepixel.features.misc
+package com.jef.justenoughfakepixel.features.misc.protect
 
 import com.jef.justenoughfakepixel.core.JefConfig
 import com.jef.justenoughfakepixel.core.config.gui.GuiTextures
@@ -19,7 +19,6 @@ import net.minecraftforge.fml.common.eventhandler.EventPriority
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import org.lwjgl.input.Keyboard
-
 
 @RegisterEvents
 class ProtectItemFeature {
