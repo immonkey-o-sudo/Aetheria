@@ -365,12 +365,12 @@ public class CalculatorUtils {
     private static BigDecimal factorial(BigDecimal n) throws CalculatorException {
         int num = n.intValue();
         if (num < 0) throw new CalculatorException("Factorial of negative number", 0, 0);
-        if (num > 170) throw new CalculatorException("Factorial too large (max 170)", 0, 0);
+        if (num > 10000) throw new CalculatorException("Factorial too large (max 10000)", 0, 0);
         if (n.compareTo(new BigDecimal(num)) != 0) throw new CalculatorException("Factorial requires integer", 0, 0);
 
-        long result = 1;
+        java.math.BigInteger result = java.math.BigInteger.ONE;
         for (int i = 2; i <= num; i++) {
-            result *= i;
+            result = result.multiply(java.math.BigInteger.valueOf(i));
         }
         return new BigDecimal(result);
     }
