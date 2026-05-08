@@ -1,4 +1,4 @@
-package com.jef.justenoughfakepixel.mixins;
+package com.jef.justenoughfakepixel.mixins.accessors;
 
 import net.minecraft.client.gui.FontRenderer;
 import org.spongepowered.asm.mixin.Mixin;

@@ -2,7 +2,7 @@ package com.jef.justenoughfakepixel.features.qol.helpers;
 
 import com.jef.justenoughfakepixel.core.JefConfig;
 import com.jef.justenoughfakepixel.core.config.editors.ChromaColour;
-import com.jef.justenoughfakepixel.mixins.FontRendererAccessor;
+import com.jef.justenoughfakepixel.mixins.accessors.FontRendererAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;

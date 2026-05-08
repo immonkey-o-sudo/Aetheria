@@ -66,4 +66,11 @@ public class Misc {
     @ConfigOption(name = "SkyBlock XP in Chat", desc = "Sends SkyBlock XP gains from the action bar into chat")
     @ConfigEditorBoolean
     public boolean skyblockXpInChat = false;
+
+    @Expose
+    @ConfigOption(name = "Sign Calculator", desc = "Auto-calculate expressions on signs when line 2 is ^^^^^^ (e.g., 3m x 3 → 9000000)")
+
+    @ConfigEditorBoolean
+    public boolean signCalculator = true;
 }
+
