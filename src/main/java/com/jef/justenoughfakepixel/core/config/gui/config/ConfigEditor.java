@@ -49,8 +49,10 @@ public class ConfigEditor extends GuiElement {
     private String selectedSubcategory = null;
     private final Set<String> expandedCategories = new HashSet<>();
     private Set<ConfigProcessor.ProcessedCategory> searchedCategories = null;
+    private Map<ConfigProcessor.ProcessedCategory, Set<String>> searchedSubcategories = null;
     private Map<ConfigProcessor.ProcessedCategory, Set<Integer>> searchedAccordions = null;
     private Set<ConfigProcessor.ProcessedOption> searchedOptions = null;
+    private final HashMap<ConfigProcessor.ProcessedOption, String> optionSubcategoryKey = new HashMap<>();
     private float optionsBarStart;
     private float optionsBarend;
     private int lastMouseX = 0;
@@ -65,10 +67,11 @@ public class ConfigEditor extends GuiElement {
         this.processedConfig = ConfigProcessor.create(config);
 
         for (ConfigProcessor.ProcessedCategory category : processedConfig.values()) {
-            for (ConfigProcessor.ProcessedSubcategory sub : category.subcategories.values()) {
-                for (ConfigProcessor.ProcessedOption option : sub.options.values()) {
+            for (Map.Entry<String, ConfigProcessor.ProcessedSubcategory> subEntry : category.subcategories.entrySet()) {
+                for (ConfigProcessor.ProcessedOption option : subEntry.getValue().options.values()) {
                     categoryForOption.put(option, category);
-                    String sc = category.name + " " + sub.name + " " + option.name + " " + option.desc;
+                    optionSubcategoryKey.put(option, subEntry.getKey());
+                    String sc = category.name + " " + subEntry.getValue().name + " " + option.name + " " + option.desc;
                     sc = sc.replaceAll("[^a-zA-Z_ ]", "").toLowerCase();
                     for (String sw : sc.split("[ _]")) searchOptionMap.computeIfAbsent(sw, k -> new HashSet<>()).add(option);
                 }
@@ -156,17 +159,31 @@ public class ConfigEditor extends GuiElement {
         return selectedCategory;
     }
 
+    private List<Map.Entry<String, ConfigProcessor.ProcessedSubcategory>> getVisibleSubcategories(ConfigProcessor.ProcessedCategory cat) {
+        List<Map.Entry<String, ConfigProcessor.ProcessedSubcategory>> visible = new ArrayList<>();
+        Set<String> matchedSubs = searchedSubcategories != null ? searchedSubcategories.get(cat) : null;
+        for (Map.Entry<String, ConfigProcessor.ProcessedSubcategory> subEntry : cat.subcategories.entrySet()) {
+            if (matchedSubs == null || matchedSubs.contains(subEntry.getKey())) {
+                visible.add(subEntry);
+            }
+        }
+        return visible;
+    }
+
     private void setSelectedCategory(String category) {
         if (!java.util.Objects.equals(this.selectedCategory, category)) selectedSubcategory = null;
         selectedCategory = category;
         optionsScroll.setValue(0);
         if (category != null) {
             expandedCategories.add(category);
-            // If the category has no direct options of its own but has subcategories,
-            // auto-select the first subcategory so the right panel is never empty.
             ConfigProcessor.ProcessedCategory cat = processedConfig.get(category);
-            if (cat != null && cat.options.isEmpty() && !cat.subcategories.isEmpty() && selectedSubcategory == null) {
-                selectedSubcategory = cat.subcategories.keySet().iterator().next();
+            if (cat != null && !cat.subcategories.isEmpty() && selectedSubcategory == null) {
+                boolean hasDirectMatches = searchedOptions == null
+                        || cat.options.values().stream().anyMatch(opt -> searchedOptions.contains(opt));
+                if (!hasDirectMatches) {
+                    List<Map.Entry<String, ConfigProcessor.ProcessedSubcategory>> visible = getVisibleSubcategories(cat);
+                    if (!visible.isEmpty()) selectedSubcategory = visible.get(0).getKey();
+                }
             }
         }
     }
@@ -187,6 +204,7 @@ public class ConfigEditor extends GuiElement {
         searchedCategories = null;
         searchedOptions = null;
         searchedAccordions = null;
+        searchedSubcategories = null;
 
         if (!search.isEmpty()) {
             searchedCategories = new HashSet<>();
@@ -213,12 +231,18 @@ public class ConfigEditor extends GuiElement {
             if (searchedOptions == null) {
                 searchedOptions = new HashSet<>();
             } else {
+                searchedSubcategories = new HashMap<>();
                 for (ConfigProcessor.ProcessedOption option : searchedOptions) {
                     ConfigProcessor.ProcessedCategory cat = categoryForOption.get(option);
                     if (cat == null) continue;
 
                     searchedCategories.add(cat);
                     searchedAccordions.computeIfAbsent(cat, k -> new HashSet<>()).add(option.accordionId);
+
+                    String subKey = optionSubcategoryKey.get(option);
+                    if (subKey != null) {
+                        searchedSubcategories.computeIfAbsent(cat, k -> new HashSet<>()).add(subKey);
+                    }
                 }
             }
         }
@@ -318,14 +342,15 @@ public class ConfigEditor extends GuiElement {
             catY += 15;
 
             if (isExpanded && hasSubcats) {
-                int subCount = cat.subcategories.size();
+                List<Map.Entry<String, ConfigProcessor.ProcessedSubcategory>> visibleSubs = getVisibleSubcategories(cat);
+                int subCount = visibleSubs.size();
                 // Vertical line just right of the scrollbar, spanning exactly the subcategory rows
                 int lineX = innerLeft + 11;
                 int lineTopY    = y + 70 + catY - 6;
                 int lineBottomY = y + 70 + catY + (subCount - 1) * 13 + 6;
                 Gui.drawRect(lineX, lineTopY, lineX + 1, lineBottomY, 0xff555555);
 
-                for (Map.Entry<String, ConfigProcessor.ProcessedSubcategory> subEntry : cat.subcategories.entrySet()) {
+                for (Map.Entry<String, ConfigProcessor.ProcessedSubcategory> subEntry : visibleSubs) {
                     boolean subSel = catKey.equals(getSelectedCategory()) && subEntry.getKey().equals(selectedSubcategory);
                     // Selected: bright aqua underline. Unselected: dark gray (hard to miss but clearly inactive)
                     String subName = subSel
@@ -560,7 +585,8 @@ public class ConfigEditor extends GuiElement {
         int categoryY = -categoryScroll.getValue();
         for (Map.Entry<String, ConfigProcessor.ProcessedCategory> _e : getCurrentConfigEditing().entrySet()) {
             categoryY += 15;
-            if (expandedCategories.contains(_e.getKey())) categoryY += _e.getValue().subcategories.size() * 13;
+            if (expandedCategories.contains(_e.getKey()))
+                categoryY += getVisibleSubcategories(_e.getValue()).size() * 13;
         }
         int catDist = innerBottom - innerTop - 12;
         float catBarStart = categoryScroll.getValue() / (float) (categoryY + categoryScroll.getValue());
@@ -621,7 +647,8 @@ public class ConfigEditor extends GuiElement {
                     }
 
                     catY += 15;
-                    if (expandedCategories.contains(entry.getKey())) catY += entry.getValue().subcategories.size() * 13;
+                    if (expandedCategories.contains(entry.getKey()))
+                        catY += getVisibleSubcategories(entry.getValue()).size() * 13;
                     if (catY > 0) {
                         catBarSize = LerpUtils.clampZeroOne((float) (innerBottom - innerTop - 2) / (catY + 5 + newTarget));
                     }
@@ -704,7 +731,7 @@ public class ConfigEditor extends GuiElement {
                     }
                     catY += 15;
                     if (expandedCategories.contains(entry.getKey())) {
-                        for (Map.Entry<String, ConfigProcessor.ProcessedSubcategory> subEntry : entry.getValue().subcategories.entrySet()) {
+                        for (Map.Entry<String, ConfigProcessor.ProcessedSubcategory> subEntry : getVisibleSubcategories(entry.getValue())) {
                             if (mouseX >= x + 5 && mouseX <= x + 145 && mouseY >= y + 70 + catY - 6 && mouseY <= y + 70 + catY + 6) {
                                 setSelectedSubcategory(entry.getKey(), subEntry.getKey());
                                 return true;
