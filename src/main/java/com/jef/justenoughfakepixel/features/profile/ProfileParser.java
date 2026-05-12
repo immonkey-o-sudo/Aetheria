@@ -60,13 +60,13 @@ public class ProfileParser {
 
     public static void save(){
         if(!parsing) {
-            JefMod.logger.info("[ProfileParser] Not Parsing cause one data is null");
-            JefMod.logger.info("[ProfileParser] Data: Inventory: " +
+            WaiterLogs.addLog("[ProfileParser] Not Parsing cause one data is null");
+            WaiterLogs.addLog("[ProfileParser] Data: Inventory: " +
                     (inventory[0] != null) + " | Skills: " + (skill[0] != null) +
                     " | HOTM: "+ (mountain[0] != null) + " | Dungeon: " + (dungeonData[0] != null)
                     + " | Slayer: " + (slayerData[0] != null) + " | Wardrobe: " + (wardrobeData[0] != null)
                     + " | Pets: " + (petsData[0] != null) + " | Storage: " + (storageData[0] != null)
-            + " | Bags: " + (bagsData[0] != null) + " | Collection: " + (collectionData[0] != null));
+                    + " | Bags: " + (bagsData[0] != null) + " | Collection: " + (collectionData[0] != null));
             return;
         }
         if(base.playerProfile.isEmpty() || base.playerName.isEmpty()) return;
@@ -74,10 +74,12 @@ public class ProfileParser {
                 dungeonData[0], slayerData[0],wardrobeData[0],petsData[0],storageData[0],
                 bagsData[0],collectionData[0]);
         profileData.put(base.playerName, profile);
-//        writeToJson(profile);
+        writeToJson(profile);
         SupabaseHandler.pushProfileAsync(base.playerName, profile);
         parsing = false;
         JefMod.logger.info("[ProfileParser] Saved profile: " + base.playerName);
+        WaiterLogs.addLog("[ProfileParser] Saved profile: " + base.playerName);
+        WaiterLogs.saveLogs();
     }
 
     public static HashMap<String, ProfileData> profileData = new HashMap<>();

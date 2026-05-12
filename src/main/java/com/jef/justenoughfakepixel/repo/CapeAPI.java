@@ -1,6 +1,5 @@
 package com.jef.justenoughfakepixel.repo;
 
-import com.jef.justenoughfakepixel.JefMod;
 import com.jef.justenoughfakepixel.repo.data.RepoData;
 
 public class CapeAPI {
@@ -12,7 +11,7 @@ public class CapeAPI {
 
     public static String getAPIUrl(String endpoint){
         RepoData url = RepoHandler.get(JefRepo.KEY_REPO, RepoData.class,new RepoData());
-        return url.capeApi + (url.capeApi.endsWith("/") ? "" : "/") + endpoint;
+        return url.capeApi + (url.capeApi.endsWith("/") || endpoint.startsWith("/") ? "" : "/") + endpoint;
     }
 
 }
