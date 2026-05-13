@@ -300,18 +300,18 @@ public class ConfigEditor extends GuiElement {
         RenderUtils.drawFloatingRectDark(x + 5, y + 5, xSize - 10, 20, false);
 
         FontRenderer fr = Minecraft.getMinecraft().fontRendererObj;
-        TextRenderUtils.drawStringCenteredScaledMaxWidth("JustEnoughFakepixel" + " " + JefMod.VERSION + " by " + EnumChatFormatting.RED + "h4mlock" + EnumChatFormatting.RESET + ", config by " + EnumChatFormatting.DARK_PURPLE + "Moulberry", fr, x + xSize / 2f, y + 15, false, 380, 0xa0a0a0);        RenderUtils.drawFloatingRectDark(x + 4, y + 49 - 20, 180, ySize - 54 + 20, false);
+        TextRenderUtils.drawStringCenteredScaledMaxWidth("JustEnoughFakepixel" + " " + JefMod.VERSION + " by " + EnumChatFormatting.RED + "h4mlock", fr, x + xSize / 2f, y + 15, false, 380, 0xa0a0a0);        RenderUtils.drawFloatingRectDark(x + 4, y + 49 - 20, 180, ySize - 54 + 20, false);
 
         int innerPadding = 20 / adjScaleFactor;
         int innerLeft = x + 4 + innerPadding;
         int innerRight = x + 184 - innerPadding;
         int innerTop = y + 49 + innerPadding;
         int innerBottom = y + ySize - 5 - innerPadding;
-        Gui.drawRect(innerLeft, innerTop, innerLeft + 1, innerBottom, 0xff08080E); //Left
-        Gui.drawRect(innerLeft + 1, innerTop, innerRight, innerTop + 1, 0xff08080E); //Top
-        Gui.drawRect(innerRight - 1, innerTop + 1, innerRight, innerBottom, 0xff28282E); //Right
-        Gui.drawRect(innerLeft + 1, innerBottom - 1, innerRight - 1, innerBottom, 0xff28282E); //Bottom
-        Gui.drawRect(innerLeft + 1, innerTop + 1, innerRight - 1, innerBottom - 1, 0x6008080E); //Middle
+        Gui.drawRect(innerLeft, innerTop, innerLeft + 1, innerBottom, 0xff080808); //Left
+        Gui.drawRect(innerLeft + 1, innerTop, innerRight, innerTop + 1, 0xff080808); //Top
+        Gui.drawRect(innerRight - 1, innerTop + 1, innerRight, innerBottom, 0xff282828); //Right
+        Gui.drawRect(innerLeft + 1, innerBottom - 1, innerRight - 1, innerBottom, 0xff282828); //Bottom
+        Gui.drawRect(innerLeft + 1, innerTop + 1, innerRight - 1, innerBottom - 1, 0x60080808); //Middle
 
         GlScissorStack.push(0, innerTop + 1, scaledResolution.getScaledWidth(), innerBottom - 1, scaledResolution);
 
@@ -358,7 +358,7 @@ public class ConfigEditor extends GuiElement {
                 int lineX = innerLeft + 11;
                 int lineTopY    = y + 70 + catY - 6;
                 int lineBottomY = y + 70 + catY + (subCount - 1) * 13 + 6;
-                Gui.drawRect(lineX, lineTopY, lineX + 1, lineBottomY, 0xff555555);
+                Gui.drawRect(lineX, lineTopY, lineX + 1, lineBottomY, 0xff007272);
 
                 for (Map.Entry<String, ConfigProcessor.ProcessedSubcategory> subEntry : visibleSubs) {
                     boolean subSel = catKey.equals(getSelectedCategory()) && subEntry.getKey().equals(selectedSubcategory);
@@ -389,12 +389,12 @@ public class ConfigEditor extends GuiElement {
             }
         }
         int catDist = innerBottom - innerTop - 12;
-        Gui.drawRect(innerLeft + 2, innerTop + 5, innerLeft + 7, innerBottom - 5, 0xff101010);
-        Gui.drawRect(innerLeft + 3, innerTop + 6 + (int) (catDist * catBarStart), innerLeft + 6, innerTop + 6 + (int) (catDist * catBarEnd), 0xff303030);
+        Gui.drawRect(innerLeft + 2, innerTop + 5, innerLeft + 7, innerBottom - 5, 0xff0d0d0d);
+        Gui.drawRect(innerLeft + 3, innerTop + 6 + (int) (catDist * catBarStart), innerLeft + 6, innerTop + 6 + (int) (catDist * catBarEnd), 0xff3a3a3a);
 
         GlScissorStack.pop(scaledResolution);
 
-        TextRenderUtils.drawStringCenteredScaledMaxWidth("Categories", fr, x + 95, y + 44, false, 120, 0xa368ef);
+        TextRenderUtils.drawStringCenteredScaledMaxWidth("Categories", fr, x + 95, y + 44, false, 120, 0x00b8b8);
 
         RenderUtils.drawFloatingRectDark(x + 189, y + 29, xSize - 194, ySize - 34, false);
 
@@ -434,11 +434,11 @@ public class ConfigEditor extends GuiElement {
             TextRenderUtils.drawStringScaledMaxWidth(cat.desc, fr, innerLeft + 5, y + 40, true, innerRight - innerLeft - rightStuffLen - 10, 0xb0b0b0);
         }
 
-        Gui.drawRect(innerLeft, innerTop, innerLeft + 1, innerBottom, 0xff08080E); //Left
-        Gui.drawRect(innerLeft + 1, innerTop, innerRight, innerTop + 1, 0xff08080E); //Top
-        Gui.drawRect(innerRight - 1, innerTop + 1, innerRight, innerBottom, 0xff303036); //Right
-        Gui.drawRect(innerLeft + 1, innerBottom - 1, innerRight - 1, innerBottom, 0xff303036); //Bottom
-        Gui.drawRect(innerLeft + 1, innerTop + 1, innerRight - 1, innerBottom - 1, 0x6008080E); //Middle
+        Gui.drawRect(innerLeft, innerTop, innerLeft + 1, innerBottom, 0xff080808); //Left
+        Gui.drawRect(innerLeft + 1, innerTop, innerRight, innerTop + 1, 0xff080808); //Top
+        Gui.drawRect(innerRight - 1, innerTop + 1, innerRight, innerBottom, 0xff303030); //Right
+        Gui.drawRect(innerLeft + 1, innerBottom - 1, innerRight - 1, innerBottom, 0xff303030); //Bottom
+        Gui.drawRect(innerLeft + 1, innerTop + 1, innerRight - 1, innerBottom - 1, 0x60080808); //Middle
 
         GlScissorStack.push(innerLeft + 1, innerTop + 1, innerRight - 1, innerBottom - 1, scaledResolution);
         float barSize = 1;
@@ -543,8 +543,8 @@ public class ConfigEditor extends GuiElement {
             }
         }
         int dist = innerBottom - innerTop - 12;
-        Gui.drawRect(innerRight - 10, innerTop + 5, innerRight - 5, innerBottom - 5, 0xff101010);
-        Gui.drawRect(innerRight - 9, innerTop + 6 + (int) (dist * optionsBarStart), innerRight - 6, innerTop + 6 + (int) (dist * optionsBarend), 0xff303030);
+        Gui.drawRect(innerRight - 10, innerTop + 5, innerRight - 5, innerBottom - 5, 0xff0d0d0d);
+        Gui.drawRect(innerRight - 9, innerTop + 6 + (int) (dist * optionsBarStart), innerRight - 6, innerTop + 6 + (int) (dist * optionsBarend), 0xff3a3a3a);
 
         for (int socialIndex = 0; socialIndex < socialsIco.length; socialIndex++) {
             Minecraft.getMinecraft().getTextureManager().bindTexture(socialsIco[socialIndex]);
