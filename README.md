@@ -14,8 +14,10 @@
 </div>
 
 # Features
-- A full feature list can be found [here](https://github.com/JustEnoughFakepixel/JustEnoughFakepixel/blob/main/FEATURES.md)
+- A full feature list can be found [here](docs/FEATURES.md)
 
+# How do I contribute ?
+- A full comprehensive guide for contribution and compiling the mod yourself can be found [here](docs/CONTRIBUTING.md)
 
 # 📋 IMPORTANT
 On server join, this mod sends only two things to our servers:
@@ -36,7 +38,6 @@ This project wouldn't be where it is today without the help of these amazing peo
 **Contributors & Maintainers**
 
 [Internet Protocol](https://github.com/protocol-8)
-
 [Whispering](https://github.com/ginafro1)
 
 **Discord Maintainer**
