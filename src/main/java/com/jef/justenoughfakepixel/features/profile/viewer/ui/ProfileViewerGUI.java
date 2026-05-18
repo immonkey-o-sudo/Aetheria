@@ -7,6 +7,7 @@ import com.jef.justenoughfakepixel.features.profile.viewer.PlayerProfile;
 import com.jef.justenoughfakepixel.features.profile.viewer.ProfileViewerAPI;
 import com.jef.justenoughfakepixel.features.profile.viewer.ui.modules.PVButton;
 import com.jef.justenoughfakepixel.features.profile.viewer.ui.modules.PlayerModule;
+import com.jef.justenoughfakepixel.features.profile.viewer.ui.tabs.*;
 import com.jef.justenoughfakepixel.features.profile.viewer.ui.util.StringDrawer;
 import com.jef.justenoughfakepixel.utils.render.NineSliceUtils;
 import com.jef.justenoughfakepixel.utils.render.ResolutionUtils;
@@ -19,6 +20,10 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
 
 public class ProfileViewerGUI extends GuiScreen {
 
@@ -30,7 +35,7 @@ public class ProfileViewerGUI extends GuiScreen {
     private int boxH;
     private int boxX;
     private int boxY;
-
+    private final HashMap<Integer, Tab> tabs = new HashMap<>();
 
     // Player Data
     public String username;
@@ -42,11 +47,20 @@ public class ProfileViewerGUI extends GuiScreen {
     public boolean isFetching = true;
     public boolean hasError = false;
 
+    // Dropdowns
+    private boolean isDropdownOpen = false;
+    private int dropX, dropY, dropW, dropH, itemHeight;
+
+    private boolean isTabDropdownOpen = false;
+    private int tabDropX, tabDropY, tabDropW, tabDropH, tabItemHeight;
+
     // Buttons
     public PVButton profileButton;
+    public PVButton tabButton;
+
     public ProfileViewerGUI(String username) {
         this.username = username;
-        uiScale = JefConfig.feature.overlays.profileViewer.pvScale* ResolutionUtils.getXStatic(1);
+        uiScale = JefConfig.feature.overlays.profileViewer.pvScale * ResolutionUtils.getXStatic(1);
 
         new Thread(() -> {
             try {
@@ -71,11 +85,31 @@ public class ProfileViewerGUI extends GuiScreen {
         }, "JEF-GUI-FetchThread").start();
     }
 
+    public static float getScaleHeader() {
+        return Math.max(0.25f, getScaledF(1)) * 3f;
+    }
+
+    public static float getScaleText() {
+        return Math.max(0.25f, getScaledF(1)) * 2f;
+    }
+
+    public void addTab(Tab tab) {
+        this.tabs.put(tab.tabIndex, tab);
+    }
+
     @Override
     public void initGui() {
         super.initGui();
-        CONTAINER_BG = GuiTextures.storageBackground(3);
+        profileButton = null;
+        tabButton = null;
+        isDropdownOpen = false;
+        isTabDropdownOpen = false;
+        CONTAINER_BG = GuiTextures.storageBackground(1);
         uiScale = JefConfig.feature.overlays.profileViewer.pvScale * ResolutionUtils.getXStatic(1);
+        addTab(new BasicInfoTab());
+        addTab(new SkillInfoTab());
+        addTab(new DungeonInfoTab());
+        addTab(new SlayerInfoTab());
     }
 
     @Override
@@ -86,7 +120,6 @@ public class ProfileViewerGUI extends GuiScreen {
         boxX = (this.width / 2) - (boxW / 2);
         boxY = (this.height / 2) - (boxH / 2);
 
-
         int centerX = boxX + (boxW / 2);
         int centerY = boxY + (boxH / 2);
 
@@ -94,59 +127,198 @@ public class ProfileViewerGUI extends GuiScreen {
             NineSliceUtils.draw(CONTAINER_BG, boxX, boxY, boxW, boxH, 6, 18);
             String text = "Fetching data...";
             int textWidth = fontRendererObj.getStringWidth(text);
-            drawString(fontRendererObj, text, centerX - (textWidth / 2), centerY - (fontRendererObj.FONT_HEIGHT / 2), 0xFFFFAA00); // Yellow/Orange
+            drawString(fontRendererObj, text, centerX - (textWidth / 2), centerY - (fontRendererObj.FONT_HEIGHT / 2), 0xFFFFAA00);
 
         } else if (hasError) {
             NineSliceUtils.draw(CONTAINER_BG, boxX, boxY, boxW, boxH, 6, 18);
             String text = "An error occurred while fetching!";
             int textWidth = fontRendererObj.getStringWidth(text);
-            drawString(fontRendererObj, text, centerX - (textWidth / 2), centerY - (fontRendererObj.FONT_HEIGHT / 2), 0xFFFF5555); // Light Red
+            drawString(fontRendererObj, text, centerX - (textWidth / 2), centerY - (fontRendererObj.FONT_HEIGHT / 2), 0xFFFF5555);
 
         } else if (this.playerProfile == null) {
             NineSliceUtils.draw(CONTAINER_BG, boxX, boxY, boxW, boxH, 6, 18);
             String text = this.username + " (Not In Database)";
             int textWidth = fontRendererObj.getStringWidth(text);
-            drawString(fontRendererObj, text, centerX - (textWidth / 2), centerY - (fontRendererObj.FONT_HEIGHT / 2), 0xFFAAAAAA); // Gray
+            drawString(fontRendererObj, text, centerX - (textWidth / 2), centerY - (fontRendererObj.FONT_HEIGHT / 2), 0xFFAAAAAA);
 
         } else {
-            int leftBoxWidth = drawBasicBG();
-            int scale = getScaled(200);
+            int leftBoxWidth = drawBasicBG(mouseX, mouseY);
+            int rightBoxX = boxX + leftBoxWidth + getScaled(10);
+
+            int profileW = getScaled(200);
+            int profileH = getScaled(30);
+            int profileX = boxX + (leftBoxWidth / 2) - (profileW / 2);
+            int profileY = boxY + boxH - profileH - getScaled(12);
+
+            int scale = getScaled(150);
             int playerX = boxX + (leftBoxWidth / 2);
-            int playerY = (int) (boxY + boxH * 0.95f);
+            int playerY = profileY - getScaled(25);
+
             PlayerModule.draw(playerX, playerY, scale, this.username, mouseX, mouseY);
 
-            int profileX =  boxX + (leftBoxWidth / 2);
-            int profileY =  boxY - getScaled(40);
-            int profileW =  getScaled(240);
-            int profileH =  getScaled(35);
-            String profile = "§aProfile: §f" + this.activeProfileData.baseData.playerProfile;
-            if(profileButton == null){
-                profileButton = new PVButton(0,profileX,profileY,profileW,profileH,profile);
+            String profile = "§aProfile: §f" + this.activeProfileData.baseData.playerProfile + " §7▼";
+            if (profileButton == null) {
+                profileButton = new PVButton(0, profileX, profileY, profileW, profileH, profile);
                 this.buttonList.add(profileButton);
-            }else{
+            } else {
                 profileButton.xPosition = profileX;
                 profileButton.yPosition = profileY;
                 profileButton.width = profileW;
                 profileButton.height = profileH;
                 profileButton.displayString = profile;
             }
+
+            int tabW = getScaled(200);
+            int tabH = getScaled(30);
+            int tabX = rightBoxX + getScaled(12);
+            int tabY = boxY + getScaled(12);
+
+            String tabName = "§a" + tabs.get(tab).name + " §7▼";
+            if (tabButton == null) {
+                tabButton = new PVButton(1, tabX, tabY, tabW, tabH, tabName);
+                this.buttonList.add(tabButton);
+            } else {
+                tabButton.xPosition = tabX;
+                tabButton.yPosition = tabY;
+                tabButton.width = tabW;
+                tabButton.height = tabH;
+                tabButton.displayString = tabName;
+            }
+
+            float lineY = tabY + tabH + getScaledF(8);
+            net.minecraft.client.gui.Gui.drawRect((int) (rightBoxX + getScaled(12)), (int) lineY, (int) (rightBoxX + boxW - getScaled(12)), (int) (lineY + Math.max(1, getScaledF(1))), new java.awt.Color(255, 255, 255, 40).getRGB());
+
+            float contentY = lineY + getScaledF(8);
+            int contentH = (boxY + boxH) - (int)contentY - getScaled(12);
+            tabs.get(tab).draw(rightBoxX, contentY, boxW, contentH, activeProfileData, mc);
         }
+
         super.drawScreen(mouseX, mouseY, partialTicks);
+
+        if (isDropdownOpen && this.playerProfile != null && this.playerProfile.profiles != null) {
+            drawProfileDropdown(mouseX, mouseY);
+        }
+        if (isTabDropdownOpen) {
+            drawTabDropdown(mouseX, mouseY);
+        }
+    }
+
+    private void drawProfileDropdown(int mouseX, int mouseY) {
+        int numProfiles = this.playerProfile.profiles.size();
+        itemHeight = getScaled(20);
+
+        dropX = profileButton.xPosition;
+        dropW = profileButton.width;
+        dropH = itemHeight * numProfiles;
+        dropY = profileButton.yPosition + profileButton.height;
+
+        NineSliceUtils.draw(CONTAINER_BG, dropX, dropY, dropW, dropH, 6, 18);
+
+        for (int i = 0; i < numProfiles; i++) {
+            ProfileData pData = this.playerProfile.profiles.get(i);
+            String pName = pData.baseData.playerProfile;
+            int itemY = dropY + (i * itemHeight);
+
+            boolean isHovered = mouseX >= dropX && mouseX <= dropX + dropW &&
+                    mouseY >= itemY && mouseY <= itemY + itemHeight;
+
+            if (isHovered) {
+                net.minecraft.client.gui.Gui.drawRect(dropX + 4, itemY, dropX + dropW - 4, itemY + itemHeight, 0x30FFFFFF);
+            }
+
+            float centerX = dropX + (dropW / 2.0f);
+            float centerY = itemY + (itemHeight / 2.0f);
+
+            String displayPrefix = (i == profileIndex) ? "§a> §f" : "§7";
+            StringDrawer.drawCenteredString(displayPrefix + pName, centerX, centerY, (uiScale * 1.8f), false);
+        }
+    }
+
+    private void drawTabDropdown(int mouseX, int mouseY) {
+        int numTabs = this.tabs.size();
+        tabItemHeight = getScaled(20);
+
+        tabDropX = tabButton.xPosition;
+        tabDropW = tabButton.width;
+        tabDropH = tabItemHeight * numTabs;
+        tabDropY = tabButton.yPosition + tabButton.height;
+
+        NineSliceUtils.draw(CONTAINER_BG, tabDropX, tabDropY, tabDropW, tabDropH, 6, 18);
+
+        List<Tab> sortedTabs = new ArrayList<>(tabs.values());
+        sortedTabs.sort(Comparator.comparingInt(t -> t.tabIndex));
+
+        for (int i = 0; i < sortedTabs.size(); i++) {
+            Tab t = sortedTabs.get(i);
+            int itemY = tabDropY + (i * tabItemHeight);
+
+            boolean isHovered = mouseX >= tabDropX && mouseX <= tabDropX + tabDropW &&
+                    mouseY >= itemY && mouseY <= itemY + tabItemHeight;
+
+            if (isHovered) {
+                net.minecraft.client.gui.Gui.drawRect(tabDropX + 4, itemY, tabDropX + tabDropW - 4, itemY + tabItemHeight, 0x30FFFFFF);
+            }
+
+            float centerX = tabDropX + (tabDropW / 2.0f);
+            float centerY = itemY + (tabItemHeight / 2.0f);
+
+            String displayPrefix = (t.tabIndex == tab) ? "§a> §f" : "§7";
+            StringDrawer.drawCenteredString(displayPrefix + t.name, centerX, centerY, (uiScale * 1.8f), false);
+        }
     }
 
     @Override
-    protected void actionPerformed(GuiButton button) throws IOException {
-        if(button.id == profileButton.id){
-            profileIndex++;
-            if(profileIndex >= playerProfile.profiles.size()){
-                profileIndex = 0;
+    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+        if (mouseButton == 0) {
+            if (isDropdownOpen) {
+                if (mouseX >= dropX && mouseX <= dropX + dropW && mouseY >= dropY && mouseY <= dropY + dropH) {
+                    int clickedIndex = (mouseY - dropY) / itemHeight;
+                    if (clickedIndex >= 0 && clickedIndex < playerProfile.profiles.size()) {
+                        profileIndex = clickedIndex;
+                        activeProfileData = playerProfile.profiles.get(profileIndex);
+                        isDropdownOpen = false;
+                        return;
+                    }
+                } else if (!(mouseX >= profileButton.xPosition && mouseX <= profileButton.xPosition + profileButton.width &&
+                        mouseY >= profileButton.yPosition && mouseY <= profileButton.yPosition + profileButton.height)) {
+                    isDropdownOpen = false;
+                }
             }
-            this.activeProfileData = this.playerProfile.profiles.get(profileIndex);
+
+            if (isTabDropdownOpen) {
+                if (mouseX >= tabDropX && mouseX <= tabDropX + tabDropW && mouseY >= tabDropY && mouseY <= tabDropY + tabDropH) {
+                    int clickedRow = (mouseY - tabDropY) / tabItemHeight;
+
+                    List<Tab> sortedTabs = new ArrayList<>(tabs.values());
+                    sortedTabs.sort(Comparator.comparingInt(t -> t.tabIndex));
+
+                    if (clickedRow >= 0 && clickedRow < sortedTabs.size()) {
+                        tab = sortedTabs.get(clickedRow).tabIndex; // Switch tab!
+                        isTabDropdownOpen = false;
+                        return;
+                    }
+                } else if (!(mouseX >= tabButton.xPosition && mouseX <= tabButton.xPosition + tabButton.width &&
+                        mouseY >= tabButton.yPosition && mouseY <= tabButton.yPosition + tabButton.height)) {
+                    isTabDropdownOpen = false;
+                }
+            }
+        }
+        super.mouseClicked(mouseX, mouseY, mouseButton);
+    }
+
+    @Override
+    protected void actionPerformed(GuiButton button) {
+        if (button.id == profileButton.id) {
+            isDropdownOpen = !isDropdownOpen;
+            isTabDropdownOpen = false;
+        } else if (button.id == tabButton.id) {
+            isTabDropdownOpen = !isTabDropdownOpen;
+            isDropdownOpen = false;
         }
     }
 
-    public int drawBasicBG() {
-        String name = this.username + " §8(Fetched)";
+    public int drawBasicBG(int mouseX, int mouseY) {
+        String name = "§a" + this.username;
 
         String updateTimeText = this.playerProfile.update_time;
         String syncTimeText = this.playerProfile.updated_at;
@@ -157,19 +329,33 @@ public class ProfileViewerGUI extends GuiScreen {
 
         ZonedDateTime localizedUpd = updateT.atZone(targetZone);
         ZonedDateTime localizedSync = syncT.atZone(targetZone);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm");
 
-        String updateTime = "§8Uploaded On: §f" + formatter.format(localizedUpd);
-        String syncTime = "§8Sync: §f" +formatter.format(localizedSync);
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy");
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
 
-        int textWidth = fontRendererObj.getStringWidth(updateTime);
-        int nameWidth = fontRendererObj.getStringWidth(name);
-        int syncNameWidth = fontRendererObj.getStringWidth(syncTime);
-        if(nameWidth > textWidth) textWidth = nameWidth;
-        if(syncNameWidth > nameWidth && syncNameWidth > textWidth) textWidth = syncNameWidth;
+        String updateDate = "§8Uploaded: §f" + dateFormatter.format(localizedUpd);
+        String syncDate = "§8Sync: §f" + dateFormatter.format(localizedSync);
 
-        float textScale = Math.max(0.25f, getScaledF(1)) * 3f;
-        int leftBoxWidth = (int)(textWidth * textScale + getScaledF(20));
+        String updateHour = "§7(" + timeFormatter.format(localizedUpd) + ")";
+        String syncHour = "§7(" + timeFormatter.format(localizedSync) + ")";
+
+        float textScale = Math.max(0.25f, getScaledF(1)) * 2.5f;
+        float labelScale = textScale * 0.70f;
+        float hourScale = textScale * 0.55f;
+
+        float nameWidth = fontRendererObj.getStringWidth(name) * textScale;
+
+        float updDateWidth = fontRendererObj.getStringWidth(updateDate) * labelScale;
+        float updHourWidth = fontRendererObj.getStringWidth(updateHour) * hourScale;
+        float fullUpdWidth = updDateWidth + getScaled(5) + updHourWidth;
+
+        float syncDateWidth = fontRendererObj.getStringWidth(syncDate) * labelScale;
+        float syncHourWidth = fontRendererObj.getStringWidth(syncHour) * hourScale;
+        float fullSyncWidth = syncDateWidth + getScaled(5) + syncHourWidth;
+
+        float maxTextWidth = Math.max(nameWidth, Math.max(fullUpdWidth, fullSyncWidth));
+
+        int leftBoxWidth = (int)(maxTextWidth + getScaledF(20));
         int gap = getScaled(10);
         int totalCombinedWidth = leftBoxWidth + gap + boxW;
 
@@ -177,16 +363,30 @@ public class ProfileViewerGUI extends GuiScreen {
         int rightBoxX = boxX + leftBoxWidth + gap;
 
         int textX = boxX + getScaled(10);
-        int nameY = boxY + getScaled(15);
-        int updateY = boxY + getScaled(50);
-        int syncY = boxY + getScaled(80);
+        int nameY = boxY + getScaled(12);
+
+        int updateY = boxY + getScaled(32);
+        int syncY = updateY + getScaled(14);
 
         NineSliceUtils.draw(CONTAINER_BG, boxX, boxY, leftBoxWidth, boxH, 6, 18);
         NineSliceUtils.draw(CONTAINER_BG, rightBoxX, boxY, boxW, boxH, 6, 18);
 
         StringDrawer.drawString(name, textX, nameY, textScale, false);
-        StringDrawer.drawString(updateTime, textX, updateY, textScale * 0.75f, false);
-        StringDrawer.drawString(syncTime, textX, syncY, textScale * 0.75f, false);
+
+        float textHeight = fontRendererObj.FONT_HEIGHT * labelScale;
+
+        boolean hoverUpd = mouseX >= textX && mouseX <= textX + fullUpdWidth && mouseY >= updateY && mouseY <= updateY + textHeight;
+        boolean hoverSync = mouseX >= textX && mouseX <= textX + fullSyncWidth && mouseY >= syncY && mouseY <= syncY + textHeight;
+
+        StringDrawer.drawString(updateDate, textX, updateY, labelScale, false);
+        if (hoverUpd) {
+            StringDrawer.drawString(updateHour, textX + updDateWidth + getScaled(5), updateY + (textHeight - fontRendererObj.FONT_HEIGHT * hourScale), hourScale, false);
+        }
+
+        StringDrawer.drawString(syncDate, textX, syncY, labelScale, false);
+        if (hoverSync) {
+            StringDrawer.drawString(syncHour, textX + syncDateWidth + getScaled(5), syncY + (textHeight - fontRendererObj.FONT_HEIGHT * hourScale), hourScale, false);
+        }
 
         return leftBoxWidth;
     }
@@ -198,5 +398,4 @@ public class ProfileViewerGUI extends GuiScreen {
     public static float getScaledF(double initial){
         return (float) (initial*uiScale);
     }
-
 }
