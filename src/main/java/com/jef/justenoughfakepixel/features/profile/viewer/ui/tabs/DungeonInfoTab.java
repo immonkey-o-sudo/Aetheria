@@ -5,7 +5,7 @@ import com.jef.justenoughfakepixel.features.profile.data.ProfileData;
 import com.jef.justenoughfakepixel.features.profile.data.dungeon.Floor;
 import com.jef.justenoughfakepixel.features.profile.data.dungeon.FloorData;
 import com.jef.justenoughfakepixel.features.profile.viewer.ui.ProfileViewerGUI;
-import com.jef.justenoughfakepixel.features.profile.viewer.ui.util.StringDrawer;
+import com.jef.justenoughfakepixel.features.profile.viewer.ui.util.StringRenderUtils;
 import com.jef.justenoughfakepixel.utils.render.NineSliceUtils;
 import net.minecraft.client.Minecraft;
 
@@ -39,7 +39,7 @@ public class DungeonInfoTab extends Tab {
             float cX = xPos + (i * spacing) + (spacing / 2f);
             float cY = yPos + (classSectionH / 2f);
             String text = "§e" + classNames[i] + ": §a" + classLevels[i];
-            StringDrawer.drawCenteredString(text, cX, cY, textScale, false);
+            StringRenderUtils.drawCenteredString(text, cX, cY, textScale, false);
         }
 
         float gridY = yPos + classSectionH + pad;
@@ -76,36 +76,36 @@ public class DungeonInfoTab extends Tab {
         float statScale = textScale * 0.95f;
 
         String title = "§c§l" + floor.floorName;
-        StringDrawer.drawString(title, x + pad, y + pad, titleScale, false);
+        StringRenderUtils.drawString(title, x + pad, y + pad, titleScale, false);
 
         float currentY = y + pad + (titleScale * mc.fontRendererObj.FONT_HEIGHT) + ProfileViewerGUI.getScaledF(4);
 
         float lineSpc = statScale * mc.fontRendererObj.FONT_HEIGHT + ProfileViewerGUI.getScaledF(1.5f);
 
         if (fData == null || fData.bossKills == 0) {
-            StringDrawer.drawString("§8Not Completed", x + pad, currentY, statScale, false);
+            StringRenderUtils.drawString("§8Not Completed", x + pad, currentY, statScale, false);
             return;
         }
 
-        StringDrawer.drawString("§7Kills: §a" + StringUtils.formatNumber(fData.bossKills), x + pad, currentY, statScale, false);
+        StringRenderUtils.drawString("§7Kills: §a" + StringUtils.formatNumber(fData.bossKills), x + pad, currentY, statScale, false);
         currentY += lineSpc;
 
-        StringDrawer.drawString("§7Best Score: §6" + fData.bestScore, x + pad, currentY, statScale, false);
+        StringRenderUtils.drawString("§7Best Score: §6" + fData.bestScore, x + pad, currentY, statScale, false);
         currentY += lineSpc;
 
         long maxDmg = getMaxDamage(fData);
         if (maxDmg > 0) {
-            StringDrawer.drawString("§7Max Dmg: §d" + StringUtils.formatNumber(maxDmg), x + pad, currentY, statScale, false);
+            StringRenderUtils.drawString("§7Max Dmg: §d" + StringUtils.formatNumber(maxDmg), x + pad, currentY, statScale, false);
             currentY += lineSpc;
         }
 
-        StringDrawer.drawString("§7Enemies Killed: §c" + StringUtils.formatNumber(fData.totalEnemiesKilled), x + pad, currentY, statScale, false);
+        StringRenderUtils.drawString("§7Enemies Killed: §c" + StringUtils.formatNumber(fData.totalEnemiesKilled), x + pad, currentY, statScale, false);
         currentY += lineSpc;
 
-        StringDrawer.drawString("§7Fastest: §b" + formatTime(fData.fastestTime), x + pad, currentY, statScale, false);
+        StringRenderUtils.drawString("§7Fastest: §b" + formatTime(fData.fastestTime), x + pad, currentY, statScale, false);
         currentY += lineSpc;
 
-        StringDrawer.drawString("§7S: §b" + formatTime(fData.fastestSTime) + "  §7S+: §b" + formatTime(fData.fastestSPlusTime), x + pad, currentY, statScale, false);
+        StringRenderUtils.drawString("§7S: §b" + formatTime(fData.fastestSTime) + "  §7S+: §b" + formatTime(fData.fastestSPlusTime), x + pad, currentY, statScale, false);
     }
 
     private long getMaxDamage(FloorData data) {

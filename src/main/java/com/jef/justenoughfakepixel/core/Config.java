@@ -71,9 +71,9 @@ public class Config {
     @Category(name = "Fishing", desc = "Fishing features")
     public final Fishing fishing = new Fishing();
 
-    @Expose
-    @Category(name = "Overlays", desc = "Various Ovarlay features")
-    public final Overlays overlays = new Overlays();
+//    @Expose
+//    @Category(name = "Overlays", desc = "Various Ovarlay features")
+//    public final Overlays overlays = new Overlays();
 
     @Expose
     @Category(name = "Debug", desc = "Debug tools")

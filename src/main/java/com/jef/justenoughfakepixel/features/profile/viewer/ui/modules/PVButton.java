@@ -1,7 +1,7 @@
 package com.jef.justenoughfakepixel.features.profile.viewer.ui.modules;
 
 import com.jef.justenoughfakepixel.features.profile.viewer.ui.ProfileViewerGUI;
-import com.jef.justenoughfakepixel.features.profile.viewer.ui.util.StringDrawer;
+import com.jef.justenoughfakepixel.features.profile.viewer.ui.util.StringRenderUtils;
 import com.jef.justenoughfakepixel.utils.render.NineSliceUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -29,7 +29,7 @@ public class PVButton extends GuiButton {
             float centerX = this.xPosition + (this.width / 2.0f);
             float centerY = this.yPosition + (this.height / 2.0f);
 
-            StringDrawer.drawCenteredString(this.displayString, centerX, centerY, (ProfileViewerGUI.uiScale * 2f), false);
+            StringRenderUtils.drawCenteredString(this.displayString, centerX, centerY, (ProfileViewerGUI.uiScale * 2f), false);
         }
     }
 }

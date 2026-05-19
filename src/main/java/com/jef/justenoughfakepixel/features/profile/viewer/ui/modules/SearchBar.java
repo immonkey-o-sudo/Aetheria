@@ -2,7 +2,7 @@ package com.jef.justenoughfakepixel.features.profile.viewer.ui.modules;
 
 import com.jef.justenoughfakepixel.features.profile.viewer.ProfileViewerAPI;
 import com.jef.justenoughfakepixel.features.profile.viewer.ui.ProfileViewerGUI;
-import com.jef.justenoughfakepixel.features.profile.viewer.ui.util.StringDrawer;
+import com.jef.justenoughfakepixel.features.profile.viewer.ui.util.StringRenderUtils;
 import com.jef.justenoughfakepixel.utils.render.NineSliceUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
@@ -35,11 +35,11 @@ public class SearchBar {
         float startX = x + ProfileViewerGUI.getScaledF(12);
 
         if (text.isEmpty() && !isFocused) {
-            StringDrawer.drawString("§7" + placeholder, startX, textY - ((Minecraft.getMinecraft().fontRendererObj.FONT_HEIGHT * textScale) / 2f), textScale, false);
+            StringRenderUtils.drawString("§7" + placeholder, startX, textY - ((Minecraft.getMinecraft().fontRendererObj.FONT_HEIGHT * textScale) / 2f), textScale, false);
         } else {
             String displayText = "§f" + text + (showCursor ? "§7|" : "");
             float fontOffset = (Minecraft.getMinecraft().fontRendererObj.FONT_HEIGHT * textScale) / 2f;
-            StringDrawer.drawString(displayText, startX, textY - fontOffset, textScale, false);
+            StringRenderUtils.drawString(displayText, startX, textY - fontOffset, textScale, false);
         }
 
         // Draw the Auto-complete Dropdown if suggestions exist and search is active
@@ -63,7 +63,7 @@ public class SearchBar {
                     Gui.drawRect(x + 4, (int) itemY, x + width - 4, (int) (itemY + itemH), 0x30FFFFFF);
                 }
 
-                StringDrawer.drawString("§f" + sug, startX, itemY + (itemH / 2f) - ((Minecraft.getMinecraft().fontRendererObj.FONT_HEIGHT * textScale) / 2f), textScale, false);
+                StringRenderUtils.drawString("§f" + sug, startX, itemY + (itemH / 2f) - ((Minecraft.getMinecraft().fontRendererObj.FONT_HEIGHT * textScale) / 2f), textScale, false);
             }
         }
         GlStateManager.popMatrix();

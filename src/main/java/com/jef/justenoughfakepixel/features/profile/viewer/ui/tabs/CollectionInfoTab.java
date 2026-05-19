@@ -6,7 +6,7 @@ import com.jef.justenoughfakepixel.features.profile.data.collection.CollectionBa
 import com.jef.justenoughfakepixel.features.profile.data.collection.CollectionData;
 import com.jef.justenoughfakepixel.features.profile.data.collection.CollectionType;
 import com.jef.justenoughfakepixel.features.profile.viewer.ui.ProfileViewerGUI;
-import com.jef.justenoughfakepixel.features.profile.viewer.ui.util.StringDrawer;
+import com.jef.justenoughfakepixel.features.profile.viewer.ui.util.StringRenderUtils;
 import com.jef.justenoughfakepixel.utils.render.ItemRenderUtils;
 import com.jef.justenoughfakepixel.utils.render.NineSliceUtils;
 import net.minecraft.client.Minecraft;
@@ -54,7 +54,7 @@ public class CollectionInfoTab extends Tab {
 
         NineSliceUtils.draw(ProfileViewerGUI.CONTAINER_BG, (int) btnX, (int) btnY, (int) btnW, (int) topBarH, 6, 18);
         String triggerText = "§a" + formatEnumName(currentCategory.name()) + " §7▼";
-        StringDrawer.drawCenteredString(triggerText, btnX + (btnW / 2f), btnY + (topBarH / 2f), textScale * 0.9f, false);
+        StringRenderUtils.drawCenteredString(triggerText, btnX + (btnW / 2f), btnY + (topBarH / 2f), textScale * 0.9f, false);
 
         float gridY = btnY + topBarH + pad;
         float gridH = height - (gridY - yPos) - pad;
@@ -166,21 +166,21 @@ public class CollectionInfoTab extends Tab {
         float textYTop = y + pad + ProfileViewerGUI.getScaledF(2);
         float textYBottom = y + (h / 2f) + ProfileViewerGUI.getScaledF(1);
 
-        StringDrawer.drawString("§e" + type.itemName, textStartX, textYTop, textScale * 0.95f, false);
+        StringRenderUtils.drawString("§e" + type.itemName, textStartX, textYTop, textScale * 0.95f, false);
 
         if (notUnlocked) {
-            StringDrawer.drawString("§8Not Unlocked", textStartX, textYBottom, textScale * 0.8f, false);
+            StringRenderUtils.drawString("§8Not Unlocked", textStartX, textYBottom, textScale * 0.8f, false);
         } else if (isMaxed) {
-            StringDrawer.drawString("§dMAXED §7" +(cData.curProgress > 0 ? "(" + StringUtils.formatNumber(cData.curProgress) + ")" : ""), textStartX, textYBottom, textScale * 0.8f, false);
+            StringRenderUtils.drawString("§dMAXED §7" +(cData.curProgress > 0 ? "(" + StringUtils.formatNumber(cData.curProgress) + ")" : ""), textStartX, textYBottom, textScale * 0.8f, false);
         } else {
             String progressText = "§b" + StringUtils.formatNumber(cData.curProgress) + " §7/ §3" + StringUtils.formatNumber(cData.maxProgress);
-            StringDrawer.drawString(progressText, textStartX, textYBottom, textScale * 0.8f, false);
+            StringRenderUtils.drawString(progressText, textStartX, textYBottom, textScale * 0.8f, false);
         }
 
         if (!notUnlocked) {
             String lvlText = (isMaxed ? "§d" : "§a") + "LVL " + cData.level;
             float lvlWidth = mc.fontRendererObj.getStringWidth(lvlText) * textScale * 0.95f;
-            StringDrawer.drawString(lvlText, x + w - pad - lvlWidth, textYTop, textScale * 0.95f, false);
+            StringRenderUtils.drawString(lvlText, x + w - pad - lvlWidth, textYTop, textScale * 0.95f, false);
         }
     }
 
@@ -302,7 +302,7 @@ public class CollectionInfoTab extends Tab {
             float centerX = dropX + (dropW / 2.0f);
             float centerY = itemY + (itemHeight / 2.0f);
             String prefix = (base == currentCategory) ? "§a> §f" : "§7";
-            StringDrawer.drawCenteredString(prefix + formatEnumName(base.name()), centerX, centerY, textScale * 0.85f, false);
+            StringRenderUtils.drawCenteredString(prefix + formatEnumName(base.name()), centerX, centerY, textScale * 0.85f, false);
         }
     }
 

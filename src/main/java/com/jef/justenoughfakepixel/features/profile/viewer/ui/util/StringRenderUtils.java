@@ -4,7 +4,7 @@ import com.jef.justenoughfakepixel.utils.render.ResolutionUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 
-public class StringDrawer {
+public class StringRenderUtils {
 
     public static void drawString(String text, float xPos, float yPos, float uiScale, boolean displayScale) {
         GlStateManager.pushMatrix();

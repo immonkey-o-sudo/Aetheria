@@ -3,7 +3,7 @@ package com.jef.justenoughfakepixel.features.profile.viewer.ui.tabs;
 import com.jef.justenoughfakepixel.core.config.utils.StringUtils;
 import com.jef.justenoughfakepixel.features.profile.data.ProfileData;
 import com.jef.justenoughfakepixel.features.profile.viewer.ui.ProfileViewerGUI;
-import com.jef.justenoughfakepixel.features.profile.viewer.ui.util.StringDrawer;
+import com.jef.justenoughfakepixel.features.profile.viewer.ui.util.StringRenderUtils;
 import com.jef.justenoughfakepixel.utils.render.NineSliceUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
@@ -43,14 +43,14 @@ public class BasicInfoTab extends Tab {
         float pad = ProfileViewerGUI.getScaledF(10);
         float titleScale = textScale * 1.15f;
 
-        StringDrawer.drawString(title, x + pad, y + pad, titleScale, false);
+        StringRenderUtils.drawString(title, x + pad, y + pad, titleScale, false);
 
         float lineY = y + pad + (titleScale * mc.fontRendererObj.FONT_HEIGHT) + ProfileViewerGUI.getScaledF(4);
         Gui.drawRect((int)(x + pad), (int)lineY, (int)(x + w - pad), (int)(lineY + Math.max(1, ProfileViewerGUI.getScaled(1))), new Color(255, 255, 255, 25).getRGB());
 
         float currentY = lineY + ProfileViewerGUI.getScaledF(8);
         for (String line : lines) {
-            StringDrawer.drawString(line, x + pad, currentY, textScale, false);
+            StringRenderUtils.drawString(line, x + pad, currentY, textScale, false);
             currentY += (textScale * mc.fontRendererObj.FONT_HEIGHT) + ProfileViewerGUI.getScaledF(4);
         }
     }

@@ -1,7 +1,7 @@
 package com.jef.justenoughfakepixel.features.profile.viewer.ui;
 
-import com.jef.justenoughfakepixel.core.JefConfig;
 import com.jef.justenoughfakepixel.core.config.gui.GuiTextures;
+import com.jef.justenoughfakepixel.core.config.utils.TextRenderUtils;
 import com.jef.justenoughfakepixel.features.profile.data.ProfileData;
 import com.jef.justenoughfakepixel.features.profile.viewer.PlayerProfile;
 import com.jef.justenoughfakepixel.features.profile.viewer.ProfileViewerAPI;
@@ -9,9 +9,8 @@ import com.jef.justenoughfakepixel.features.profile.viewer.ui.modules.PVButton;
 import com.jef.justenoughfakepixel.features.profile.viewer.ui.modules.PlayerModule;
 import com.jef.justenoughfakepixel.features.profile.viewer.ui.modules.SearchBar;
 import com.jef.justenoughfakepixel.features.profile.viewer.ui.tabs.*;
-import com.jef.justenoughfakepixel.features.profile.viewer.ui.util.StringDrawer;
+import com.jef.justenoughfakepixel.features.profile.viewer.ui.util.StringRenderUtils;
 import com.jef.justenoughfakepixel.utils.render.NineSliceUtils;
-import com.jef.justenoughfakepixel.utils.render.ResolutionUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiButton;
@@ -66,7 +65,7 @@ public class ProfileViewerGUI extends GuiScreen {
 
     public ProfileViewerGUI(String username) {
         this.username = username;
-        uiScale = JefConfig.feature.overlays.profileViewer.pvScale * ResolutionUtils.getXStatic(1);
+//        uiScale = JefConfig.feature.overlays.profileViewer.pvScale * ResolutionUtils.getXStatic(1);
         ProfileViewerAPI.fetchPlayerListAsync();
 
         new Thread(() -> {
@@ -115,7 +114,7 @@ public class ProfileViewerGUI extends GuiScreen {
         isDropdownOpen = false;
         isTabDropdownOpen = false;
         CONTAINER_BG = GuiTextures.storageBackground(1);
-        uiScale = JefConfig.feature.overlays.profileViewer.pvScale * ResolutionUtils.getXStatic(1);
+//        uiScale = JefConfig.feature.overlays.profileViewer.pvScale * ResolutionUtils.getXStatic(1);
         addTab(new BasicInfoTab());
         addTab(new SkillInfoTab());
         addTab(new DungeonInfoTab());
@@ -127,6 +126,10 @@ public class ProfileViewerGUI extends GuiScreen {
     public void onGuiClosed() {
         super.onGuiClosed();
         Keyboard.enableRepeatEvents(false);
+    }
+
+    public void drawTooltip(List<String> textLines, int x, int y) {
+        TextRenderUtils.drawHoveringText(textLines, x, y,fontRendererObj);
     }
 
     @Override
@@ -271,7 +274,7 @@ public class ProfileViewerGUI extends GuiScreen {
             float centerY = itemY + (itemHeight / 2.0f);
 
             String displayPrefix = (i == profileIndex) ? "§a> §f" : "§7";
-            StringDrawer.drawCenteredString(displayPrefix + pName, centerX, centerY, (uiScale * 1.8f), false);
+            StringRenderUtils.drawCenteredString(displayPrefix + pName, centerX, centerY, (uiScale * 1.8f), false);
         }
     }
 
@@ -304,7 +307,7 @@ public class ProfileViewerGUI extends GuiScreen {
             float centerY = itemY + (tabItemHeight / 2.0f);
 
             String displayPrefix = (t.tabIndex == tab) ? "§a> §f" : "§7";
-            StringDrawer.drawCenteredString(displayPrefix + t.name, centerX, centerY, (uiScale * 1.8f), false);
+            StringRenderUtils.drawCenteredString(displayPrefix + t.name, centerX, centerY, (uiScale * 1.8f), false);
         }
     }
 
@@ -441,21 +444,21 @@ public class ProfileViewerGUI extends GuiScreen {
         NineSliceUtils.draw(CONTAINER_BG, boxX, boxY, leftBoxWidth, boxH, 6, 18);
         NineSliceUtils.draw(CONTAINER_BG, rightBoxX, boxY, boxW, boxH, 6, 18);
 
-        StringDrawer.drawString(name, textX, nameY, textScale, false);
+        StringRenderUtils.drawString(name, textX, nameY, textScale, false);
 
         float textHeight = fontRendererObj.FONT_HEIGHT * labelScale;
 
         boolean hoverUpd = mouseX >= textX && mouseX <= textX + fullUpdWidth && mouseY >= updateY && mouseY <= updateY + textHeight;
         boolean hoverSync = mouseX >= textX && mouseX <= textX + fullSyncWidth && mouseY >= syncY && mouseY <= syncY + textHeight;
 
-        StringDrawer.drawString(updateDate, textX, updateY, labelScale, false);
+        StringRenderUtils.drawString(updateDate, textX, updateY, labelScale, false);
         if (hoverUpd) {
-            StringDrawer.drawString(updateHour, textX + updDateWidth + getScaled(5), updateY + (textHeight - fontRendererObj.FONT_HEIGHT * hourScale), hourScale, false);
+            StringRenderUtils.drawString(updateHour, textX + updDateWidth + getScaled(5), updateY + (textHeight - fontRendererObj.FONT_HEIGHT * hourScale), hourScale, false);
         }
 
-        StringDrawer.drawString(syncDate, textX, syncY, labelScale, false);
+        StringRenderUtils.drawString(syncDate, textX, syncY, labelScale, false);
         if (hoverSync) {
-            StringDrawer.drawString(syncHour, textX + syncDateWidth + getScaled(5), syncY + (textHeight - fontRendererObj.FONT_HEIGHT * hourScale), hourScale, false);
+            StringRenderUtils.drawString(syncHour, textX + syncDateWidth + getScaled(5), syncY + (textHeight - fontRendererObj.FONT_HEIGHT * hourScale), hourScale, false);
         }
 
         return leftBoxWidth;

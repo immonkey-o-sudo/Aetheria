@@ -5,7 +5,7 @@ import com.jef.justenoughfakepixel.features.profile.data.ProfileData;
 import com.jef.justenoughfakepixel.features.profile.data.skills.Skill;
 import com.jef.justenoughfakepixel.features.profile.data.skills.SkillData;
 import com.jef.justenoughfakepixel.features.profile.viewer.ui.ProfileViewerGUI;
-import com.jef.justenoughfakepixel.features.profile.viewer.ui.util.StringDrawer;
+import com.jef.justenoughfakepixel.features.profile.viewer.ui.util.StringRenderUtils;
 import com.jef.justenoughfakepixel.utils.render.ItemRenderUtils;
 import com.jef.justenoughfakepixel.utils.render.NineSliceUtils;
 import net.minecraft.client.Minecraft;
@@ -102,19 +102,19 @@ public class SkillInfoTab extends Tab {
         float textYTop = y + pad + ProfileViewerGUI.getScaledF(2);
         float textYBottom = y + (h / 2f) + ProfileViewerGUI.getScaledF(1);
 
-        StringDrawer.drawString("§e§l" + skillName.toUpperCase(), textStartX, textYTop, textScale, false);
+        StringRenderUtils.drawString("§e§l" + skillName.toUpperCase(), textStartX, textYTop, textScale, false);
 
         if (isMaxed) {
             String overflow = currentXp > 0 ? " §7(+" + StringUtils.formatNumber(currentXp) + ")" : "";
-            StringDrawer.drawString("§dMAXED" + overflow, textStartX, textYBottom, textScale * 0.85f, false);
+            StringRenderUtils.drawString("§dMAXED" + overflow, textStartX, textYBottom, textScale * 0.85f, false);
         } else {
             String xpText = "§b" + StringUtils.formatNumber(currentXp) + " §7/ §3" + StringUtils.formatNumber(requiredXp);
-            StringDrawer.drawString(xpText, textStartX, textYBottom, textScale * 0.85f, false);
+            StringRenderUtils.drawString(xpText, textStartX, textYBottom, textScale * 0.85f, false);
         }
 
         String lvlText = (isMaxed ? "§d" : "§a") + "LVL " + currentLevel;
         float lvlWidth = mc.fontRendererObj.getStringWidth(lvlText) * textScale;
-        StringDrawer.drawString(lvlText, x + w - pad - lvlWidth, textYTop, textScale, false);
+        StringRenderUtils.drawString(lvlText, x + w - pad - lvlWidth, textYTop, textScale, false);
     }
 
     private ItemStack getSkillItem(String skillName) {
