@@ -44,18 +44,26 @@ public class NpcShopRecipe extends Recipe {
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
         GL11.glScissor(gridX * sf, (Minecraft.getMinecraft().displayHeight - (gridY + gridH) * sf), gridW * sf, gridH * sf);
 
-        for (int i = 0; i < COLS * ROWS && i < recipes.size(); i++) {
-            JsonObject recipe = recipes.get(i);
+        for (int i = 0; i < COLS * ROWS; i++) {
             int col = i % COLS, row = i / COLS;
             int sx = gridX + col * S, sy = gridY + row * S;
 
             RecipeUtils.drawSlot(sx, sy, S);
 
-            if (!recipe.has("result")) continue;
-            String resultRaw = recipe.get("result").getAsString();
-            SkyblockItem resultItem = RecipeUtils.resolve(resultRaw.split(":")[0]);
-            if (resultItem != null && resultItem.getStack() != null)
-                ItemRenderUtils.drawItemStack(resultItem.getStack(), sx + 1, sy + 1);
+            if (i < recipes.size()) {
+                JsonObject recipe = recipes.get(i);
+                if (!recipe.has("result")) continue;
+
+                String resultRaw = recipe.get("result").getAsString();
+                String[] rp = resultRaw.split(":");
+                String rAmt = rp.length > 1 ? rp[1] : "1";
+                SkyblockItem resultItem = RecipeUtils.resolve(rp[0]);
+
+                if (resultItem != null && resultItem.getStack() != null) {
+                    ItemRenderUtils.drawItemStack(resultItem.getStack(), sx + 1, sy + 1);
+                    RecipeUtils.drawAmount(fr, rAmt, sx, sy);
+                }
+            }
         }
 
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
@@ -68,34 +76,36 @@ public class NpcShopRecipe extends Recipe {
         int gridX = x + (width  - gridW) / 2;
         int gridY = y + (height - gridH) / 2;
 
-        for (int i = 0; i < COLS * ROWS && i < recipes.size(); i++) {
+        for (int i = 0; i < COLS * ROWS; i++) {
             int col = i % COLS, row = i / COLS;
             int sx = gridX + col * S, sy = gridY + row * S;
             if (mouseX < sx || mouseX >= sx + S || mouseY < sy || mouseY >= sy + S) continue;
 
-            JsonObject recipe = recipes.get(i);
-            if (!recipe.has("result")) return null;
-            String[] rp = recipe.get("result").getAsString().split(":");
-            SkyblockItem rItem = RecipeUtils.resolve(rp[0]);
-            String rAmt = rp.length > 1 ? rp[1] : "1";
-            if (rItem == null) return null;
+            if (i < recipes.size()) {
+                JsonObject recipe = recipes.get(i);
+                if (!recipe.has("result")) return null;
+                String[] rp = recipe.get("result").getAsString().split(":");
+                SkyblockItem rItem = RecipeUtils.resolve(rp[0]);
+                String rAmt = rp.length > 1 ? rp[1] : "1";
+                if (rItem == null) return null;
 
-            List<String> tip = RecipeUtils.buildItemTooltipWithAmount(rItem, rAmt);
-            tip.add("§8---------------");
-            if (recipe.has("cost") && recipe.get("cost").isJsonArray()) {
-                JsonArray costArr = recipe.get("cost").getAsJsonArray();
-                for (int c = 0; c < costArr.size(); c++) {
-                    String[] cp = costArr.get(c).getAsString().split(":");
-                    String rId = cp[0], cAmt = cp.length > 1 ? cp[1] : "1";
-                    if (rId.equals("SKYBLOCK_COIN")) {
-                        tip.add("§7Cost: §6" + cAmt + " Coins");
-                    } else {
-                        SkyblockItem costItem = RecipeUtils.resolve(rId);
-                        if (costItem != null) tip.add("§7Cost: " + costItem.displayName + " §8x" + cAmt);
+                List<String> tip = RecipeUtils.buildItemTooltipWithAmount(rItem, rAmt);
+                tip.add("§8---------------");
+                if (recipe.has("cost") && recipe.get("cost").isJsonArray()) {
+                    JsonArray costArr = recipe.get("cost").getAsJsonArray();
+                    for (int c = 0; c < costArr.size(); c++) {
+                        String[] cp = costArr.get(c).getAsString().split(":");
+                        String rId = cp[0], cAmt = cp.length > 1 ? cp[1] : "1";
+                        if (rId.equals("SKYBLOCK_COIN")) {
+                            tip.add("§7Cost: §6" + cAmt + " Coins");
+                        } else {
+                            SkyblockItem costItem = RecipeUtils.resolve(rId);
+                            if (costItem != null) tip.add("§7Cost: " + costItem.displayName + " §8x" + cAmt);
+                        }
                     }
                 }
+                return tip;
             }
-            return tip;
         }
         return null;
     }

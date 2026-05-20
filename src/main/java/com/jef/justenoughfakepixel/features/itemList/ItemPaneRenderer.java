@@ -1,24 +1,22 @@
 package com.jef.justenoughfakepixel.features.itemList;
 
 import com.jef.justenoughfakepixel.core.JefConfig;
-import com.jef.justenoughfakepixel.core.config.utils.TextRenderUtils;
 import com.jef.justenoughfakepixel.core.config.gui.GuiTextures;
+import com.jef.justenoughfakepixel.core.config.utils.TextRenderUtils;
 import com.jef.justenoughfakepixel.features.misc.SearchBar;
 import com.jef.justenoughfakepixel.init.RegisterEvents;
-import com.jef.justenoughfakepixel.utils.data.SkyblockData;
 import com.jef.justenoughfakepixel.utils.render.ItemRenderUtils;
 import com.jef.justenoughfakepixel.utils.render.NineSliceUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiTextField;
-import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,50 +25,95 @@ import java.util.stream.Collectors;
 @RegisterEvents
 public class ItemPaneRenderer {
 
-    private static final int S        = 18;
-    private static final int PAD      = 4;
-    private static final int NAV_H    = 22;
-    private static final int SEARCH_H = 20;
-    private static final int DROP_PAD = 4;
-    private static final int DROP_H   = S + DROP_PAD * 2 + 10;
+    public static float gridScale = 1.0f;
+
+    private static final int COLUMNS = 8;
+    private static final int PAD     = 4;
+    private static final int NAV_H   = 22;
+    private static final int SEARCH_H= 20;
+    private static final int FILTER_H= 20;
+
+    private int S() { return Math.max(16, (int)(24 * gridScale)); }
 
     private List<ItemFamily> filteredFamilies = new ArrayList<>();
     private GuiTextField searchField;
     private String lastSearchText = "";
     private int currentPage = 0;
 
-    private String dropdownFamilyId = null;
-    private int dropdownSlotX, dropdownSlotY;
+    private boolean wasLoaded = false;
 
-    private int paneX, paneY, paneW, paneH;
-    private int cols, rows, itemsPerPage;
+    private String hoverFamilyId = null;
+    private int hoverSlotX, hoverSlotY;
+    private int dropDx, dropDy, dropDw, dropDh;
+
+    private static final String[] RARITIES = {"Any Rarity", "Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Divine", "Special"};
+    private int rarityFilterIdx = 0;
+    private static final String[] TYPES = {"Any Type", "Sword", "Bow", "Armor", "Helmet", "Chestplate", "Leggings", "Boots", "Accessory", "Pet", "Pickaxe", "Drill"};
+    private int typeFilterIdx = 0;
+
+    private int paneX;
+    private int paneY;
+    private int paneW;
+    private int paneH;
+    private int itemsPerPage;
 
     public ItemPaneRenderer() {
-        updateSearch("");
+        if (ItemRegistry.isLoaded) {
+            updateSearch("");
+            wasLoaded = true;
+            gridScale = JefConfig.feature.overlays.itemListScale;
+        }
     }
 
     private void updateSearch(String q) {
-        String lq = q.toLowerCase();
+        String[] terms = q.toLowerCase().trim().split("\\s+");
+        String currentRarity = RARITIES[rarityFilterIdx].toLowerCase();
+        String currentType = TYPES[typeFilterIdx].toLowerCase();
+
         filteredFamilies = ItemRegistry.familyRegistry.values().stream()
                 .filter(fam -> {
-                    String name = stripColor(fam.displayName).toLowerCase();
-                    if (name.contains(lq)) return true;
-                    return fam.members.stream().anyMatch(i ->
-                            (i.skyblockID != null && i.skyblockID.toLowerCase().contains(lq)) ||
-                                    stripColor(i.displayName).toLowerCase().contains(lq));
+                    if (!currentRarity.equals("any rarity")) {
+                        boolean matchRarity = fam.members.stream().anyMatch(i ->
+                                (i.itemRarity != null && i.itemRarity.toLowerCase().contains(currentRarity)) ||
+                                        (i.rarity != null && i.rarity.toLowerCase().contains(currentRarity)));
+                        if (!matchRarity) return false;
+                    }
+
+                    if (!currentType.equals("any type")) {
+                        boolean matchType = fam.members.stream().anyMatch(i ->
+                                i.itemType != null && i.itemType.toLowerCase().contains(currentType));
+                        if (!matchType) return false;
+                    }
+
+                    if (q.trim().isEmpty()) return true;
+                    for (String term : terms) {
+                        if (term.isEmpty()) continue;
+                        boolean matchTerm;
+                        if (term.startsWith("type:")) {
+                            String t = term.substring(5);
+                            matchTerm = fam.members.stream().anyMatch(i -> i.itemType != null && i.itemType.toLowerCase().contains(t));
+                        } else if (term.startsWith("rarity:")) {
+                            String r = term.substring(7);
+                            matchTerm = fam.members.stream().anyMatch(i -> (i.itemRarity != null && i.itemRarity.toLowerCase().contains(r)) || (i.rarity != null && i.rarity.toLowerCase().contains(r)));
+                        } else {
+                            if (fam.cleanDisplayNameLower.contains(term)) matchTerm = true;
+                            else matchTerm = fam.members.stream().anyMatch(i ->
+                                    (i.idLower != null && i.idLower.contains(term)) ||
+                                            (i.cleanNameLower != null && i.cleanNameLower.contains(term)));
+                        }
+                        if (!matchTerm) return false;
+                    }
+                    return true;
                 })
                 .collect(Collectors.toList());
+
+        filteredFamilies.sort((f1, f2) -> f1.cleanDisplayName.compareToIgnoreCase(f2.cleanDisplayName));
         currentPage = 0;
     }
 
-    private static String stripColor(String s) {
-        return s == null ? "" : s.replaceAll("§.", "");
-    }
-
-    private boolean shouldShow() {
-        if (JefConfig.feature == null) return false;
-        if (ItemRegistry.familyRegistry == null || ItemRegistry.familyRegistry.isEmpty()) return false;
-        return SkyblockData.isOnSkyblock();
+    private boolean shouldntShow() {
+        if (JefConfig.feature == null) return true;
+        return !ItemRegistry.isLoaded || ItemRegistry.familyRegistry.isEmpty();
     }
 
     private int totalPages() {
@@ -79,78 +122,111 @@ public class ItemPaneRenderer {
     }
 
     private void computeGeometry(int screenW, int screenH) {
-        paneX = screenW / 2 + 2;
-        paneY = 2;
-        paneW = screenW - paneX - 2;
-        paneH = screenH - 4;
-        int gridH = paneH - NAV_H - SEARCH_H - PAD * 3;
-        cols = Math.max(1, (paneW - PAD * 2) / S);
-        rows = Math.max(1,  gridH / S);
-        itemsPerPage = cols * rows;
+        paneW = COLUMNS * S() + (PAD * 2);
+        paneX = screenW - paneW;
+        paneY = 0;
+        paneH = screenH;
+
+        int gridH = paneH - NAV_H - FILTER_H - SEARCH_H - (PAD * 4);
+        int rows = Math.max(1, gridH / S());
+        itemsPerPage = COLUMNS * rows;
     }
 
     @SubscribeEvent
     public void onDraw(GuiScreenEvent.DrawScreenEvent.Post event) {
         if (!(event.gui instanceof GuiContainer)) return;
-        if (!shouldShow()) return;
 
         Minecraft mc = Minecraft.getMinecraft();
+
+        // Main thread pre-loader (warms up texture cache smoothly to avoid spikes)
+        if (!ItemRegistry.preloadQueue.isEmpty()) {
+            long start = System.currentTimeMillis();
+            while (!ItemRegistry.preloadQueue.isEmpty() && System.currentTimeMillis() - start < 3) { // Use 3ms per frame max
+                ItemStack stack = ItemRegistry.preloadQueue.poll();
+                if (stack != null) {
+                    mc.getRenderItem().getItemModelMesher().getItemModel(stack);
+                }
+            }
+        }
+
+        if (shouldntShow()) return;
+
+        if (ItemRegistry.isLoaded && !wasLoaded) {
+            wasLoaded = true;
+            updateSearch(lastSearchText);
+        }
+
         computeGeometry(event.gui.width, event.gui.height);
         currentPage = Math.max(0, Math.min(currentPage, totalPages() - 1));
 
         int mouseX = event.mouseX, mouseY = event.mouseY;
 
-        int sbY = paneY + paneH - SEARCH_H - PAD;
+        int sbY = paneH - SEARCH_H - PAD;
         if (searchField == null) {
             searchField = SearchBar.createStorageSearchBar(paneX + PAD, sbY, paneW - PAD * 2);
         } else {
             searchField.xPosition = paneX + PAD;
             searchField.yPosition = sbY;
+            searchField.width = paneW - PAD * 2;
         }
+
         String cur = SearchBar.getStorageSearchText();
-        if (!cur.equals(lastSearchText)) { lastSearchText = cur; updateSearch(cur); }
+        if (!cur.equals(lastSearchText)) {
+            lastSearchText = cur;
+            updateSearch(cur);
+        }
 
-        GlStateManager.color(1f, 1f, 1f, 1f);
-        GlStateManager.enableBlend();
-        NineSliceUtils.draw(GuiTextures.storageBackground(1), paneX, paneY, paneW, paneH, 6, 18);
+        int filterY = sbY - PAD - FILTER_H;
+        int btnWidth = (paneW - (PAD * 3)) / 2;
 
-        int navY  = paneY + PAD;
-        int btnW  = 50;
-        int prevX = paneX + PAD, nextX = paneX + paneW - PAD - btnW;
-        boolean hP = mouseX >= prevX && mouseX < prevX + btnW && mouseY >= navY && mouseY < navY + NAV_H;
-        boolean hN = mouseX >= nextX && mouseX < nextX + btnW && mouseY >= navY && mouseY < navY + NAV_H;
+        int rarityX = paneX + PAD;
+        boolean hoverRar = mouseX >= rarityX && mouseX < rarityX + btnWidth && mouseY >= filterY && mouseY < filterY + FILTER_H;
+        NineSliceUtils.draw(GuiTextures.storageBackground(1), rarityX, filterY, btnWidth, FILTER_H, 6, 18);
+        if (hoverRar) Gui.drawRect(rarityX, filterY, rarityX + btnWidth, filterY + FILTER_H, 0x33FFFFFF);
+        drawCenteredText(mc, RARITIES[rarityFilterIdx], rarityX + btnWidth / 2, filterY + 6, 0xAAAAAA);
 
-        NineSliceUtils.draw(GuiTextures.storageBackground(1), prevX, navY, btnW, NAV_H, 6, 18);
-        if (hP) Gui.drawRect(prevX, navY, prevX + btnW, navY + NAV_H, 0x33FFFFFF);
-        mc.fontRendererObj.drawStringWithShadow("◄ Prev",
-                prevX + (btnW - mc.fontRendererObj.getStringWidth("◄ Prev")) / 2f,
-                navY  + (NAV_H - mc.fontRendererObj.FONT_HEIGHT) / 2f, hP ? 0xFFFFAA : 0xFFFFFF);
+        int typeX = rarityX + btnWidth + PAD;
+        boolean hoverType = mouseX >= typeX && mouseX < typeX + btnWidth && mouseY >= filterY && mouseY < filterY + FILTER_H;
+        NineSliceUtils.draw(GuiTextures.storageBackground(1), typeX, filterY, btnWidth, FILTER_H, 6, 18);
+        if (hoverType) Gui.drawRect(typeX, filterY, typeX + btnWidth, filterY + FILTER_H, 0x33FFFFFF);
+        drawCenteredText(mc, TYPES[typeFilterIdx], typeX + btnWidth / 2, filterY + 6, 0xAAAAAA);
 
-        NineSliceUtils.draw(GuiTextures.storageBackground(1), nextX, navY, btnW, NAV_H, 6, 18);
-        if (hN) Gui.drawRect(nextX, navY, nextX + btnW, navY + NAV_H, 0x33FFFFFF);
-        mc.fontRendererObj.drawStringWithShadow("Next ►",
-                nextX + (btnW - mc.fontRendererObj.getStringWidth("Next ►")) / 2f,
-                navY  + (NAV_H - mc.fontRendererObj.FONT_HEIGHT) / 2f, hN ? 0xFFFFAA : 0xFFFFFF);
+        int navY = paneY + PAD;
+        int navBtnW = 40;
+        int prevX = paneX + PAD;
+        int nextX = paneX + paneW - PAD - navBtnW;
 
-        String pageStr = "Page: " + (currentPage + 1) + " / " + totalPages();
-        mc.fontRendererObj.drawStringWithShadow(pageStr,
-                paneX + (paneW - mc.fontRendererObj.getStringWidth(pageStr)) / 2f,
-                navY  + (NAV_H - mc.fontRendererObj.FONT_HEIGHT) / 2f, 0xCCCCCC);
+        boolean hP = mouseX >= prevX && mouseX < prevX + navBtnW && mouseY >= navY && mouseY < navY + NAV_H;
+        boolean hN = mouseX >= nextX && mouseX < nextX + navBtnW && mouseY >= navY && mouseY < navY + NAV_H;
+
+        NineSliceUtils.draw(GuiTextures.storageBackground(1), prevX, navY, navBtnW, NAV_H, 6, 18);
+        if (hP) Gui.drawRect(prevX, navY, prevX + navBtnW, navY + NAV_H, 0x33FFFFFF);
+        drawCenteredText(mc, "◄", prevX + navBtnW / 2, navY + 6, hP ? 0xFFFFAA : 0xFFFFFF);
+
+        NineSliceUtils.draw(GuiTextures.storageBackground(1), nextX, navY, navBtnW, NAV_H, 6, 18);
+        if (hN) Gui.drawRect(nextX, navY, nextX + navBtnW, navY + NAV_H, 0x33FFFFFF);
+        drawCenteredText(mc, "►", nextX + navBtnW / 2, navY + 6, hN ? 0xFFFFAA : 0xFFFFFF);
+
+        String pageStr = "Page: " + (currentPage + 1) + "/" + totalPages();
+        drawCenteredText(mc, pageStr, paneX + paneW / 2, navY + 6, 0xCCCCCC);
+
+        boolean overDropdown = false;
+        if (hoverFamilyId != null) {
+            overDropdown = mouseX >= dropDx && mouseX < dropDx + dropDw && mouseY >= dropDy && mouseY < dropDy + dropDh;
+            boolean overParent = mouseX >= hoverSlotX && mouseX < hoverSlotX + S() && mouseY >= hoverSlotY && mouseY < hoverSlotY + S();
+            if (!overDropdown && !overParent) {
+                hoverFamilyId = null;
+            }
+        }
 
         int gridX = paneX + PAD;
         int gridY = paneY + PAD + NAV_H + PAD;
-        int gridH = rows * S;
-
-        ScaledResolution sr = new ScaledResolution(mc);
-        int sf = sr.getScaleFactor();
-        GL11.glEnable(GL11.GL_SCISSOR_TEST);
-        GL11.glScissor(paneX * sf, (mc.displayHeight - (gridY + gridH) * sf), paneW * sf, gridH * sf);
-
         int start = currentPage * itemsPerPage;
+
         String nowHovered = null;
-        int   nowHovX = 0, nowHovY = 0;
+        int nowHovX = 0, nowHovY = 0;
         ItemFamily tooltipFamily = null;
-        SkyblockItem tooltipItem  = null;
+        SkyblockItem tooltipItem = null;
 
         for (int i = 0; i < itemsPerPage; i++) {
             int idx = start + i;
@@ -158,51 +234,55 @@ public class ItemPaneRenderer {
 
             ItemFamily fam = filteredFamilies.get(idx);
             SkyblockItem rep = fam.representative();
-            int col = i % cols, row = i / cols;
-            int sx  = gridX + col * S, sy = gridY + row * S;
+            int col = i % COLUMNS, row = i / COLUMNS;
+            int sx = gridX + col * S(), sy = gridY + row * S();
 
             GlStateManager.color(1f, 1f, 1f, 1f);
-            mc.getTextureManager().bindTexture(GuiTextures.storageSlot(1));
-            Gui.drawModalRectWithCustomSizedTexture(sx, sy, 0, 0, S, S, S, S);
+            NineSliceUtils.draw(GuiTextures.storageSlot(1), sx, sy, S(), S(), 6, 18);
 
-            if (rep != null && rep.getStack() != null)
-                ItemRenderUtils.drawItemStack(rep.getStack(), sx + 1, sy + 1);
-
-            if (fam.hasDropdown()) {
-                Gui.drawRect(sx + S - 4, sy + S - 4, sx + S - 1, sy + S - 1, 0xFFFFDD44);
+            if (rep != null && rep.getStack() != null) {
+                GlStateManager.pushMatrix();
+                float itemScale = (S() - PAD) / 16.0f; // Maintain dynamic scaling
+                GlStateManager.translate(sx + PAD/2f, sy + PAD/2f, 0);
+                GlStateManager.scale(itemScale, itemScale, 1.0f);
+                ItemRenderUtils.drawItemStack(rep.getStack(), 0, 0);
+                GlStateManager.popMatrix();
             }
 
-            boolean hovered = mouseX >= sx && mouseX < sx + S && mouseY >= sy && mouseY < sy + S;
-            if (hovered) {
+            if (fam.hasDropdown()) {
+                // Subtle golden corner indicator for variants
+                int indS = (int)(4 * gridScale);
+                Gui.drawRect(sx + S() - indS - 2, sy + S() - indS - 2, sx + S() - 2, sy + S() - 2, 0xFFFFDD44);
+            }
+
+            boolean hovered = mouseX >= sx && mouseX < sx + S() && mouseY >= sy && mouseY < sy + S();
+            if (hovered && !overDropdown) {
                 GlStateManager.enableBlend();
                 GlStateManager.disableDepth();
-                Gui.drawRect(sx, sy, sx + S, sy + S, 0x80FFFFFF);
+                Gui.drawRect(sx, sy, sx + S(), sy + S(), 0x80FFFFFF);
                 GlStateManager.enableDepth();
                 nowHovered = fam.familyId;
-                nowHovX = sx; nowHovY = sy;
+                nowHovX = sx;
+                nowHovY = sy;
                 if (!fam.hasDropdown()) tooltipItem = rep;
-                else                    tooltipFamily = fam;
+                else tooltipFamily = fam;
             }
         }
 
-        GL11.glDisable(GL11.GL_SCISSOR_TEST);
-
         if (nowHovered != null) {
-            dropdownFamilyId = nowHovered;
-            dropdownSlotX = nowHovX;
-            dropdownSlotY = nowHovY;
-        } else if (!isMouseOverDropdown(mouseX, mouseY)) {
-            dropdownFamilyId = null;
+            hoverFamilyId = nowHovered;
+            hoverSlotX = nowHovX;
+            hoverSlotY = nowHovY;
         }
 
         searchField.updateCursorCounter();
         SearchBar.drawStorageSearchBar(searchField);
 
         SkyblockItem dropdownTooltipItem = null;
-        if (dropdownFamilyId != null) {
-            ItemFamily dropFam = ItemRegistry.familyRegistry.get(dropdownFamilyId);
+        if (hoverFamilyId != null) {
+            ItemFamily dropFam = ItemRegistry.familyRegistry.get(hoverFamilyId);
             if (dropFam != null && dropFam.hasDropdown()) {
-                dropdownTooltipItem = drawDropdown(mc, dropFam, mouseX, mouseY);
+                dropdownTooltipItem = drawFamilyHover(mc, dropFam, mouseX, mouseY);
             }
         }
 
@@ -215,111 +295,152 @@ public class ItemPaneRenderer {
         } else if (tooltipFamily != null) {
             List<String> tip = new ArrayList<>();
             tip.add(tooltipFamily.displayName);
-            tip.add("§7" + tooltipFamily.members.size() + " variants – hover to expand");
+            tip.add("§7" + tooltipFamily.members.size() + " variants – click/hover to expand");
             TextRenderUtils.drawHoveringText(tip, mouseX, mouseY, mc.fontRendererObj);
         }
     }
 
-    private SkyblockItem drawDropdown(Minecraft mc, ItemFamily fam, int mouseX, int mouseY) {
+    private SkyblockItem drawFamilyHover(Minecraft mc, ItemFamily fam, int mouseX, int mouseY) {
         int members = fam.members.size();
-        int dropW   = members * (S + 2) + DROP_PAD * 2;
-        int dropH   = DROP_H;
+        int cols = Math.min(members, 5);
+        int dropRows = (int) Math.ceil((double) members / cols);
 
-        int dx = dropdownSlotX;
-        int dy = dropdownSlotY + S + 2;
-        if (dx + dropW > paneX + paneW) dx = paneX + paneW - dropW - 2;
-        if (dy + dropH > paneY + paneH) dy = dropdownSlotY - dropH - 2;
+        dropDw = cols * (S() + 2) + PAD * 2 - 2;
+        dropDh = dropRows * (S() + 2) + PAD * 2 - 2;
+
+        dropDx = hoverSlotX - PAD;
+        dropDy = hoverSlotY + S();
+
+        if (dropDx + dropDw > paneX + paneW) dropDx = paneX + paneW - dropDw - PAD;
+        if (dropDx < paneX) dropDx = paneX + PAD;
+        if (dropDy + dropDh > paneY + paneH) dropDy = hoverSlotY - dropDh;
+
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(0, 0, 300);
+
+        // Glow Border Outline around the entire popup!
+        Gui.drawRect(dropDx - 1, dropDy - 1, dropDx + dropDw + 1, dropDy, 0xFFFFAA00); // Top
+        Gui.drawRect(dropDx - 1, dropDy + dropDh, dropDx + dropDw + 1, dropDy + dropDh + 1, 0xFFFFAA00); // Bottom
+        Gui.drawRect(dropDx - 1, dropDy, dropDx, dropDy + dropDh, 0xFFFFAA00); // Left
+        Gui.drawRect(dropDx + dropDw, dropDy, dropDx + dropDw + 1, dropDy + dropDh, 0xFFFFAA00); // Right
 
         GlStateManager.color(1f, 1f, 1f, 1f);
-        NineSliceUtils.draw(GuiTextures.storageBackground(1), dx, dy, dropW, dropH, 6, 18);
+        NineSliceUtils.draw(GuiTextures.storageBackground(1), dropDx, dropDy, dropDw, dropDh, 6, 18);
 
         SkyblockItem hovered = null;
         for (int i = 0; i < members; i++) {
             SkyblockItem mem = fam.members.get(i);
-            int sx = dx + DROP_PAD + i * (S + 2);
-            int sy = dy + DROP_PAD;
+            int r = i / cols;
+            int c = i % cols;
+            int sx = dropDx + PAD + c * (S() + 2);
+            int sy = dropDy + PAD + r * (S() + 2);
 
-            mc.getTextureManager().bindTexture(GuiTextures.storageSlot(1));
-            Gui.drawModalRectWithCustomSizedTexture(sx, sy, 0, 0, S, S, S, S);
-            if (mem.getStack() != null)
-                ItemRenderUtils.drawItemStack(mem.getStack(), sx + 1, sy + 1);
+            NineSliceUtils.draw(GuiTextures.storageSlot(1), sx, sy, S(), S(), 6, 18);
 
-            String label = mem.familyMemberLabel != null ? mem.familyMemberLabel : "";
-            int lw = mc.fontRendererObj.getStringWidth(label);
-            mc.fontRendererObj.drawStringWithShadow(label, sx + (S - lw) / 2f, sy + S + 1, 0xCCCCCC);
+            if (mem.getStack() != null) {
+                GlStateManager.pushMatrix();
+                float itemScale = (S() - PAD) / 16.0f;
+                GlStateManager.translate(sx + PAD/2f, sy + PAD/2f, 0);
+                GlStateManager.scale(itemScale, itemScale, 1.0f);
+                ItemRenderUtils.drawItemStack(mem.getStack(), 0, 0);
+                GlStateManager.popMatrix();
+            }
 
-            boolean h = mouseX >= sx && mouseX < sx + S && mouseY >= sy && mouseY < sy + S;
+            boolean h = mouseX >= sx && mouseX < sx + S() && mouseY >= sy && mouseY < sy + S();
             if (h) {
                 GlStateManager.enableBlend();
                 GlStateManager.disableDepth();
-                Gui.drawRect(sx, sy, sx + S, sy + S, 0x80FFFFFF);
+                Gui.drawRect(sx, sy, sx + S(), sy + S(), 0x80FFFFFF);
                 GlStateManager.enableDepth();
                 hovered = mem;
             }
         }
+
+        GlStateManager.popMatrix();
         return hovered;
     }
 
-    private boolean isMouseOverDropdown(int mx, int my) {
-        if (dropdownFamilyId == null) return false;
-        ItemFamily fam = ItemRegistry.familyRegistry.get(dropdownFamilyId);
-        if (fam == null) return false;
-        int members = fam.members.size();
-        int dropW = members * (S + 2) + DROP_PAD * 2;
-        int dropH = DROP_H;
-        int dx = dropdownSlotX;
-        int dy = dropdownSlotY + S + 2;
-        if (dx + dropW > paneX + paneW) dx = paneX + paneW - dropW - 2;
-        if (dy + dropH > paneY + paneH) dy = dropdownSlotY - dropH - 2;
-        return mx >= dx && mx < dx + dropW && my >= dy && my < dy + dropH;
+    private void drawCenteredText(Minecraft mc, String text, int x, int y, int color) {
+        mc.fontRendererObj.drawStringWithShadow(text, x - mc.fontRendererObj.getStringWidth(text) / 2f, y, color);
     }
 
     @SubscribeEvent
     public void onMouse(GuiScreenEvent.MouseInputEvent.Pre event) {
         if (!(event.gui instanceof GuiContainer)) return;
-        if (!shouldShow()) return;
+        if (shouldntShow()) return;
 
         Minecraft mc = Minecraft.getMinecraft();
         int mouseX = Mouse.getEventX() * event.gui.width / mc.displayWidth;
         int mouseY = event.gui.height - Mouse.getEventY() * event.gui.height / mc.displayHeight - 1;
 
         int dw = Mouse.getEventDWheel();
-        if (dw != 0 && mouseX >= paneX && mouseX < paneX + paneW) {
+        if (dw != 0 && mouseX >= paneX && mouseX < paneX + paneW && mouseY >= paneY && mouseY < paneY + paneH) {
             if (dw > 0) currentPage = Math.max(0, currentPage - 1);
-            else        currentPage = Math.min(totalPages() - 1, currentPage + 1);
+            else currentPage = Math.min(totalPages() - 1, currentPage + 1);
+            event.setCanceled(true);
             return;
         }
 
         if (!Mouse.getEventButtonState() || Mouse.getEventButton() != 0) return;
 
-        int navY = paneY + PAD, btnW = 50;
-        int prevX = paneX + PAD, nextX = paneX + paneW - PAD - btnW;
-        if (mouseX >= prevX && mouseX < prevX + btnW && mouseY >= navY && mouseY < navY + NAV_H) {
-            currentPage = Math.max(0, currentPage - 1); event.setCanceled(true); return;
-        }
-        if (mouseX >= nextX && mouseX < nextX + btnW && mouseY >= navY && mouseY < navY + NAV_H) {
-            currentPage = Math.min(totalPages() - 1, currentPage + 1); event.setCanceled(true); return;
+        if (mouseX < paneX || mouseX >= paneX + paneW || mouseY < paneY || mouseY >= paneY + paneH) {
+            return;
         }
 
-        if (searchField != null && SearchBar.handleStorageMouseClick(searchField, mouseX, mouseY)) {
-            event.setCanceled(true); return;
+        int navY = paneY + PAD, navBtnW = 40;
+        int prevX = paneX + PAD, nextX = paneX + paneW - PAD - navBtnW;
+        if (mouseX >= prevX && mouseX < prevX + navBtnW && mouseY >= navY && mouseY < navY + NAV_H) {
+            currentPage = Math.max(0, currentPage - 1);
+            event.setCanceled(true);
+            return;
+        }
+        if (mouseX >= nextX && mouseX < nextX + navBtnW && mouseY >= navY && mouseY < navY + NAV_H) {
+            currentPage = Math.min(totalPages() - 1, currentPage + 1);
+            event.setCanceled(true);
+            return;
         }
 
-        if (dropdownFamilyId != null) {
-            ItemFamily fam = ItemRegistry.familyRegistry.get(dropdownFamilyId);
+        int sbY = paneH - SEARCH_H - PAD;
+        int filterY = sbY - PAD - FILTER_H;
+        int btnWidth = (paneW - (PAD * 3)) / 2;
+        int rarityX = paneX + PAD;
+        int typeX = rarityX + btnWidth + PAD;
+
+        if (mouseY >= filterY && mouseY < filterY + FILTER_H) {
+            if (mouseX >= rarityX && mouseX < rarityX + btnWidth) {
+                rarityFilterIdx = (rarityFilterIdx + 1) % RARITIES.length;
+                updateSearch(SearchBar.getStorageSearchText());
+                event.setCanceled(true);
+                return;
+            }
+            if (mouseX >= typeX && mouseX < typeX + btnWidth) {
+                typeFilterIdx = (typeFilterIdx + 1) % TYPES.length;
+                updateSearch(SearchBar.getStorageSearchText());
+                event.setCanceled(true);
+                return;
+            }
+        }
+
+        if (SearchBar.handleStorageMouseClick(searchField, mouseX, mouseY)) {
+            event.setCanceled(true);
+            return;
+        }
+
+        if (hoverFamilyId != null) {
+            ItemFamily fam = ItemRegistry.familyRegistry.get(hoverFamilyId);
             if (fam != null && fam.hasDropdown()) {
                 int members = fam.members.size();
-                int dropW   = members * (S + 2) + DROP_PAD * 2;
-                int dx      = dropdownSlotX;
-                int dy      = dropdownSlotY + S + 2;
-                if (dx + dropW > paneX + paneW) dx = paneX + paneW - dropW - 2;
-                if (dy + DROP_H > paneY + paneH) dy = dropdownSlotY - DROP_H - 2;
+                int cols = Math.min(members, 5);
 
                 for (int i = 0; i < members; i++) {
-                    int sx = dx + DROP_PAD + i * (S + 2), sy = dy + DROP_PAD;
-                    if (mouseX >= sx && mouseX < sx + S && mouseY >= sy && mouseY < sy + S) {
+                    int r = i / cols;
+                    int c = i % cols;
+                    int sx = dropDx + PAD + c * (S() + 2);
+                    int sy = dropDy + PAD + r * (S() + 2);
+                    if (mouseX >= sx && mouseX < sx + S() && mouseY >= sy && mouseY < sy + S()) {
                         mc.displayGuiScreen(new RecipeViewerGUI(fam.members.get(i)));
-                        event.setCanceled(true); return;
+                        event.setCanceled(true);
+                        return;
                     }
                 }
             }
@@ -330,12 +451,14 @@ public class ItemPaneRenderer {
             int idx = currentPage * itemsPerPage + i;
             if (idx >= filteredFamilies.size()) break;
             ItemFamily fam = filteredFamilies.get(idx);
-            int sx = gridX + (i % cols) * S, sy = gridY + (i / cols) * S;
-            if (mouseX >= sx && mouseX < sx + S && mouseY >= sy && mouseY < sy + S) {
+            int sx = gridX + (i % COLUMNS) * S(), sy = gridY + (i / COLUMNS) * S();
+
+            if (mouseX >= sx && mouseX < sx + S() && mouseY >= sy && mouseY < sy + S()) {
                 if (!fam.hasDropdown() && fam.representative() != null) {
                     mc.displayGuiScreen(new RecipeViewerGUI(fam.representative()));
                 }
-                event.setCanceled(true); return;
+                event.setCanceled(true);
+                return;
             }
         }
     }
@@ -343,9 +466,10 @@ public class ItemPaneRenderer {
     @SubscribeEvent
     public void onKey(GuiScreenEvent.KeyboardInputEvent.Pre event) {
         if (!(event.gui instanceof GuiContainer)) return;
-        if (!shouldShow()) return;
+        if (shouldntShow()) return;
         if (searchField == null || !searchField.isFocused()) return;
         if (!Keyboard.getEventKeyState()) return;
+
         char ch = Keyboard.getEventCharacter();
         int key = Keyboard.getEventKey();
         if (SearchBar.handleStorageKeyTyped(searchField, ch, key)) {

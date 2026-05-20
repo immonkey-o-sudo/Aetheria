@@ -27,6 +27,7 @@ public class SkyblockItem {
     public List<String> baseLore;
 
     public String rarity;
+    public int texColor = -1;
 
     public List<JsonObject> recipes;
     public List<String> info;
@@ -37,6 +38,12 @@ public class SkyblockItem {
     public transient ItemStack itemStack;
     public transient String familyId;
     public transient String familyMemberLabel;
+
+    // Filter and search cache tags
+    public transient String itemType = "";
+    public transient String itemRarity = "";
+    public transient String cleanNameLower = "";
+    public transient String idLower = "";
 
     public SkyblockItem clone() {
         SkyblockItem clone = new SkyblockItem();
@@ -49,6 +56,10 @@ public class SkyblockItem {
         clone.rarity = this.rarity;
         clone.enchanted = this.enchanted;
         clone.itemStack = this.itemStack;
+        clone.itemType = this.itemType;
+        clone.itemRarity = this.itemRarity;
+        clone.cleanNameLower = this.cleanNameLower;
+        clone.idLower = this.idLower;
         return clone;
     }
 
@@ -99,6 +110,10 @@ public class SkyblockItem {
             extra.setString("id", this.skyblockID);
         }
         tag.setTag("ExtraAttributes", extra);
+
+        if (this.enchanted) {
+            tag.setTag("ench", new NBTTagList());
+        }
 
         return this.itemStack;
     }

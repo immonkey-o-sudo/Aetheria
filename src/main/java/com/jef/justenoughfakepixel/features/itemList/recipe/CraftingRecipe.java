@@ -41,9 +41,14 @@ public class CraftingRecipe extends Recipe {
             if (recipeData.has(SLOTS[i])) {
                 String req = recipeData.get(SLOTS[i]).getAsString();
                 if (req != null && !req.isEmpty()) {
-                    SkyblockItem reqItem = RecipeUtils.resolve(req.split(":")[0]);
-                    if (reqItem != null && reqItem.getStack() != null)
+                    String[] parts = req.split(":");
+                    String amt = parts.length > 1 ? parts[1] : "1";
+                    SkyblockItem reqItem = RecipeUtils.resolve(parts[0]);
+
+                    if (reqItem != null && reqItem.getStack() != null) {
                         ItemRenderUtils.drawItemStack(reqItem.getStack(), sx + 1, sy + 1);
+                        RecipeUtils.drawAmount(fr, amt, sx, sy);
+                    }
                 }
             }
         }
@@ -75,11 +80,14 @@ public class CraftingRecipe extends Recipe {
             if (!recipeData.has(SLOTS[i])) continue;
             String req = recipeData.get(SLOTS[i]).getAsString();
             if (req == null || req.isEmpty()) continue;
-            SkyblockItem reqItem = RecipeUtils.resolve(req.split(":")[0]);
+            String[] parts = req.split(":");
+            String amt = parts.length > 1 ? parts[1] : "1";
+            SkyblockItem reqItem = RecipeUtils.resolve(parts[0]);
             if (reqItem == null) continue;
+
             int sx = gridStartX + (i % 3) * S, sy = gridStartY + (i / 3) * S;
             if (mouseX >= sx && mouseX < sx + S && mouseY >= sy && mouseY < sy + S)
-                return RecipeUtils.buildItemTooltip(reqItem);
+                return RecipeUtils.buildItemTooltipWithAmount(reqItem, amt);
         }
         int arrowX = gridStartX + 3 * S + 4;
         int resultX = arrowX + 12, resultY = gridStartY + S - 4;

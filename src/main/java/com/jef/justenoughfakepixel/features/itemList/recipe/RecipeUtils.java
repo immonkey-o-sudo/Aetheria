@@ -4,6 +4,8 @@ import com.jef.justenoughfakepixel.features.itemList.ItemRegistry;
 import com.jef.justenoughfakepixel.features.itemList.SkyblockItem;
 import com.jef.justenoughfakepixel.utils.render.NineSliceUtils;
 import com.jef.justenoughfakepixel.core.config.gui.GuiTextures;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.renderer.GlStateManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +16,16 @@ public final class RecipeUtils {
 
     public static void drawSlot(int x, int y, int size) {
         NineSliceUtils.draw(GuiTextures.storageSlot(1), x, y, size, size, 6, 18);
+    }
+
+    public static void drawAmount(FontRenderer fr, String amount, int sx, int sy) {
+        if (amount == null || amount.equals("1") || amount.isEmpty()) return;
+
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(0, 0, 300); // Render above the item stack
+        int strW = fr.getStringWidth(amount);
+        fr.drawStringWithShadow(amount, sx + 17 - strW, sy + 9, 0xFFFFFF);
+        GlStateManager.popMatrix();
     }
 
     public static List<String> buildItemTooltip(SkyblockItem item) {

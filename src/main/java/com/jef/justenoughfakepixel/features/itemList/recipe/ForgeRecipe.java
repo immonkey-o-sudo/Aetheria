@@ -74,11 +74,17 @@ public class ForgeRecipe extends Recipe {
 
         for (int i = 0; i < n; i++) {
             String[] parts = inputs.get(i).getAsString().split(":");
-            SkyblockItem reqItem = RecipeUtils.resolve(parts[0]);
+            String reqId = parts[0];
+            String amt = parts.length > 1 ? parts[1] : "1";
+
             int sx = slotX + i * (S + 2);
             RecipeUtils.drawSlot(sx, slotY, S);
-            if (reqItem != null && reqItem.getStack() != null)
+
+            SkyblockItem reqItem = RecipeUtils.resolve(reqId);
+            if (reqItem != null && reqItem.getStack() != null) {
                 ItemRenderUtils.drawItemStack(reqItem.getStack(), sx + 1, slotY + 1);
+                RecipeUtils.drawAmount(fr, amt, sx, slotY);
+            }
         }
 
         int arrowX = slotX + n * (S + 2) + 2;

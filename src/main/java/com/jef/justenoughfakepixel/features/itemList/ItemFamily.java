@@ -6,7 +6,9 @@ import java.util.List;
 public class ItemFamily {
 
     public final String familyId;
-    public final String displayName;
+    public String displayName;
+    public String cleanDisplayName;
+    public String cleanDisplayNameLower;
     public final FamilyType type;
     public final List<SkyblockItem> members = new ArrayList<>();
 
@@ -14,8 +16,14 @@ public class ItemFamily {
 
     public ItemFamily(String familyId, String displayName, FamilyType type) {
         this.familyId    = familyId;
-        this.displayName = displayName;
         this.type        = type;
+        updateDisplayName(displayName);
+    }
+
+    public void updateDisplayName(String newName) {
+        this.displayName = newName;
+        this.cleanDisplayName = newName != null ? newName.replaceAll("§.", "") : "";
+        this.cleanDisplayNameLower = this.cleanDisplayName.toLowerCase();
     }
 
     public SkyblockItem representative() {
