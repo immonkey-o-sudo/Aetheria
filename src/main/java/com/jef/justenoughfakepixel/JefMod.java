@@ -5,6 +5,7 @@ import com.jef.justenoughfakepixel.core.JefStorageManager;
 import com.jef.justenoughfakepixel.data.ApiHandler;
 import com.jef.justenoughfakepixel.features.capes.CapeManager;
 import com.jef.justenoughfakepixel.features.dungeons.caseopening.CitManager;
+import com.jef.justenoughfakepixel.features.itemList.ItemRegistry;
 import com.jef.justenoughfakepixel.features.misc.protect.ProtectedItemStorage;
 import com.jef.justenoughfakepixel.features.misc.invbuttons.SkyblockItemCache;
 import com.jef.justenoughfakepixel.features.misc.pet.PetCache;
@@ -51,6 +52,7 @@ public class JefMod {
         JefStorageManager.loadAll();
         JefStorageManager.startAutoSave();
         SkyblockItemCache.getInstance().loadAsync();
+        ItemRegistry.initialise();
 
         new CitManager();
         if (JefConfig.feature.misc.currentPet.showCurrentPet) PetCache.getInstance().warmupTextures();
