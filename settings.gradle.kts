@@ -26,4 +26,4 @@ plugins {
 }
 
 
-rootProject.name = "JustEnoughfakepixel"
+rootProject.name = "Aetheria"

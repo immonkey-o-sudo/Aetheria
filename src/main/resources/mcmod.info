@@ -1,15 +1,15 @@
 [
   {
     "modid": "${modid}",
-    "name": "JustEnoughFakepixel",
-    "description": "A Quality-Of-Life mod for Fakepixel Skyblock",
+    "name": "Aetheria",
+    "description": "A Quality-Of-Life mod for Fakepixel Skyblock, Formerly known as JEF.",
     "version": "${version}",
     "mcversion": "${mcversion}",
     "url": "https://github.com/JustEnoughFakepixel/JustEnoughFakepixel",
     "updateUrl": "",
     "authorList": ["hamlock"],
     "credits": "Internet Protocol, Whispering & Mxhooman.",
-    "logoFile": "assets/justenoughfakepixel/logo.png",
+    "logoFile": "assets/aetheria/logo.png",
     "screenshots": [],
     "dependencies": []
   }

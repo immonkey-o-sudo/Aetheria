@@ -1,7 +1,0 @@
-{
-  "package": "com.jef.justenoughfakepixel.mixins",
-  "plugin": "com.jef.justenoughfakepixel.init.AutoDiscoveryMixinPlugin",
-  "refmap": "mixins.${modid}.refmap.json",
-  "minVersion": "0.7",
-  "compatibilityLevel": "JAVA_8"
-}
