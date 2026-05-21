@@ -1,5 +1,6 @@
 package com.jef.justenoughfakepixel.features.itemList;
 
+import com.jef.justenoughfakepixel.JefMod;
 import com.jef.justenoughfakepixel.core.JefConfig;
 import com.jef.justenoughfakepixel.core.config.gui.GuiTextures;
 import com.jef.justenoughfakepixel.core.config.utils.TextRenderUtils;
@@ -12,7 +13,6 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.item.ItemStack;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.input.Keyboard;
@@ -57,15 +57,9 @@ public class ItemPaneRenderer {
     private int paneH;
     private int itemsPerPage;
 
-    public ItemPaneRenderer() {
-        if (ItemRegistry.isLoaded) {
-            updateSearch("");
-            wasLoaded = true;
-            gridScale = JefConfig.feature.overlays.itemListScale;
-        }
-    }
-
     private void updateSearch(String q) {
+        long searchStart = System.currentTimeMillis();
+
         String[] terms = q.toLowerCase().trim().split("\\s+");
         String currentRarity = RARITIES[rarityFilterIdx].toLowerCase();
         String currentType = TYPES[typeFilterIdx].toLowerCase();
@@ -109,6 +103,11 @@ public class ItemPaneRenderer {
 
         filteredFamilies.sort((f1, f2) -> f1.cleanDisplayName.compareToIgnoreCase(f2.cleanDisplayName));
         currentPage = 0;
+
+        long taken = System.currentTimeMillis() - searchStart;
+        if (taken > 50) {
+            JefMod.logger.info("[JEF-DEBUG] Search filter update took " + taken + "ms.");
+        }
     }
 
     private boolean shouldntShow() {
@@ -122,6 +121,9 @@ public class ItemPaneRenderer {
     }
 
     private void computeGeometry(int screenW, int screenH) {
+        if (JefConfig.feature != null) {
+            gridScale = JefConfig.feature.overlays.itemListScale;
+        }
         paneW = COLUMNS * S() + (PAD * 2);
         paneX = screenW - paneW;
         paneY = 0;
@@ -138,22 +140,13 @@ public class ItemPaneRenderer {
 
         Minecraft mc = Minecraft.getMinecraft();
 
-        // Main thread pre-loader (warms up texture cache smoothly to avoid spikes)
-        if (!ItemRegistry.preloadQueue.isEmpty()) {
-            long start = System.currentTimeMillis();
-            while (!ItemRegistry.preloadQueue.isEmpty() && System.currentTimeMillis() - start < 3) { // Use 3ms per frame max
-                ItemStack stack = ItemRegistry.preloadQueue.poll();
-                if (stack != null) {
-                    mc.getRenderItem().getItemModelMesher().getItemModel(stack);
-                }
-            }
-        }
-
         if (shouldntShow()) return;
 
         if (ItemRegistry.isLoaded && !wasLoaded) {
+            JefMod.logger.info("[JEF-DEBUG] ItemPaneRenderer detected isLoaded! Initializing search...");
             wasLoaded = true;
             updateSearch(lastSearchText);
+            gridScale = JefConfig.feature.overlays.itemListScale;
         }
 
         computeGeometry(event.gui.width, event.gui.height);
@@ -242,7 +235,7 @@ public class ItemPaneRenderer {
 
             if (rep != null && rep.getStack() != null) {
                 GlStateManager.pushMatrix();
-                float itemScale = (S() - PAD) / 16.0f; // Maintain dynamic scaling
+                float itemScale = (S() - PAD) / 16.0f;
                 GlStateManager.translate(sx + PAD/2f, sy + PAD/2f, 0);
                 GlStateManager.scale(itemScale, itemScale, 1.0f);
                 ItemRenderUtils.drawItemStack(rep.getStack(), 0, 0);
@@ -250,7 +243,6 @@ public class ItemPaneRenderer {
             }
 
             if (fam.hasDropdown()) {
-                // Subtle golden corner indicator for variants
                 int indS = (int)(4 * gridScale);
                 Gui.drawRect(sx + S() - indS - 2, sy + S() - indS - 2, sx + S() - 2, sy + S() - 2, 0xFFFFDD44);
             }
@@ -318,7 +310,6 @@ public class ItemPaneRenderer {
         GlStateManager.pushMatrix();
         GlStateManager.translate(0, 0, 300);
 
-        // Glow Border Outline around the entire popup!
         Gui.drawRect(dropDx - 1, dropDy - 1, dropDx + dropDw + 1, dropDy, 0xFFFFAA00); // Top
         Gui.drawRect(dropDx - 1, dropDy + dropDh, dropDx + dropDw + 1, dropDy + dropDh + 1, 0xFFFFAA00); // Bottom
         Gui.drawRect(dropDx - 1, dropDy, dropDx, dropDy + dropDh, 0xFFFFAA00); // Left

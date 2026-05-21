@@ -27,7 +27,7 @@ public class SkyblockItem {
     public List<String> baseLore;
 
     public String rarity;
-    public int texColor = -1;
+    public String color;
 
     public List<JsonObject> recipes;
     public List<String> info;
@@ -60,6 +60,7 @@ public class SkyblockItem {
         clone.itemRarity = this.itemRarity;
         clone.cleanNameLower = this.cleanNameLower;
         clone.idLower = this.idLower;
+        clone.color = this.color;
         return clone;
     }
 
@@ -113,6 +114,13 @@ public class SkyblockItem {
 
         if (this.enchanted) {
             tag.setTag("ench", new NBTTagList());
+        }
+
+        if (this.color != null && !this.color.isEmpty()) {
+            try {
+                int rgb = Integer.parseInt(this.color);
+                display.setInteger("color", rgb);
+            } catch (NumberFormatException ignored) {}
         }
 
         return this.itemStack;

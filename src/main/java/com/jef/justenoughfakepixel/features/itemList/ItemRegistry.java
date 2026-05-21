@@ -3,15 +3,22 @@ package com.jef.justenoughfakepixel.features.itemList;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.jef.justenoughfakepixel.JefMod;
+import com.jef.justenoughfakepixel.core.JefConfig;
 import com.jef.justenoughfakepixel.features.profile.data.ItemData;
 import net.minecraft.item.ItemStack;
 
-import java.io.InputStreamReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,7 +33,6 @@ public class ItemRegistry {
 
     private static final Gson GSON = new Gson();
 
-    // Expanded to catch up to XX just in case (e.g. Cleave XII)
     private static final Pattern LEVEL_SUFFIX = Pattern.compile("^(.+?)\\s+(I|II|III|IV|V|VI|VII|VIII|IX|X|XI|XII|XIII|XIV|XV|XVI|XVII|XVIII|XIX|XX|\\d+)$", Pattern.CASE_INSENSITIVE);
     private static final Pattern PET_RARITY   = Pattern.compile("^(.+);(\\d)$");
     private static final Pattern RUNE_RARITY  = Pattern.compile("^(.+_RUNE);(\\d)$");
@@ -38,68 +44,139 @@ public class ItemRegistry {
 
     public static void initialise() {
         new Thread(() -> {
+            long threadStart = System.currentTimeMillis();
+            JefMod.logger.info("[JEF-DEBUG] Initialization thread started.");
+
             try {
-                URL url = new URL("https://raw.githubusercontent.com/GinaFro1/FPItemData/main/items/itemData.json");
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestProperty("User-Agent", "JustEnoughFakepixel");
-                conn.setConnectTimeout(10000);
-                conn.setReadTimeout(10000);
+                File cacheDir = JefConfig.configDirectory;
+                if (cacheDir != null && !cacheDir.exists()) {
+                    cacheDir.mkdirs();
+                }
 
-                if (conn.getResponseCode() == 200) {
-                    try (InputStreamReader reader = new InputStreamReader(conn.getInputStream())) {
-                        Type type = new TypeToken<Map<String, SkyblockItem>>(){}.getType();
-                        Map<String, SkyblockItem> items = GSON.fromJson(reader, type);
+                File dataFile = new File(cacheDir, "itemData.json");
+                File versionFile = new File(cacheDir, "itemData_version.txt");
 
-                        if (items != null) {
-                            JefMod.logger.info("[JEF] Fetched " + items.size() + " items from JSON. Pre-loading stacks...");
+                String localVersion = "";
+                if (versionFile.exists() && dataFile.exists()) {
+                    localVersion = new String(Files.readAllBytes(versionFile.toPath())).trim();
+                }
 
-                            Map<String, SkyblockItem> tempItemRegistry = new HashMap<>();
+                boolean requiresDownload = true;
 
-                            int count = 0;
-                            for (Map.Entry<String, SkyblockItem> entry : items.entrySet()) {
-                                String id = entry.getKey();
-                                SkyblockItem item = entry.getValue();
+                try {
+                    JefMod.logger.info("[JEF-DEBUG] Checking GitHub for updates...");
+                    URL url = new URL("https://raw.githubusercontent.com/GinaFro1/FPItemData/main/items/itemData.json");
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestProperty("User-Agent", "JustEnoughFakepixel");
+                    conn.setConnectTimeout(5000);
+                    conn.setReadTimeout(15000);
 
-                                // Extract actual Enchantment names out of the lore
-                                if (item.displayName != null && stripColor(item.displayName).trim().equalsIgnoreCase("Enchanted Book") && item.baseLore != null && !item.baseLore.isEmpty()) {
-                                    String firstLore = item.baseLore.get(0);
-                                    if (firstLore.trim().length() > 2) {
-                                        item.displayName = firstLore.trim();
-                                    }
-                                }
+                    if (conn.getResponseCode() == 200) {
+                        // The ETag acts as the exact Git Blob SHA for raw GitHub files
+                        String remoteVersion = conn.getHeaderField("ETag");
+                        if (remoteVersion != null) remoteVersion = remoteVersion.replace("\"", "").trim();
 
-                                item.skyblockID = id;
-                                item.idLower = id.toLowerCase();
-                                item.cleanNameLower = item.displayName != null ? stripColor(item.displayName).trim().toLowerCase() : item.idLower;
+                        if (remoteVersion != null && remoteVersion.equals(localVersion) && dataFile.exists()) {
+                            JefMod.logger.info("[JEF-DEBUG] Local cache is up-to-date! Skipping 73s download.");
+                            requiresDownload = false;
+                        }
 
-                                tempItemRegistry.put(id, item);
+                        if (requiresDownload) {
+                            JefMod.logger.info("[JEF-DEBUG] Downloading fresh itemData.json...");
+                            long downloadStart = System.currentTimeMillis();
 
-                                try {
-                                    ItemStack stack = item.getStack(); // Pre-load NBT
-                                    if (stack != null) preloadQueue.add(stack); // Queue texture preloader
-                                    parseLoreMeta(item); // Extract type/rarity filters
-                                } catch (Exception ex) {
-                                    JefMod.logger.severe("[JEF] Failed to pre-load stack for " + id + ": " + ex.getMessage());
-                                }
-                                count++;
-                                if (count % 1000 == 0) {
-                                    JefMod.logger.info("[JEF] Pre-loaded " + count + " items...");
+                            try (InputStream in = conn.getInputStream();
+                                 FileOutputStream out = new FileOutputStream(dataFile)) {
+                                byte[] buffer = new byte[8192];
+                                int bytesRead;
+                                while ((bytesRead = in.read(buffer)) != -1) {
+                                    out.write(buffer, 0, bytesRead);
                                 }
                             }
-                            itemRegistry = tempItemRegistry; // Atomic swap
-                            JefMod.logger.info("[JEF] Loaded " + itemRegistry.size() + " items total.");
 
-                            JefMod.logger.info("[JEF] Building item families...");
-                            buildFamilies();
-                        } else {
-                            JefMod.logger.severe("[JEF] itemData.json parsed to null!");
+                            if (remoteVersion != null) {
+                                Files.write(versionFile.toPath(), remoteVersion.getBytes());
+                            }
+                            JefMod.logger.info("[JEF-DEBUG] Download and cache save complete in " + (System.currentTimeMillis() - downloadStart) + "ms.");
                         }
+                    } else {
+                        JefMod.logger.warning("[JEF-DEBUG] Non-200 response from GitHub: " + conn.getResponseCode());
+                    }
+                } catch (Exception networkEx) {
+                    JefMod.logger.warning("[JEF-DEBUG] Network fetch failed! Attempting to fallback to local cache...");
+                    if (!dataFile.exists()) {
+                        throw new RuntimeException("No local cache available and network fetch failed.");
+                    }
+                }
+
+                if (dataFile.exists()) {
+                    JefMod.logger.info("[JEF-DEBUG] Beginning GSON parsing from local cache...");
+                    long parseStart = System.currentTimeMillis();
+                    Type type = new TypeToken<Map<String, SkyblockItem>>(){}.getType();
+                    Map<String, SkyblockItem> items;
+
+                    try (FileReader reader = new FileReader(dataFile)) {
+                        items = GSON.fromJson(reader, type);
+                    }
+                    JefMod.logger.info("[JEF-DEBUG] Actual GSON parse took " + (System.currentTimeMillis() - parseStart) + "ms.");
+
+                    if (items != null) {
+                        JefMod.logger.info("[JEF-DEBUG] Fetched " + items.size() + " items. Starting Multi-Threaded Processing...");
+                        long loopStart = System.currentTimeMillis();
+
+                        Map<String, SkyblockItem> tempItemRegistry = new ConcurrentHashMap<>();
+                        AtomicInteger count = new AtomicInteger(0);
+
+                        items.entrySet().parallelStream().forEach(entry -> {
+                            String id = entry.getKey();
+                            SkyblockItem item = entry.getValue();
+
+                            if (item.displayName != null && stripColor(item.displayName).trim().equalsIgnoreCase("Enchanted Book") && item.baseLore != null && !item.baseLore.isEmpty()) {
+                                String firstLore = item.baseLore.get(0);
+                                if (firstLore.trim().length() > 2) {
+                                    item.displayName = firstLore.trim();
+                                }
+                            }
+
+                            item.skyblockID = id;
+                            item.idLower = id.toLowerCase();
+                            item.cleanNameLower = item.displayName != null ? stripColor(item.displayName).trim().toLowerCase() : item.idLower;
+
+                            tempItemRegistry.put(id, item);
+
+                            try {
+                                item.getStack();
+                                parseLoreMeta(item);
+                            } catch (Exception ex) {
+                                JefMod.logger.severe("[JEF-DEBUG] Failed to pre-load stack for " + id + ": " + ex.getMessage());
+                            }
+
+                            int currentCount = count.incrementAndGet();
+                            if (currentCount % 2000 == 0) {
+                                JefMod.logger.info("[JEF-DEBUG] Processed " + currentCount + " items...");
+                            }
+                        });
+
+                        JefMod.logger.info("[JEF-DEBUG] Parallel processing finished in " + (System.currentTimeMillis() - loopStart) + "ms.");
+
+                        itemRegistry = tempItemRegistry;
+                        JefMod.logger.info("[JEF-DEBUG] Loaded " + itemRegistry.size() + " items total.");
+
+                        JefMod.logger.info("[JEF-DEBUG] Building item families...");
+                        long familyStart = System.currentTimeMillis();
+                        buildFamilies();
+                        JefMod.logger.info("[JEF-DEBUG] Families built in " + (System.currentTimeMillis() - familyStart) + "ms.");
+
+                        JefMod.logger.info("[JEF-DEBUG] --- TOTAL INITIALIZATION TIME: " + (System.currentTimeMillis() - threadStart) + "ms ---");
+                    } else {
+                        JefMod.logger.severe("[JEF-DEBUG] Local JSON parsed to null!");
                     }
                 } else {
-                    JefMod.logger.severe("[JEF] Failed to load items. HTTP: " + conn.getResponseCode());
+                    JefMod.logger.severe("[JEF-DEBUG] No local data file found and download failed.");
                 }
+
             } catch (Exception e) {
-                JefMod.logger.severe("[JEF] Exception loading items in background thread:");
+                JefMod.logger.severe("[JEF-DEBUG] Exception loading items: " + e.getClass().getSimpleName() + " - " + e.getMessage());
                 e.printStackTrace();
             }
         }, "JEF-ItemRegistry-Loader").start();
@@ -191,7 +268,6 @@ public class ItemRegistry {
             pending.put(famKey, fam);
         }
 
-        // Second pass: Apply highest rarity colors and correct Enchantment names
         for (ItemFamily fam : pending.values()) {
             if (fam.members.isEmpty()) continue;
 
@@ -202,7 +278,6 @@ public class ItemRegistry {
                 String baseName = toTitleCase(highest.skyblockID.replace("ENCHANTMENT_", "").replaceAll("_\\d+$", ""));
                 if (highest.displayName != null && highest.displayName.trim().length() >= 2 && highest.displayName.trim().charAt(0) == '§') {
                     color = highest.displayName.trim().substring(0, 2);
-                    // Accurately separate trailing roman numerals by splitting words
                     baseName = stripRomanNumeral(stripColor(highest.displayName));
                 }
                 fam.updateDisplayName(color + baseName);
@@ -217,14 +292,11 @@ public class ItemRegistry {
             }
         }
 
-        familyRegistry = pending; // Atomic swap
-        isLoaded = true; // Signal the UI that loading is finished
+        familyRegistry = pending;
+        isLoaded = true;
         JefMod.logger.info("[JEF] Built " + familyRegistry.size() + " item families. Initialization Complete!");
     }
 
-    /**
-     * Splits a string by spaces and explicitly removes the last word if it matches a Roman Numeral or digit.
-     */
     private static String stripRomanNumeral(String name) {
         if (name == null || name.trim().isEmpty()) return name;
         String clean = name.trim();

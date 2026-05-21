@@ -9,6 +9,7 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 
+@RegisterCommand
 public class ProfileViewCommand extends SimpleCommand {
     @Override
     public String getName() {

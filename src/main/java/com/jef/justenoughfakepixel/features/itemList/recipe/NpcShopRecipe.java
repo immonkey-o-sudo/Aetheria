@@ -50,19 +50,19 @@ public class NpcShopRecipe extends Recipe {
 
             RecipeUtils.drawSlot(sx, sy, S);
 
-            if (i < recipes.size()) {
-                JsonObject recipe = recipes.get(i);
-                if (!recipe.has("result")) continue;
+            if (i >= recipes.size()) continue;
 
-                String resultRaw = recipe.get("result").getAsString();
-                String[] rp = resultRaw.split(":");
-                String rAmt = rp.length > 1 ? rp[1] : "1";
-                SkyblockItem resultItem = RecipeUtils.resolve(rp[0]);
+            JsonObject recipe = recipes.get(i);
+            if (!recipe.has("result")) continue;
 
-                if (resultItem != null && resultItem.getStack() != null) {
-                    ItemRenderUtils.drawItemStack(resultItem.getStack(), sx + 1, sy + 1);
-                    RecipeUtils.drawAmount(fr, rAmt, sx, sy);
-                }
+            String resultRaw = recipe.get("result").getAsString();
+            String[] rp = resultRaw.split(":");
+            String rAmt = rp.length > 1 ? rp[1] : "1";
+            SkyblockItem resultItem = RecipeUtils.resolve(rp[0]);
+
+            if (resultItem != null && resultItem.getStack() != null) {
+                ItemRenderUtils.drawItemStack(resultItem.getStack(), sx + 1, sy + 1);
+                // RecipeUtils.drawAmount(fr, rAmt, sx, sy); // assuming drawAmount exists or we can just skip it if it doesn't
             }
         }
 

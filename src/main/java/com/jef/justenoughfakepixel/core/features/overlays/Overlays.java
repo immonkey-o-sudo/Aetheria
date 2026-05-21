@@ -11,7 +11,7 @@ public class Overlays {
 
     @Expose
     @ConfigAnnotations.ConfigOption(name = "Item List GUI Scale", desc = "Configure the grid scale of the item list")
-    @ConfigAnnotations.ConfigEditorSliderAnnotation(minValue = 0.75f,maxValue = 2f,minStep = 0.1f)
+    @ConfigAnnotations.ConfigEditorSliderAnnotation(minValue = 0.5f,maxValue = 2f,minStep = 0.1f)
     public float itemListScale = 1f;
 
 }
