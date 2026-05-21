@@ -10,8 +10,7 @@ public class Overlays {
     public ProfileViewerConfig profileViewer = new ProfileViewerConfig();
 
     @Expose
-    @ConfigAnnotations.ConfigOption(name = "Item List GUI Scale", desc = "Configure the grid scale of the item list")
-    @ConfigAnnotations.ConfigEditorSliderAnnotation(minValue = 0.5f,maxValue = 2f,minStep = 0.1f)
-    public float itemListScale = 1f;
+    @ConfigAnnotations.Category(name = "Item List", desc = "Settings for the Item List Overlay")
+    public ItemListConfig itemList = new ItemListConfig();
 
 }

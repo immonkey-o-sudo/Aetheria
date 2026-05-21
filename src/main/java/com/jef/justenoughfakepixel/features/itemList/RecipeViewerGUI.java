@@ -64,6 +64,19 @@ public class RecipeViewerGUI extends GuiScreen {
 
     @Override
     protected void mouseClicked(int mx, int my, int btn) throws IOException {
+        computeBox();
+        int contentX = boxX;
+        int contentY = boxY + HEADER_H;
+        int contentH = boxH - HEADER_H - NAV_H;
+
+        // Give the recipe priority to consume the click (for things like NPC Shop pages)
+        if (!recipes.isEmpty()) {
+            if (recipes.get(recipeIndex).mouseClicked(mx, my, btn, contentX, contentY, boxW, contentH, scrollY)) {
+                return;
+            }
+        }
+
+        // Global Recipe Nav Arrows
         if (recipes.size() <= 1) return;
         int arrowY = boxY + boxH - NAV_H;
         if (my >= arrowY && my <= arrowY + NAV_H) {
@@ -95,20 +108,19 @@ public class RecipeViewerGUI extends GuiScreen {
         int cx = boxX + boxW / 2;
 
         if (recipes.isEmpty()) {
-            // No recipe – just show icon + name + lore
             ItemStack stack = item.getStack();
             String nameStr = item.displayName != null ? item.displayName : "";
             int nameW = fontRendererObj.getStringWidth(nameStr);
             int rowW = (stack != null ? 18 + 4 : 0) + nameW;
             int rowX = cx - rowW / 2;
             int rowY = boxY + 12;
-            
+
             if (stack != null) {
                 ItemRenderUtils.drawItemStack(stack, rowX, rowY - 4);
                 rowX += 22;
             }
             fontRendererObj.drawStringWithShadow(nameStr, rowX, rowY, 0xFFFFFF);
-            
+
             if (item.baseLore != null) {
                 int ly = boxY + 32;
                 for (int i = 0; i < Math.min(item.baseLore.size(), 8); i++) {
@@ -119,31 +131,28 @@ public class RecipeViewerGUI extends GuiScreen {
         } else {
             Recipe current = recipes.get(recipeIndex);
 
-            // Single row: [TypeLabel] [Icon] [Item Name]
             String typeLabel = current.typeLabel();
             String nameStr  = item.displayName != null ? item.displayName : "";
             ItemStack stack = item.getStack();
-            
+
             int typeW = fontRendererObj.getStringWidth(typeLabel);
             int nameW = fontRendererObj.getStringWidth(nameStr);
             int iconW = stack != null ? 18 : 0;
-            
-            // Layout: type (gap 4) icon (gap 4) name
+
             int totalW = typeW + (iconW > 0 ? 4 + iconW : 0) + 4 + nameW;
             int startX = cx - totalW / 2;
             int currentX = startX;
             int textY = boxY + 12;
-            
+
             fontRendererObj.drawStringWithShadow(typeLabel, currentX, textY, current.typeLabelColor());
             currentX += typeW + 4;
-            
+
             if (stack != null) {
                 ItemRenderUtils.drawItemStack(stack, currentX, textY - 4);
                 currentX += 18 + 4;
             }
             fontRendererObj.drawStringWithShadow(nameStr, currentX, textY, 0xFFFFFF);
 
-            // content area (below header, above nav bar)
             int contentX = boxX;
             int contentY = boxY + HEADER_H;
             int contentH = boxH - HEADER_H - NAV_H;

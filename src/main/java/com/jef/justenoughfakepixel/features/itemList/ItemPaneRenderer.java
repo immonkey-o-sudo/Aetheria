@@ -1,6 +1,5 @@
 package com.jef.justenoughfakepixel.features.itemList;
 
-import com.jef.justenoughfakepixel.JefMod;
 import com.jef.justenoughfakepixel.core.JefConfig;
 import com.jef.justenoughfakepixel.core.config.gui.GuiTextures;
 import com.jef.justenoughfakepixel.core.config.utils.TextRenderUtils;
@@ -13,6 +12,7 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.input.Keyboard;
@@ -25,21 +25,21 @@ import java.util.stream.Collectors;
 @RegisterEvents
 public class ItemPaneRenderer {
 
-    public static float gridScale = 1.0f;
-
     private static final int COLUMNS = 8;
     private static final int PAD     = 4;
     private static final int NAV_H   = 22;
-    private static final int SEARCH_H= 20;
     private static final int FILTER_H= 20;
 
-    private int S() { return Math.max(16, (int)(24 * gridScale)); }
+    private float getScale() {
+        return JefConfig.feature != null ? JefConfig.feature.overlays.itemList.itemListScale : 1.0f;
+    }
+
+    private int S() { return Math.max(16, (int)(24 * getScale())); }
 
     private List<ItemFamily> filteredFamilies = new ArrayList<>();
     private GuiTextField searchField;
     private String lastSearchText = "";
     private int currentPage = 0;
-
     private boolean wasLoaded = false;
 
     private String hoverFamilyId = null;
@@ -51,15 +51,9 @@ public class ItemPaneRenderer {
     private static final String[] TYPES = {"Any Type", "Sword", "Bow", "Armor", "Helmet", "Chestplate", "Leggings", "Boots", "Accessory", "Pet", "Pickaxe", "Drill"};
     private int typeFilterIdx = 0;
 
-    private int paneX;
-    private int paneY;
-    private int paneW;
-    private int paneH;
-    private int itemsPerPage;
+    private int paneX, paneY, paneW, paneH, itemsPerPage;
 
     private void updateSearch(String q) {
-        long searchStart = System.currentTimeMillis();
-
         String[] terms = q.toLowerCase().trim().split("\\s+");
         String currentRarity = RARITIES[rarityFilterIdx].toLowerCase();
         String currentType = TYPES[typeFilterIdx].toLowerCase();
@@ -72,13 +66,11 @@ public class ItemPaneRenderer {
                                         (i.rarity != null && i.rarity.toLowerCase().contains(currentRarity)));
                         if (!matchRarity) return false;
                     }
-
                     if (!currentType.equals("any type")) {
                         boolean matchType = fam.members.stream().anyMatch(i ->
                                 i.itemType != null && i.itemType.toLowerCase().contains(currentType));
                         if (!matchType) return false;
                     }
-
                     if (q.trim().isEmpty()) return true;
                     for (String term : terms) {
                         if (term.isEmpty()) continue;
@@ -103,11 +95,6 @@ public class ItemPaneRenderer {
 
         filteredFamilies.sort((f1, f2) -> f1.cleanDisplayName.compareToIgnoreCase(f2.cleanDisplayName));
         currentPage = 0;
-
-        long taken = System.currentTimeMillis() - searchStart;
-        if (taken > 50) {
-            JefMod.logger.info("[JEF-DEBUG] Search filter update took " + taken + "ms.");
-        }
     }
 
     private boolean shouldntShow() {
@@ -121,32 +108,42 @@ public class ItemPaneRenderer {
     }
 
     private void computeGeometry(int screenW, int screenH) {
-        if (JefConfig.feature != null) {
-            gridScale = JefConfig.feature.overlays.itemListScale;
-        }
         paneW = COLUMNS * S() + (PAD * 2);
         paneX = screenW - paneW;
         paneY = 0;
         paneH = screenH;
 
-        int gridH = paneH - NAV_H - FILTER_H - SEARCH_H - (PAD * 4);
-        int rows = Math.max(1, gridH / S());
+        boolean useGlobalSearch = JefConfig.feature != null && JefConfig.feature.overlays.itemList.searchItemList;
+        int searchH = useGlobalSearch ? 0 : 20;
+        int searchPad = useGlobalSearch ? 0 : PAD;
+
+        int sbY = paneH - searchH - PAD;
+        int filterY = sbY - FILTER_H - searchPad;
+
+        int gridStartY = paneY + PAD + NAV_H + PAD;
+        int gridMaxH = (filterY - PAD) - gridStartY;
+
+        int rows = Math.max(1, gridMaxH / S());
         itemsPerPage = COLUMNS * rows;
     }
 
     @SubscribeEvent
     public void onDraw(GuiScreenEvent.DrawScreenEvent.Post event) {
         if (!(event.gui instanceof GuiContainer)) return;
-
         Minecraft mc = Minecraft.getMinecraft();
 
-        if (shouldntShow()) return;
+        if (!ItemRegistry.preloadQueue.isEmpty()) {
+            long start = System.currentTimeMillis();
+            while (!ItemRegistry.preloadQueue.isEmpty() && System.currentTimeMillis() - start < 3) {
+                ItemStack stack = ItemRegistry.preloadQueue.poll();
+                if (stack != null) mc.getRenderItem().getItemModelMesher().getItemModel(stack);
+            }
+        }
 
+        if (shouldntShow()) return;
         if (ItemRegistry.isLoaded && !wasLoaded) {
-            JefMod.logger.info("[JEF-DEBUG] ItemPaneRenderer detected isLoaded! Initializing search...");
             wasLoaded = true;
             updateSearch(lastSearchText);
-            gridScale = JefConfig.feature.overlays.itemListScale;
         }
 
         computeGeometry(event.gui.width, event.gui.height);
@@ -154,22 +151,30 @@ public class ItemPaneRenderer {
 
         int mouseX = event.mouseX, mouseY = event.mouseY;
 
-        int sbY = paneH - SEARCH_H - PAD;
-        if (searchField == null) {
-            searchField = SearchBar.createStorageSearchBar(paneX + PAD, sbY, paneW - PAD * 2);
-        } else {
-            searchField.xPosition = paneX + PAD;
-            searchField.yPosition = sbY;
-            searchField.width = paneW - PAD * 2;
+        boolean useGlobalSearch = JefConfig.feature != null && JefConfig.feature.overlays.itemList.searchItemList;
+
+        if (!useGlobalSearch) {
+            int sbY = paneH - 20 - PAD;
+            if (searchField == null) {
+                searchField = SearchBar.createStorageSearchBar(paneX + PAD, sbY, paneW - PAD * 2);
+            } else {
+                searchField.xPosition = paneX + PAD;
+                searchField.yPosition = sbY;
+                searchField.width = paneW - PAD * 2;
+            }
         }
 
-        String cur = SearchBar.getStorageSearchText();
+        String cur = useGlobalSearch ? SearchBar.getSearchText() : SearchBar.getStorageSearchText();
+        if (cur == null) cur = "";
+
         if (!cur.equals(lastSearchText)) {
             lastSearchText = cur;
             updateSearch(cur);
         }
 
-        int filterY = sbY - PAD - FILTER_H;
+        int searchH = useGlobalSearch ? 0 : 20;
+        int searchPad = useGlobalSearch ? 0 : PAD;
+        int filterY = paneH - searchH - PAD - FILTER_H - searchPad;
         int btnWidth = (paneW - (PAD * 3)) / 2;
 
         int rarityX = paneX + PAD;
@@ -243,7 +248,7 @@ public class ItemPaneRenderer {
             }
 
             if (fam.hasDropdown()) {
-                int indS = (int)(4 * gridScale);
+                int indS = (int)(4 * getScale());
                 Gui.drawRect(sx + S() - indS - 2, sy + S() - indS - 2, sx + S() - 2, sy + S() - 2, 0xFFFFDD44);
             }
 
@@ -267,8 +272,10 @@ public class ItemPaneRenderer {
             hoverSlotY = nowHovY;
         }
 
-        searchField.updateCursorCounter();
-        SearchBar.drawStorageSearchBar(searchField);
+        if (!useGlobalSearch && searchField != null) {
+            searchField.updateCursorCounter();
+            SearchBar.drawStorageSearchBar(searchField);
+        }
 
         SkyblockItem dropdownTooltipItem = null;
         if (hoverFamilyId != null) {
@@ -310,10 +317,10 @@ public class ItemPaneRenderer {
         GlStateManager.pushMatrix();
         GlStateManager.translate(0, 0, 300);
 
-        Gui.drawRect(dropDx - 1, dropDy - 1, dropDx + dropDw + 1, dropDy, 0xFFFFAA00); // Top
-        Gui.drawRect(dropDx - 1, dropDy + dropDh, dropDx + dropDw + 1, dropDy + dropDh + 1, 0xFFFFAA00); // Bottom
-        Gui.drawRect(dropDx - 1, dropDy, dropDx, dropDy + dropDh, 0xFFFFAA00); // Left
-        Gui.drawRect(dropDx + dropDw, dropDy, dropDx + dropDw + 1, dropDy + dropDh, 0xFFFFAA00); // Right
+        Gui.drawRect(dropDx - 1, dropDy - 1, dropDx + dropDw + 1, dropDy, 0xFFFFAA00);
+        Gui.drawRect(dropDx - 1, dropDy + dropDh, dropDx + dropDw + 1, dropDy + dropDh + 1, 0xFFFFAA00);
+        Gui.drawRect(dropDx - 1, dropDy, dropDx, dropDy + dropDh, 0xFFFFAA00);
+        Gui.drawRect(dropDx + dropDw, dropDy, dropDx + dropDw + 1, dropDy + dropDh, 0xFFFFAA00);
 
         GlStateManager.color(1f, 1f, 1f, 1f);
         NineSliceUtils.draw(GuiTextures.storageBackground(1), dropDx, dropDy, dropDw, dropDh, 6, 18);
@@ -391,8 +398,11 @@ public class ItemPaneRenderer {
             return;
         }
 
-        int sbY = paneH - SEARCH_H - PAD;
-        int filterY = sbY - PAD - FILTER_H;
+        boolean useGlobalSearch = JefConfig.feature != null && JefConfig.feature.overlays.itemList.searchItemList;
+        int searchH = useGlobalSearch ? 0 : 20;
+        int searchPad = useGlobalSearch ? 0 : PAD;
+
+        int filterY = paneH - searchH - PAD - FILTER_H - searchPad;
         int btnWidth = (paneW - (PAD * 3)) / 2;
         int rarityX = paneX + PAD;
         int typeX = rarityX + btnWidth + PAD;
@@ -400,19 +410,19 @@ public class ItemPaneRenderer {
         if (mouseY >= filterY && mouseY < filterY + FILTER_H) {
             if (mouseX >= rarityX && mouseX < rarityX + btnWidth) {
                 rarityFilterIdx = (rarityFilterIdx + 1) % RARITIES.length;
-                updateSearch(SearchBar.getStorageSearchText());
+                updateSearch(useGlobalSearch ? SearchBar.getSearchText() : SearchBar.getStorageSearchText());
                 event.setCanceled(true);
                 return;
             }
             if (mouseX >= typeX && mouseX < typeX + btnWidth) {
                 typeFilterIdx = (typeFilterIdx + 1) % TYPES.length;
-                updateSearch(SearchBar.getStorageSearchText());
+                updateSearch(useGlobalSearch ? SearchBar.getSearchText() : SearchBar.getStorageSearchText());
                 event.setCanceled(true);
                 return;
             }
         }
 
-        if (SearchBar.handleStorageMouseClick(searchField, mouseX, mouseY)) {
+        if (!useGlobalSearch && SearchBar.handleStorageMouseClick(searchField, mouseX, mouseY)) {
             event.setCanceled(true);
             return;
         }
@@ -458,14 +468,16 @@ public class ItemPaneRenderer {
     public void onKey(GuiScreenEvent.KeyboardInputEvent.Pre event) {
         if (!(event.gui instanceof GuiContainer)) return;
         if (shouldntShow()) return;
-        if (searchField == null || !searchField.isFocused()) return;
-        if (!Keyboard.getEventKeyState()) return;
 
-        char ch = Keyboard.getEventCharacter();
-        int key = Keyboard.getEventKey();
-        if (SearchBar.handleStorageKeyTyped(searchField, ch, key)) {
-            updateSearch(SearchBar.getStorageSearchText());
-            event.setCanceled(true);
+        boolean useGlobalSearch = JefConfig.feature != null && JefConfig.feature.overlays.itemList.searchItemList;
+
+        if (!useGlobalSearch && searchField != null && searchField.isFocused() && Keyboard.getEventKeyState()) {
+            char ch = Keyboard.getEventCharacter();
+            int key = Keyboard.getEventKey();
+            if (SearchBar.handleStorageKeyTyped(searchField, ch, key)) {
+                updateSearch(SearchBar.getStorageSearchText());
+                event.setCanceled(true);
+            }
         }
     }
 }

@@ -18,6 +18,10 @@ public abstract class Recipe {
     public abstract List<String> getTooltip(int mouseX, int mouseY, int x, int y,
                                             int width, int height, int scrollY);
 
+    public boolean mouseClicked(int mouseX, int mouseY, int mouseButton, int x, int y, int width, int height, int scrollY) {
+        return false;
+    }
+
     public int[] preferredSize() { return new int[]{220, 100}; }
 
     public String typeLabel()      { return "Recipe"; }
