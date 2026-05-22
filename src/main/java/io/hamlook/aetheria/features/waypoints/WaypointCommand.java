@@ -461,31 +461,41 @@ public class WaypointCommand extends SimpleCommand {
         }
     }
 
-    private void renumberNumericNames(WaypointGroup g, int fromOneBasedIndex) {
-        for (int i = fromOneBasedIndex; i < g.waypoints.size(); i++) {
-            WaypointPoint ATHRW= g.waypoints.get(i);
+    private void renumberNumericNames(WaypointGroup group, int fromOneBasedIndex) {
+        for (int i = fromOneBasedIndex; i < group.waypoints.size(); i++) {
+            WaypointPoint waypoint = group.waypoints.get(i);
+
             try {
-                if (Integer.parseInt(JW.name) == i) JW.name = String.valueOf(i + 1);
+                if (Integer.parseInt(waypoint.name) == i) {
+                    waypoint.name = String.valueOf(i + 1);
+                }
             } catch (NumberFormatException ignored) {
             }
         }
     }
 
-    private String exportSoopy(WaypointGroup g) {
+    private String exportSoopy(WaypointGroup group) {
         List<Map<String, Object>> list = new ArrayList<>();
-        for (WaypointPoint ATHRW: g.waypoints) {
-            Map<String, Object> m = new LinkedHashMap<>();
-            m.put("x", JW.x);
-            m.put("y", JW.y);
-            m.put("z", JW.z);
-            m.put("r", 0);
-            m.put("g", 1);
-            m.put("b", 0);
-            Map<String, Object> opts = new LinkedHashMap<>();
-            opts.put("name", JW.name != null ? JW.name : "");
-            m.put("options", opts);
-            list.add(m);
+
+        for (WaypointPoint waypoint : group.waypoints) {
+            Map<String, Object> map = new LinkedHashMap<>();
+
+            map.put("x", waypoint.x);
+            map.put("y", waypoint.y);
+            map.put("z", waypoint.z);
+
+            map.put("r", 0);
+            map.put("g", 1);
+            map.put("b", 0);
+
+            Map<String, Object> options = new LinkedHashMap<>();
+            options.put("name", waypoint.name != null ? waypoint.name : "");
+
+            map.put("options", options);
+
+            list.add(map);
         }
+
         return GSON.toJson(list);
     }
 
