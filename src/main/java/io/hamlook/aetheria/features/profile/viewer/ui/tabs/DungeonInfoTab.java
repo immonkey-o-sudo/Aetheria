@@ -12,7 +12,7 @@ import net.minecraft.client.Minecraft;
 public class DungeonInfoTab extends Tab {
 
     public DungeonInfoTab() {
-        super(2, "Dungeons");
+        super(3, "Dungeons");
     }
 
     @Override

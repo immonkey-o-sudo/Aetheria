@@ -23,11 +23,10 @@ import java.util.regex.Pattern;
 
 public class ItemRegistry {
 
-    public static volatile Map<String, SkyblockItem> itemRegistry = new HashMap<>();
+    private static volatile Map<String, SkyblockItem> itemRegistry = new HashMap<>();
     public static volatile Map<String, ItemFamily> familyRegistry = new LinkedHashMap<>();
     public static volatile boolean isLoaded = false;
 
-    // Background Queue to warm up the texture cache without lagging the main thread
     public static Queue<ItemStack> preloadQueue = new ConcurrentLinkedQueue<>();
 
     private static final Gson GSON = new Gson();
@@ -41,6 +40,15 @@ public class ItemRegistry {
             "§fCommon", "§aUncommon", "§9Rare", "§5Epic", "§6Legendary", "§dMythic", "§bDivine", "§4Special"
     };
 
+    public static SkyblockItem getItem(String id) {
+        if (id == null) return null;
+        return itemRegistry.get(ItemResolver.resolveId(id, null));
+    }
+
+    public static SkyblockItem getItem(String id, String displayName) {
+        if (id == null) return null;
+        return itemRegistry.get(ItemResolver.resolveId(id, displayName));
+    }
     public static void initialise() {
         new Thread(() -> {
             long threadStart = System.currentTimeMillis();
@@ -64,14 +72,13 @@ public class ItemRegistry {
 
                 try {
                     Aetheria.logger.info("[ATHR-DEBUG] Checking GitHub for updates...");
-                    URL url = new URL("https://raw.githubusercontent.com/GinaFro1/FPItemData/main/items/itemData.json");
+                    URL url = new URL("https://raw.githubusercontent.com/JustEnoughFakepixel/JustEnoughFakepixel-REPO/refs/heads/main/itemData/itemData.json");
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     conn.setRequestProperty("User-Agent", "JustEnoughFakepixel");
                     conn.setConnectTimeout(5000);
                     conn.setReadTimeout(15000);
 
                     if (conn.getResponseCode() == 200) {
-                        // The ETag acts as the exact Git Blob SHA for raw GitHub files
                         String remoteVersion = conn.getHeaderField("ETag");
                         if (remoteVersion != null) remoteVersion = remoteVersion.replace("\"", "").trim();
 
@@ -374,7 +381,9 @@ public class ItemRegistry {
         }
     }
 
-    public static SkyblockItem getWithItemData(SkyblockItem base, ItemData data) {
+    public static SkyblockItem getWithItemData(ItemData data) {
+        if (data == null || data.skyblockID == null) return null;
+        SkyblockItem base = getItem(data.skyblockID, data.displayName);
         if (base == null) return null;
         SkyblockItem item = base.clone();
         if (data.lore != null && !data.lore.isEmpty()) item.baseLore = data.lore;

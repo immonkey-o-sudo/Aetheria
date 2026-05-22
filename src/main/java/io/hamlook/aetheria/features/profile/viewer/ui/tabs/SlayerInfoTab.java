@@ -17,7 +17,7 @@ import org.lwjgl.opengl.GL11;
 public class SlayerInfoTab extends Tab {
 
     public SlayerInfoTab() {
-        super(3, "Slayers");
+        super(4, "Slayers");
     }
 
     @Override

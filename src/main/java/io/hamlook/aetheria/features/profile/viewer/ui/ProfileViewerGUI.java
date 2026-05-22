@@ -10,6 +10,8 @@ import io.hamlook.aetheria.features.profile.viewer.ui.modules.PlayerModule;
 import io.hamlook.aetheria.features.profile.viewer.ui.modules.PVSearchBar;
 import io.hamlook.aetheria.features.profile.viewer.ui.tabs.*;
 import io.hamlook.aetheria.utils.render.NineSliceUtils;
+import io.hamlook.aetheria.core.ATHRConfig;
+import io.hamlook.aetheria.utils.render.ResolutionUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiButton;
@@ -57,6 +59,9 @@ public class ProfileViewerGUI extends GuiScreen {
     private boolean isTabDropdownOpen = false;
     private int tabDropX, tabDropY, tabDropW, tabDropH, tabItemHeight;
 
+    private List<String> tooltipToDraw = null;
+    private int tooltipX, tooltipY;
+
     // Buttons & Inputs
     public PVButton profileButton;
     public PVButton tabButton;
@@ -64,7 +69,7 @@ public class ProfileViewerGUI extends GuiScreen {
 
     public ProfileViewerGUI(String username) {
         this.username = username;
-//        uiScale = ATHRConfig.feature.overlays.profileViewer.pvScale * ResolutionUtils.getXStatic(1);
+        uiScale = ATHRConfig.feature.overlays.pvScale * ResolutionUtils.getXStatic(1);
         ProfileViewerAPI.fetchPlayerListAsync();
 
         new Thread(() -> {
@@ -113,12 +118,16 @@ public class ProfileViewerGUI extends GuiScreen {
         isDropdownOpen = false;
         isTabDropdownOpen = false;
         CONTAINER_BG = GuiTextures.storageBackground(1);
-//        uiScale = ATHRConfig.feature.overlays.profileViewer.pvScale * ResolutionUtils.getXStatic(1);
+        uiScale = ATHRConfig.feature.overlays.pvScale * ResolutionUtils.getXStatic(1);
         addTab(new BasicInfoTab());
+        addTab(new InventoryStorageInfoTab());
         addTab(new SkillInfoTab());
         addTab(new DungeonInfoTab());
         addTab(new SlayerInfoTab());
         addTab(new CollectionInfoTab());
+        addTab(new ExtraWearableInfoTab());
+        addTab(new HOTMInfoTab());
+        addTab(new BagsInfoTab());
     }
 
     @Override
@@ -128,7 +137,9 @@ public class ProfileViewerGUI extends GuiScreen {
     }
 
     public void drawTooltip(List<String> textLines, int x, int y) {
-        TextRenderUtils.drawHoveringText(textLines, x, y,fontRendererObj);
+        this.tooltipToDraw = textLines;
+        this.tooltipX = x;
+        this.tooltipY = y;
     }
 
     @Override
@@ -215,8 +226,9 @@ public class ProfileViewerGUI extends GuiScreen {
 
             float contentY = lineY + getScaledF(8);
             int contentH = (boxY + boxH) - (int)contentY - getScaled(12);
-            tabs.get(tab).draw(rightBoxX, contentY, boxW, contentH, activeProfileData, mc);
+            
             updateAndDrawSearchBar(rightBoxX + boxW, boxY, mouseX, mouseY);
+            tabs.get(tab).draw(rightBoxX, contentY, boxW, contentH, activeProfileData, mc);
         }
 
         super.drawScreen(mouseX, mouseY, partialTicks);
@@ -226,6 +238,14 @@ public class ProfileViewerGUI extends GuiScreen {
         }
         if (isTabDropdownOpen) {
             drawTabDropdown(mouseX, mouseY);
+        }
+
+        if (tooltipToDraw != null) {
+            net.minecraft.client.renderer.GlStateManager.pushMatrix();
+            net.minecraft.client.renderer.GlStateManager.translate(0, 0, 500);
+            TextRenderUtils.drawHoveringText(tooltipToDraw, tooltipX, tooltipY, fontRendererObj);
+            net.minecraft.client.renderer.GlStateManager.popMatrix();
+            tooltipToDraw = null;
         }
     }
 
@@ -255,6 +275,9 @@ public class ProfileViewerGUI extends GuiScreen {
         dropH = itemHeight * numProfiles;
         dropY = profileButton.yPosition + profileButton.height;
 
+        net.minecraft.client.renderer.GlStateManager.pushMatrix();
+        net.minecraft.client.renderer.GlStateManager.translate(0, 0, 300);
+
         NineSliceUtils.draw(CONTAINER_BG, dropX, dropY, dropW, dropH, 6, 18);
 
         for (int i = 0; i < numProfiles; i++) {
@@ -275,6 +298,8 @@ public class ProfileViewerGUI extends GuiScreen {
             String displayPrefix = (i == profileIndex) ? "§a> §f" : "§7";
             TextRenderUtils.drawCenteredStringScaleAware(displayPrefix + pName, centerX, centerY, (uiScale * 1.8f), false);
         }
+        
+        net.minecraft.client.renderer.GlStateManager.popMatrix();
     }
 
     private void drawTabDropdown(int mouseX, int mouseY) {
@@ -285,6 +310,9 @@ public class ProfileViewerGUI extends GuiScreen {
         tabDropW = tabButton.width;
         tabDropH = tabItemHeight * numTabs;
         tabDropY = tabButton.yPosition + tabButton.height;
+
+        net.minecraft.client.renderer.GlStateManager.pushMatrix();
+        net.minecraft.client.renderer.GlStateManager.translate(0, 0, 300);
 
         NineSliceUtils.draw(CONTAINER_BG, tabDropX, tabDropY, tabDropW, tabDropH, 6, 18);
 
@@ -308,6 +336,8 @@ public class ProfileViewerGUI extends GuiScreen {
             String displayPrefix = (t.tabIndex == tab) ? "§a> §f" : "§7";
             TextRenderUtils.drawCenteredStringScaleAware(displayPrefix + t.name, centerX, centerY, (uiScale * 1.8f), false);
         }
+        
+        net.minecraft.client.renderer.GlStateManager.popMatrix();
     }
 
     @Override
@@ -373,6 +403,10 @@ public class ProfileViewerGUI extends GuiScreen {
                         mouseY >= tabButton.yPosition && mouseY <= tabButton.yPosition + tabButton.height)) {
                     isTabDropdownOpen = false;
                 }
+            }
+            
+            if (tabs.containsKey(tab) && !isDropdownOpen && !isTabDropdownOpen) {
+                tabs.get(tab).mouseClicked(mouseX, mouseY, mouseButton);
             }
         }
         super.mouseClicked(mouseX, mouseY, mouseButton);

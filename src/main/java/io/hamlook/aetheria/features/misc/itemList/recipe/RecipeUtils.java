@@ -81,6 +81,6 @@ public final class RecipeUtils {
     }
 
     public static SkyblockItem resolve(String id) {
-        return ItemRegistry.itemRegistry.get(id);
+        return ItemRegistry.getItem(id);
     }
 }

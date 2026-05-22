@@ -39,7 +39,7 @@ public class CollectionInfoTab extends Tab {
     private float dropX, dropY, dropW, dropH, itemHeight;
 
     public CollectionInfoTab() {
-        super(4, "Collections");
+        super(5, "Collections");
     }
 
     @Override

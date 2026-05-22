@@ -19,7 +19,7 @@ import org.lwjgl.opengl.GL11;
 public class SkillInfoTab extends Tab {
 
     public SkillInfoTab() {
-        super(1, "Skills");
+        super(2, "Skills");
     }
 
     @Override
