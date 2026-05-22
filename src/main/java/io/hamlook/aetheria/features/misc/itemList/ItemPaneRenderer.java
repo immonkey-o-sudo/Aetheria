@@ -149,7 +149,7 @@ public class ItemPaneRenderer {
         }
 
         if (shouldntShow()) return;
-        if (ItemRegistry.isLoaded && !wasLoaded && ATHRConfig.feature.misc.itemList.enabled) {
+        if (ItemRegistry.isLoaded && !wasLoaded) {
             wasLoaded = true;
             updateSearch(lastSearchText);
         }
