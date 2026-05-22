@@ -4,17 +4,20 @@ import io.hamlook.aetheria.core.ATHRConfig;
 import io.hamlook.aetheria.command.SimpleCommand;
 import io.hamlook.aetheria.init.RegisterCommand;
 import net.minecraft.command.ICommandSender;
+import java.util.Arrays;
+import java.util.List;
 
 @RegisterCommand
-public class ATHRButtonsCommand extends SimpleCommand {
+public class InvButtonsCommand extends SimpleCommand {
     @Override
-    public String getName() {
-        return "ATHRbuttons";
-    }
+    public String getName() { return "athrbuttons"; }
+
+    @Override
+    public List<String> getAliases() { return Arrays.asList("aetheriabuttons", "jefbuttons", "asmbuttons"); }
 
     @Override
     public String getUsage() {
-        return "/ATHRbuttons";
+        return "/athrbuttons";
     }
 
     @Override

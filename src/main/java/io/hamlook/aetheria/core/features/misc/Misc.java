@@ -87,7 +87,7 @@ public class Misc {
     public int dvdSize = 80;
 
     @Expose
-    @Category(name = "Timer", desc = "Countdown timer overlay & /ATHRtimer command")
+    @Category(name = "Timer", desc = "Countdown timer overlay & /athrtimercommand")
     public UptimeConfig uptimeConfig = new UptimeConfig();
 
     @Expose

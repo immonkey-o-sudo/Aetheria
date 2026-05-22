@@ -18,7 +18,7 @@ import java.util.Collections;
 import java.util.List;
 
 @RegisterCommand
-public class ATHRDebugCommand extends SimpleCommand {
+public class DebugCommand extends SimpleCommand {
 
     private static final String PREFIX = EnumChatFormatting.GRAY + "[ATHR Debug] " + EnumChatFormatting.RESET;
 
@@ -73,9 +73,7 @@ public class ATHRDebugCommand extends SimpleCommand {
             String formatted = footer.getFormattedText();
             String stripped = StringUtils.stripControlCodes(formatted);
 
-            String sb = "=== TAB FOOTER ===\n" +
-                    "[RAW]\n" + formatted + "\n" +
-                    "[STRIPPED]\n" + stripped + "\n";
+            String sb = "=== TAB FOOTER ===\n" + "[RAW]\n" + formatted + "\n" + "[STRIPPED]\n" + stripped + "\n";
 
             GuiScreen.setClipboardString(sb);
             sender.addChatMessage(new ChatComponentText(PREFIX + EnumChatFormatting.GREEN + "Copied tab footer to clipboard."));
@@ -87,23 +85,23 @@ public class ATHRDebugCommand extends SimpleCommand {
 
     @Override
     public String getName() {
-        return "ATHRdebug";
+        return "athrdebug";
     }
 
     @Override
     public String getUsage() {
-        return "/ATHRdebug <tablist|tabfooter>";
+        return "/athrdebug <tablist|tabfooter>";
     }
 
     @Override
     public List<String> getAliases() {
-        return Collections.singletonList("jdebug");
+        return Arrays.asList("aetheriadebug", "jdebug", "asmdebug");
     }
 
     @Override
     public void execute(ICommandSender sender, String[] args) {
         if (args.length == 0) {
-            sender.addChatMessage(new ChatComponentText(PREFIX + EnumChatFormatting.YELLOW + "Usage: /ATHRdebug <tablist|tabfooter>"));
+            sender.addChatMessage(new ChatComponentText(PREFIX + EnumChatFormatting.YELLOW + "Usage: /athrdebug<tablist|tabfooter>"));
             return;
         }
 
@@ -121,7 +119,7 @@ public class ATHRDebugCommand extends SimpleCommand {
 
     @Override
     @SuppressWarnings("unchecked")
-    public List addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
+    public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
         if (args.length == 1) return Arrays.asList("tablist", "tabfooter");
         return Collections.emptyList();
     }

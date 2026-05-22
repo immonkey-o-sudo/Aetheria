@@ -3,8 +3,8 @@ package io.hamlook.aetheria.features.waypoints;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import io.hamlook.aetheria.core.ATHRConfig;
 import io.hamlook.aetheria.command.SimpleCommand;
+import io.hamlook.aetheria.core.ATHRConfig;
 import io.hamlook.aetheria.init.RegisterCommand;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
@@ -21,7 +21,7 @@ import java.util.*;
 @RegisterCommand
 public class WaypointCommand extends SimpleCommand {
 
-    public static final String PREFIX = "§3[JW]§b ";
+    public static final String PREFIX = "§3[ATHRW]§b ";
 
     private static final Minecraft mc = Minecraft.getMinecraft();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -31,6 +31,11 @@ public class WaypointCommand extends SimpleCommand {
     @Override
     public String getName() {
         return "jw";
+    }
+
+    @Override
+    public List<String> getAliases() {
+        return Arrays.asList("athrw", "asmw");
     }
 
     @Override
@@ -330,7 +335,7 @@ public class WaypointCommand extends SimpleCommand {
                     data(sender, "Advance delay", state.advanceDelayMs + "ms");
                     return;
                 }
-                long t = parseLongSafe(args[1], -1);
+                long t = parseLongSafe(args[1]);
                 if (t <= 0) {
                     error(sender, "Invalid delay");
                     return;
@@ -576,11 +581,11 @@ public class WaypointCommand extends SimpleCommand {
         }
     }
 
-    private long parseLongSafe(String s, long d) {
+    private long parseLongSafe(String s) {
         try {
             return Long.parseLong(s);
         } catch (Exception e) {
-            return d;
+            return -1;
         }
     }
 
@@ -595,8 +600,7 @@ public class WaypointCommand extends SimpleCommand {
 
 
     @Override
-    @SuppressWarnings("unchecked")
-    public List addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
+    public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
         if (args.length == 1) return getListOfStringsMatchingLastWord(args, SUBCOMMANDS);
         if (args.length == 2) {
             String sub = args[0].toLowerCase();

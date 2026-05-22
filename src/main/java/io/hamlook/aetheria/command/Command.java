@@ -35,7 +35,6 @@ public class Command extends SimpleCommand {
                     ATHRConfig.openCategory(StringUtils.join(args, " "));
                     break;
             }
-            return;
         } else {
             ATHRConfig.openOptionsGui();
         }

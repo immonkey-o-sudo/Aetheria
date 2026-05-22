@@ -7,6 +7,9 @@ import io.hamlook.aetheria.utils.chat.ChatUtils;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.EnumChatFormatting;
 
+import java.util.Arrays;
+import java.util.List;
+
 @RegisterCommand
 public class CalcCommand extends SimpleCommand {
 
@@ -14,28 +17,33 @@ public class CalcCommand extends SimpleCommand {
 
     @Override
     public String getName() {
-        return "ATHRcalc";
+        return "athrcalc";
+    }
+
+    @Override
+    public List<String> getAliases() {
+        return Arrays.asList("aetheriacalc", "jefcalc", "asmcalc", "calc");
     }
 
     @Override
     public String getUsage() {
-        return "/ATHRcalc <expression>";
+        return "/athrcalc <expression>";
     }
 
     @Override
     public void execute(ICommandSender sender, String[] args) {
         if (args.length == 0) {
-            ChatUtils.sendMessage(PREFIX + EnumChatFormatting.RED + "Usage: /ATHRcalc <expression>");
+            ChatUtils.sendMessage(PREFIX + EnumChatFormatting.RED + "Usage: /athrcalc <expression>");
             ChatUtils.sendMessage(PREFIX + EnumChatFormatting.GRAY + "Basic Examples:");
-            ChatUtils.sendMessage(PREFIX + EnumChatFormatting.GRAY + "  /ATHRcalc 2 + 2");
-            ChatUtils.sendMessage(PREFIX + EnumChatFormatting.GRAY + "  /ATHRcalc 100k * 5");
-            ChatUtils.sendMessage(PREFIX + EnumChatFormatting.GRAY + "  /ATHRcalc (10 + 5) * 2");
-            ChatUtils.sendMessage(PREFIX + EnumChatFormatting.GRAY + "  /ATHRcalc 2^10");
+            ChatUtils.sendMessage(PREFIX + EnumChatFormatting.GRAY + "  /athrcalc 2 + 2");
+            ChatUtils.sendMessage(PREFIX + EnumChatFormatting.GRAY + "  /athrcalc 100k * 5");
+            ChatUtils.sendMessage(PREFIX + EnumChatFormatting.GRAY + "  /athrcalc (10 + 5) * 2");
+            ChatUtils.sendMessage(PREFIX + EnumChatFormatting.GRAY + "  /athrcalc 2^10");
             ChatUtils.sendMessage(PREFIX + EnumChatFormatting.GRAY + "Advanced Examples:");
-            ChatUtils.sendMessage(PREFIX + EnumChatFormatting.GRAY + "  /ATHRcalc sin(pi/2)");
-            ChatUtils.sendMessage(PREFIX + EnumChatFormatting.GRAY + "  /ATHRcalc sqrt(16)");
-            ChatUtils.sendMessage(PREFIX + EnumChatFormatting.GRAY + "  /ATHRcalc log(100)");
-            ChatUtils.sendMessage(PREFIX + EnumChatFormatting.GRAY + "  /ATHRcalc max(5, 10)");
+            ChatUtils.sendMessage(PREFIX + EnumChatFormatting.GRAY + "  /athrcalc sin(pi/2)");
+            ChatUtils.sendMessage(PREFIX + EnumChatFormatting.GRAY + "  /athrcalc sqrt(16)");
+            ChatUtils.sendMessage(PREFIX + EnumChatFormatting.GRAY + "  /athrcalc log(100)");
+            ChatUtils.sendMessage(PREFIX + EnumChatFormatting.GRAY + "  /athrcalc max(5, 10)");
             ChatUtils.sendMessage(PREFIX + EnumChatFormatting.GRAY + "Multipliers: k, m, b, t (numbers), s (stack/64)");
             ChatUtils.sendMessage(PREFIX + EnumChatFormatting.GRAY + "Functions: sin, cos, tan, sqrt, log, ln, abs, ceil, floor, pow, max, min");
             ChatUtils.sendMessage(PREFIX + EnumChatFormatting.GRAY + "Constants: pi, e");
@@ -56,7 +64,7 @@ public class CalcCommand extends SimpleCommand {
         } catch (Exception e) {
             String msg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
             ChatUtils.sendMessage(PREFIX + EnumChatFormatting.RED + "Error: " + msg);
-            e.printStackTrace(); // Debug: print to console
+            e.printStackTrace();
         }
     }
 }
