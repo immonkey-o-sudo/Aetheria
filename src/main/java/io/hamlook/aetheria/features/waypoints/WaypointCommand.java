@@ -3,8 +3,8 @@ package io.hamlook.aetheria.features.waypoints;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import io.hamlook.aetheria.core.ATHRConfig;
 import io.hamlook.aetheria.command.SimpleCommand;
+import io.hamlook.aetheria.core.ATHRConfig;
 import io.hamlook.aetheria.init.RegisterCommand;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
@@ -21,7 +21,7 @@ import java.util.*;
 @RegisterCommand
 public class WaypointCommand extends SimpleCommand {
 
-    public static final String PREFIX = "§3[JW]§b ";
+    public static final String PREFIX = "§3[ATHRW]§b ";
 
     private static final Minecraft mc = Minecraft.getMinecraft();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -34,8 +34,13 @@ public class WaypointCommand extends SimpleCommand {
     }
 
     @Override
+    public List<String> getAliases() {
+        return Arrays.asList("athrw", "waypoints", "asmw");
+    }
+
+    @Override
     public String getUsage() {
-        return "/jw <subcommand>";
+        return "/athrw <subcommand>";
     }
 
     // execute
@@ -56,7 +61,7 @@ public class WaypointCommand extends SimpleCommand {
 
             case "load": {
                 if (args.length < 2) {
-                    error(sender, "Usage: /jw load <group>");
+                    error(sender, "Usage: /athrw load <group>");
                     return;
                 }
                 WaypointGroup g = storage.getGroup(args[1]);
@@ -103,7 +108,7 @@ public class WaypointCommand extends SimpleCommand {
                     return;
                 }
                 if (args.length < 2) {
-                    error(sender, "Usage: /jw skipto <number>");
+                    error(sender, "Usage: /athrw skipto <number>");
                     return;
                 }
                 int n = parseIntSafe(args[1], -1);
@@ -133,7 +138,7 @@ public class WaypointCommand extends SimpleCommand {
 
             case "create": {
                 if (args.length < 2) {
-                    error(sender, "Usage: /jw create <n> [description]");
+                    error(sender, "Usage: /athrw create <n> [description]");
                     return;
                 }
                 String name = args[1].toLowerCase();
@@ -149,7 +154,7 @@ public class WaypointCommand extends SimpleCommand {
 
             case "delete": {
                 if (args.length < 2) {
-                    error(sender, "Usage: /jw delete <group>");
+                    error(sender, "Usage: /athrw delete <group>");
                     return;
                 }
                 String name = args[1].toLowerCase();
@@ -163,7 +168,7 @@ public class WaypointCommand extends SimpleCommand {
 
             case "rename": {
                 if (args.length < 3) {
-                    error(sender, "Usage: /jw rename <old> <new>");
+                    error(sender, "Usage: /athrw rename <old> <new>");
                     return;
                 }
                 String oldName = args[1].toLowerCase(), newName = args[2].toLowerCase();
@@ -187,10 +192,10 @@ public class WaypointCommand extends SimpleCommand {
             case "add": {
                 WaypointGroup target = state.loadedGroup;
                 if (target == null) {
-                    error(sender, "No group loaded. Use /jw load <n> first");
+                    error(sender, "No group loaded. Use /athrw load <n> first");
                     return;
                 }
-                // detect: /jw add x y z [name]  vs  /jw add [name]
+                // detect: /athrw add x y z [name]  vs  /athrw add [name]
                 if (args.length >= 4 && isDouble(args[1]) && isDouble(args[2]) && isDouble(args[3])) {
                     double x = parseDoubleSafe(args[1], 0);
                     double y = parseDoubleSafe(args[2], 0);
@@ -212,7 +217,7 @@ public class WaypointCommand extends SimpleCommand {
                     return;
                 }
                 if (args.length < 2) {
-                    error(sender, "Usage: /jw insert <index> [name]");
+                    error(sender, "Usage: /athrw insert <index> [name]");
                     return;
                 }
                 int idx = parseIntSafe(args[1], -1);
@@ -236,7 +241,7 @@ public class WaypointCommand extends SimpleCommand {
                     return;
                 }
                 if (args.length < 2) {
-                    error(sender, "Usage: /jw remove <index>");
+                    error(sender, "Usage: /athrw remove <index>");
                     return;
                 }
                 int idx = parseIntSafe(args[1], -1);
@@ -255,7 +260,7 @@ public class WaypointCommand extends SimpleCommand {
 
             case "export": {
                 if (args.length < 2) {
-                    error(sender, "Usage: /jw export <group>");
+                    error(sender, "Usage: /athrw export <group>");
                     return;
                 }
                 WaypointGroup g = storage.getGroup(args[1]);
@@ -270,7 +275,7 @@ public class WaypointCommand extends SimpleCommand {
 
             case "import": {
                 if (args.length < 2) {
-                    error(sender, "Usage: /jw import <groupname>");
+                    error(sender, "Usage: /athrw import <groupname>");
                     return;
                 }
                 String name = args[1].toLowerCase();
@@ -330,7 +335,7 @@ public class WaypointCommand extends SimpleCommand {
                     data(sender, "Advance delay", state.advanceDelayMs + "ms");
                     return;
                 }
-                long t = parseLongSafe(args[1], -1);
+                long t = parseLongSafe(args[1]);
                 if (t <= 0) {
                     error(sender, "Invalid delay");
                     return;
@@ -371,31 +376,31 @@ public class WaypointCommand extends SimpleCommand {
             case "guide": {
                 blank(sender);
                 header(sender, "Waypoints Guide");
-                line(sender, "/jw list", "Show all waypoint groups");
-                line(sender, "/jw create <n>", "Create a new group");
-                line(sender, "/jw delete <n>", "Delete a group");
-                line(sender, "/jw rename <old> <new>", "Rename a group");
-                line(sender, "/jw load <n>", "Load a group");
-                line(sender, "/jw add [name]", "Add waypoint at your position");
-                line(sender, "/jw insert <index>", "Insert waypoint at index");
-                line(sender, "/jw remove <index>", "Remove waypoint");
-                line(sender, "/jw skip [n]", "Skip forward");
-                line(sender, "/jw unskip [n]", "Go backward");
-                line(sender, "/jw skipto <n>", "Jump to waypoint");
-                line(sender, "/jw reset", "Reset to first waypoint");
-                line(sender, "/jw setup", "Toggle setup mode");
-                line(sender, "/jw enable / disable", "Toggle rendering");
-                line(sender, "/jw export <n>", "Copy group to clipboard");
-                line(sender, "/jw import <n>", "Import from clipboard");
-                line(sender, "/jw range <blocks>", "Set auto-advance range");
-                line(sender, "/jw time <ms>", "Set auto-advance delay");
-                line(sender, "/jw manage", "Open group manager GUI");
+                line(sender, "/athrw list", "Show all waypoint groups");
+                line(sender, "/athrw create <n>", "Create a new group");
+                line(sender, "/athrw delete <n>", "Delete a group");
+                line(sender, "/athrw rename <old> <new>", "Rename a group");
+                line(sender, "/athrw load <n>", "Load a group");
+                line(sender, "/athrw add [name]", "Add waypoint at your position");
+                line(sender, "/athrw insert <index>", "Insert waypoint at index");
+                line(sender, "/athrw remove <index>", "Remove waypoint");
+                line(sender, "/athrw skip [n]", "Skip forward");
+                line(sender, "/athrw unskip [n]", "Go backward");
+                line(sender, "/athrw skipto <n>", "Jump to waypoint");
+                line(sender, "/athrw reset", "Reset to first waypoint");
+                line(sender, "/athrw setup", "Toggle setup mode");
+                line(sender, "/athrw enable / disable", "Toggle rendering");
+                line(sender, "/athrw export <n>", "Copy group to clipboard");
+                line(sender, "/athrw import <n>", "Import from clipboard");
+                line(sender, "/athrw range <blocks>", "Set auto-advance range");
+                line(sender, "/athrw time <ms>", "Set auto-advance delay");
+                line(sender, "/athrw manage", "Open group manager GUI");
                 blank(sender);
                 break;
             }
 
             default:
-                error(sender, "Unknown subcommand '&e" + args[0] + "&c'. Try &e/jw guide &cfor help.");
+                error(sender, "Unknown subcommand '&e" + args[0] + "&c'. Try &e/athrw guide &cfor help.");
         }
     }
 
@@ -419,15 +424,15 @@ public class WaypointCommand extends SimpleCommand {
             root.appendSibling(name);
 
             ChatComponentText load = new ChatComponentText(" " + EnumChatFormatting.YELLOW + EnumChatFormatting.BOLD + "[LOAD]");
-            load.getChatStyle().setChatClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/jw load " + g.name)).setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ChatComponentText("Load " + g.name)));
+            load.getChatStyle().setChatClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/athrw load " + g.name)).setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ChatComponentText("Load " + g.name)));
             root.appendSibling(load);
 
             ChatComponentText export = new ChatComponentText(" " + EnumChatFormatting.GOLD + EnumChatFormatting.BOLD + "[EXPORT]");
-            export.getChatStyle().setChatClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/jw export " + g.name)).setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ChatComponentText("Copy to clipboard")));
+            export.getChatStyle().setChatClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/athrw export " + g.name)).setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ChatComponentText("Copy to clipboard")));
             root.appendSibling(export);
 
             ChatComponentText del = new ChatComponentText(" " + EnumChatFormatting.RED + EnumChatFormatting.BOLD + "[DEL]");
-            del.getChatStyle().setChatClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/jw delete " + g.name)).setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ChatComponentText("Delete " + g.name)));
+            del.getChatStyle().setChatClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/athrw delete " + g.name)).setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ChatComponentText("Delete " + g.name)));
             root.appendSibling(del);
 
             sender.addChatMessage(root);
@@ -456,31 +461,41 @@ public class WaypointCommand extends SimpleCommand {
         }
     }
 
-    private void renumberNumericNames(WaypointGroup g, int fromOneBasedIndex) {
-        for (int i = fromOneBasedIndex; i < g.waypoints.size(); i++) {
-            WaypointPoint JW = g.waypoints.get(i);
+    private void renumberNumericNames(WaypointGroup group, int fromOneBasedIndex) {
+        for (int i = fromOneBasedIndex; i < group.waypoints.size(); i++) {
+            WaypointPoint waypoint = group.waypoints.get(i);
+
             try {
-                if (Integer.parseInt(JW.name) == i) JW.name = String.valueOf(i + 1);
+                if (Integer.parseInt(waypoint.name) == i) {
+                    waypoint.name = String.valueOf(i + 1);
+                }
             } catch (NumberFormatException ignored) {
             }
         }
     }
 
-    private String exportSoopy(WaypointGroup g) {
+    private String exportSoopy(WaypointGroup group) {
         List<Map<String, Object>> list = new ArrayList<>();
-        for (WaypointPoint JW : g.waypoints) {
-            Map<String, Object> m = new LinkedHashMap<>();
-            m.put("x", JW.x);
-            m.put("y", JW.y);
-            m.put("z", JW.z);
-            m.put("r", 0);
-            m.put("g", 1);
-            m.put("b", 0);
-            Map<String, Object> opts = new LinkedHashMap<>();
-            opts.put("name", JW.name != null ? JW.name : "");
-            m.put("options", opts);
-            list.add(m);
+
+        for (WaypointPoint waypoint : group.waypoints) {
+            Map<String, Object> map = new LinkedHashMap<>();
+
+            map.put("x", waypoint.x);
+            map.put("y", waypoint.y);
+            map.put("z", waypoint.z);
+
+            map.put("r", 0);
+            map.put("g", 1);
+            map.put("b", 0);
+
+            Map<String, Object> options = new LinkedHashMap<>();
+            options.put("name", waypoint.name != null ? waypoint.name : "");
+
+            map.put("options", options);
+
+            list.add(map);
         }
+
         return GSON.toJson(list);
     }
 
@@ -576,11 +591,11 @@ public class WaypointCommand extends SimpleCommand {
         }
     }
 
-    private long parseLongSafe(String s, long d) {
+    private long parseLongSafe(String s) {
         try {
             return Long.parseLong(s);
         } catch (Exception e) {
-            return d;
+            return -1;
         }
     }
 
@@ -595,8 +610,7 @@ public class WaypointCommand extends SimpleCommand {
 
 
     @Override
-    @SuppressWarnings("unchecked")
-    public List addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
+    public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
         if (args.length == 1) return getListOfStringsMatchingLastWord(args, SUBCOMMANDS);
         if (args.length == 2) {
             String sub = args[0].toLowerCase();

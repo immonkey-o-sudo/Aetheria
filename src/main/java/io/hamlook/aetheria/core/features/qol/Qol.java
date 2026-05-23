@@ -75,4 +75,9 @@ public class Qol {
     @ConfigOption(name = "Chat State Restore(Let me speak)", desc = "Restores your chat text when server closes chat")
     @ConfigEditorBoolean
     public boolean chatStateRestore = true;
+
+    @Expose
+    @ConfigOption(name = "Anvil Combine Helper", desc = "Highlights matching items in your inventory when one anvil slot is filled")
+    @ConfigEditorBoolean
+    public boolean anvilCombineHelper = true;
 }

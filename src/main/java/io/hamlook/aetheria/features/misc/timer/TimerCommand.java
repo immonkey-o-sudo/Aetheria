@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 
 
 @RegisterCommand
-public class ATHRTimerCommand extends SimpleCommand {
+public class TimerCommand extends SimpleCommand {
 
     private static final Pattern TIME_PATTERN = Pattern.compile("(\\d+)([dhms])", Pattern.CASE_INSENSITIVE);
 
@@ -48,7 +48,7 @@ public class ATHRTimerCommand extends SimpleCommand {
 
     private static void printStatus(UptimeManager mgr) {
         if (!mgr.isActive()) {
-            ChatUtils.sendMessage(PREFIX + "No timer running. Use §e/ATHRtimer <time>§f to start one.");
+            ChatUtils.sendMessage(PREFIX + "No timer running. Use §e/athrtimer<time>§f to start one.");
             return;
         }
         String state = mgr.isPaused() ? " §7(paused)§f" : "";
@@ -57,12 +57,17 @@ public class ATHRTimerCommand extends SimpleCommand {
 
     @Override
     public String getName() {
-        return "ATHRtimer";
+        return "athrtimer";
+    }
+
+    @Override
+    public List<String> getAliases() {
+        return Arrays.asList("aetheriatimer", "jeftimer", "asmtimer");
     }
 
     @Override
     public String getUsage() {
-        return "/ATHRtimer <time|show|pause|resume|add <time>|cancel>";
+        return "/athrtimer <time|show|pause|resume|add <time>|cancel>";
     }
 
     @Override
@@ -101,7 +106,7 @@ public class ATHRTimerCommand extends SimpleCommand {
                 if (!mgr.isActive()) {
                     ChatUtils.sendMessage(PREFIX + "§cNo timer is running.");
                 } else if (mgr.isPaused()) {
-                    ChatUtils.sendMessage(PREFIX + "§eTimer is already paused. Use §b/ATHRtimer resume§e.");
+                    ChatUtils.sendMessage(PREFIX + "§eTimer is already paused. Use §b/athrtimerresume§e.");
                 } else {
                     mgr.pause();
                     ChatUtils.sendMessage(PREFIX + "§ePaused at §b" + TimeFormatter.formatCountdown(mgr.getRemainingMs()) + "§e.");
@@ -119,7 +124,7 @@ public class ATHRTimerCommand extends SimpleCommand {
 
             case "add": {
                 if (args.length < 2) {
-                    ChatUtils.sendMessage(PREFIX + "§cUsage: §e/ATHRtimer add <time> §7(e.g. 5m, 1h)");
+                    ChatUtils.sendMessage(PREFIX + "§cUsage: §e/athrtimeradd <time> §7(e.g. 5m, 1h)");
                     break;
                 }
                 long addMs = parseTime(String.join("", Arrays.copyOfRange(args, 1, args.length)));
@@ -140,7 +145,7 @@ public class ATHRTimerCommand extends SimpleCommand {
             default: {
                 long durationMs = parseTime(String.join("", args));
                 if (durationMs <= 0) {
-                    ChatUtils.sendMessage(PREFIX + "§cUnknown sub-command or invalid time. " + "Examples: §e/ATHRtimer 1h30m §c| §e/ATHRtimer pause §c| §e/ATHRtimer show");
+                    ChatUtils.sendMessage(PREFIX + "§cUnknown sub-command or invalid time. " + "Examples: §e/athrtimer1h30m §c| §e/athrtimerpause §c| §e/athrtimershow");
                     break;
                 }
                 mgr.start(durationMs);
