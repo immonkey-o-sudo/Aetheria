@@ -91,6 +91,10 @@ public class Misc {
     public UptimeConfig uptimeConfig = new UptimeConfig();
 
     @Expose
+    @Category(name = "Player Join/Leave", desc = "Notify when watched players join or leave your lobby")
+    public PlayerJoinLeaveConfig playerJoinLeave = new PlayerJoinLeaveConfig();
+
+    @Expose
     @Category(name = "Item List", desc = "Settings for the Item List Overlay")
     public ItemListConfig itemList = new ItemListConfig();
 }
