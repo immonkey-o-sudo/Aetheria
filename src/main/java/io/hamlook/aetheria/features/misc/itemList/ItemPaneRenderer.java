@@ -3,6 +3,7 @@ package io.hamlook.aetheria.features.misc.itemList;
 import io.hamlook.aetheria.core.ATHRConfig;
 import io.hamlook.aetheria.core.config.gui.GuiTextures;
 import io.hamlook.aetheria.features.misc.SearchBar;
+import io.hamlook.aetheria.features.storage.StorageManager;
 import io.hamlook.aetheria.init.RegisterEvents;
 import io.hamlook.aetheria.utils.render.ItemRenderUtils;
 import io.hamlook.aetheria.utils.render.NineSliceUtils;
@@ -103,6 +104,7 @@ public class ItemPaneRenderer {
     private boolean shouldntShow() {
         if (ATHRConfig.feature == null) return true;
         if (!ATHRConfig.feature.misc.itemList.enabled) return true;
+        if(StorageManager.isOverlayActive()) return false;
         return !ItemRegistry.isLoaded || ItemRegistry.familyRegistry.isEmpty();
     }
 
