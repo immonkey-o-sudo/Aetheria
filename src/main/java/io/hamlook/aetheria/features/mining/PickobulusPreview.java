@@ -8,7 +8,6 @@ import io.hamlook.aetheria.utils.item.ItemUtils;
 import io.hamlook.aetheria.utils.render.WorldRenderUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.StringUtils;
@@ -38,9 +37,6 @@ public class PickobulusPreview {
     private boolean onCooldown = false;
 
     private AxisAlignedBB previewBox = null;
-    private int totalBlocks = 0;
-    private int glassBlocks = 0;
-    private int iceBlocks = 0;
 
     private static boolean isHoldingPickobulus() {
         Minecraft mc = Minecraft.getMinecraft();
@@ -81,27 +77,6 @@ public class PickobulusPreview {
 
         // 6×6×6 blast box centred on the hit block
         previewBox = new AxisAlignedBB(hit.getX() - RADIUS, hit.getY() - RADIUS, hit.getZ() - RADIUS, hit.getX() + RADIUS, hit.getY() + RADIUS, hit.getZ() + RADIUS);
-
-        totalBlocks = 0;
-        glassBlocks = 0;
-        iceBlocks = 0;
-
-        int x0 = hit.getX() - (RADIUS - 1), x1 = hit.getX() + (RADIUS - 1);
-        int y0 = hit.getY() - (RADIUS - 1), y1 = hit.getY() + (RADIUS - 1);
-        int z0 = hit.getZ() - (RADIUS - 1), z1 = hit.getZ() + (RADIUS - 1);
-
-        for (int bx = x0; bx <= x1; bx++) {
-            for (int by = y0; by <= y1; by++) {
-                for (int bz = z0; bz <= z1; bz++) {
-                    net.minecraft.block.Block block = mc.theWorld.getBlockState(new BlockPos(bx, by, bz)).getBlock();
-                    if (block == Blocks.air) continue;
-                    totalBlocks++;
-                    String id = block.getUnlocalizedName();
-                    if (id.endsWith("glass") || id.endsWith("glass_pane")) glassBlocks++;
-                    else if (id.endsWith("ice")) iceBlocks++;
-                }
-            }
-        }
     }
 
     @SubscribeEvent
@@ -125,18 +100,5 @@ public class PickobulusPreview {
 
         WorldRenderUtils.drawSelectionBox(previewBox, outline, 2f);
         WorldRenderUtils.drawFilledBlock(previewBox, fill);
-
-        Minecraft mc = Minecraft.getMinecraft();
-        if (mc.thePlayer == null) return;
-
-        double cx = (previewBox.minX + previewBox.maxX) / 2.0;
-        double cy = previewBox.maxY + 0.3;
-        double cz = (previewBox.minZ + previewBox.maxZ) / 2.0;
-
-        String label = "§f" + totalBlocks + " blocks";
-        if (glassBlocks > 0) label += " §b(" + glassBlocks + " glass)";
-        if (iceBlocks > 0) label += " §3(" + iceBlocks + " ice)";
-
-        WorldRenderUtils.drawTextInWorld(label, cx, cy, cz);
     }
 }
