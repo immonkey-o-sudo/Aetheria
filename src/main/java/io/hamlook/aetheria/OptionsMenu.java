@@ -35,8 +35,8 @@ public class OptionsMenu extends GuiScreen {
     // Social icon strip
     private static final int ICON_SIZE = 24;
     private static final int ICON_GAP = 10;
-    private static final ResourceLocation[] SOCIAL_ICONS = {GuiTextures.DISCORD, GuiTextures.GITHUB, GuiTextures.MODRINTH};
-    private static final String[] SOCIAL_URLS = {"https://discord.gg/HHf5yqSy9R", "https://github.com/JustEnoughFakepixel/JustEnoughFakepixel", "https://modrinth.com/mod/justenoughfakepixel"};
+    private static final ResourceLocation[] SOCIAL_ICONS = {GuiTextures.DISCORD, GuiTextures.GITHUB, GuiTextures.MODRINTH,GuiTextures.SKYATLAS};
+    private static final String[] SOCIAL_URLS = {"https://discord.gg/HHf5yqSy9R", "https://github.com/JustEnoughFakepixel/JustEnoughFakepixel", "https://modrinth.com/mod/justenoughfakepixel","https://skyatlas.qzz.io"};
 
     private final List<Particle> particles = new ArrayList<>();
     private float globalTime = 0f;
@@ -193,7 +193,7 @@ public class OptionsMenu extends GuiScreen {
         // Main buttons
         int btnX = width / 2 - BTN_W / 2;
         int btnBaseY = height / 2 + 10;
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 4; i++) {
             int by = btnBaseY + i * (BTN_H + BTN_GAP);
             if (mouseX >= btnX && mouseX <= btnX + BTN_W && mouseY >= by && mouseY <= by + BTN_H) {
                 switch (i) {
@@ -208,6 +208,7 @@ public class OptionsMenu extends GuiScreen {
                         break;
                     case 3:
                         ATHRConfig.openChatFilterUI();
+                        break;
                 }
                 return;
             }

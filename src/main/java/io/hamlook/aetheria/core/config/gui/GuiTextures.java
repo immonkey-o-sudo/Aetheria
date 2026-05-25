@@ -8,6 +8,7 @@ public final class GuiTextures {
     public static final ResourceLocation DISCORD = new ResourceLocation("aetheria:discord.png");
     public static final ResourceLocation GITHUB = new ResourceLocation("aetheria:github.png");
     public static final ResourceLocation MODRINTH = new ResourceLocation("aetheria:modrinth.png");
+    public static final ResourceLocation SKYATLAS = new ResourceLocation("aetheria:skyatlas.png");
     public static final ResourceLocation button_tex = new ResourceLocation("aetheria:button.png");
     public static final ResourceLocation button_white = new ResourceLocation("aetheria:button_white.png");
     public static final ResourceLocation BAR = new ResourceLocation("aetheria:core/bar.png");
