@@ -8,11 +8,21 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 
+import java.util.Arrays;
+import java.util.List;
+
 @RegisterCommand
 public class ChatFilterCommand extends SimpleCommand {
     @Override
     public String getName() {
-        return "athrFilters";
+        return "chatfilters";
+    }
+
+    @Override
+    public List<String> getAliases() {
+        return Arrays.asList("athrChatFilters",
+                "athrchatfilters","acf","asmChatFilters","asmchatfilters",
+                "aetheriaChatFilters","aetheriachatfilters");
     }
 
     @Override

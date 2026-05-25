@@ -30,7 +30,7 @@ public class OptionsMenu extends GuiScreen {
     private static final int BTN_W = 180;
     private static final int BTN_H = 22;
     private static final int BTN_GAP = 6;
-    private static final String[] BTN_LABELS = {"⚙ Config", "Waypoints", "Cape Selector"};
+    private static final String[] BTN_LABELS = {"⚙ Config", "Waypoints", "Cape Selector", "Chat Filters"};
 
     // Social icon strip
     private static final int ICON_SIZE = 24;
@@ -149,17 +149,16 @@ public class OptionsMenu extends GuiScreen {
 
         int btnX = width / 2 - BTN_W / 2;
         int btnBaseY = height / 2 + 10;
-        for (int i = 0; i < 3; i++) {
-            int bx = btnX;
+        for (int i = 0; i < 4; i++) {
             int by = btnBaseY + i * (BTN_H + BTN_GAP);
-            boolean hov = mouseX >= bx && mouseX <= bx + BTN_W && mouseY >= by && mouseY <= by + BTN_H;
+            boolean hov = mouseX >= btnX && mouseX <= btnX + BTN_W && mouseY >= by && mouseY <= by + BTN_H;
 
-            RenderUtils.drawFloatingRectDark(bx, by, BTN_W, BTN_H, false);
-            if (hov) drawRect(bx, by, bx + BTN_W, by + BTN_H, 0x18FFFFFF);
+            RenderUtils.drawFloatingRectDark(btnX, by, BTN_W, BTN_H, false);
+            if (hov) drawRect(btnX, by, btnX + BTN_W, by + BTN_H, 0x18FFFFFF);
 
             int labelColor = hov ? 0x00C8C8 : 0xA0A0A0;
             String lbl = BTN_LABELS[i];
-            fontRendererObj.drawStringWithShadow(lbl, bx + (BTN_W - fontRendererObj.getStringWidth(lbl)) / 2f, by + (BTN_H - fontRendererObj.FONT_HEIGHT) / 2f, labelColor);
+            fontRendererObj.drawStringWithShadow(lbl, btnX + (BTN_W - fontRendererObj.getStringWidth(lbl)) / 2f, by + (BTN_H - fontRendererObj.FONT_HEIGHT) / 2f, labelColor);
         }
 
         int totalIconW = ICON_SIZE * 3 + ICON_GAP * 2;
@@ -207,6 +206,8 @@ public class OptionsMenu extends GuiScreen {
                     case 2:
                         ATHRConfig.screenToOpen = new CapeSelectorGUI();
                         break;
+                    case 3:
+                        ATHRConfig.openChatFilterUI();
                 }
                 return;
             }
