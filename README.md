@@ -1,9 +1,13 @@
 <h1 align="center">
-  JustEnoughFakepixel: A Skyblock Mod
+
+Aetheria's Skyblock Mod
+
 </h1>
+
 <div align="center">
 
 ![jef](https://github.com/user-attachments/assets/60fb947e-813d-4565-94bd-e6fa4f8243bf)
+
 
 [![Discord](https://img.shields.io/discord/1479556885769093192?label=discord&color=008b8b&logo=discord&logoColor=white&style=for-the-badge)](https://discord.gg/4zKq2RkSZS)
 [![GitHub Downloads](https://img.shields.io/github/downloads/JustEnoughFakepixel/JustEnoughFakepixel/total?label=downloads&color=008b8b&logo=github&style=for-the-badge)](https://github.com/JustEnoughFakepixel/JustEnoughFakepixel/releases)
@@ -13,36 +17,42 @@
 
 </div>
 
-# Features
-- A full feature list can be found [here](docs/FEATURES.md)
+# Features 
 
-# How do I contribute ?
-- A full comprehensive guide for contribution and compiling the mod yourself can be found [here](docs/CONTRIBUTING.md)
+The Aetheria(JEF) mod has a lot of features. You can find the list of features [here](docs/FEATURES.md).
+
+# Contributing to the project
+
+A full comprehensive guide for contribution and compiling the mod yourself can be found [here](docs/CONTRIBUTING.md)
 
 # 📋 IMPORTANT
-On server join, this mod sends only two things to our servers:
-- Your **Minecraft username**
-- Your **installed mod list**
-  This is used purely for analytics and mod compatibility tracking. Nothing else is ever collected or transmitted — no passwords, files, chat, or server IPs.
 
-Some features have additional data sharing. For example, the **capes** feature sends your **Minecraft username** and your **selected cape** to a backend server — this is what allows other players to see your cape in-game. Only the data strictly necessary for a feature to work is ever sent.
+When you join a server with Aetheria(JEF) it sends some information to our servers. This information includes:
 
-All collected data is only accessible to the project author, aside from the hosting infrastructure it runs on. It is never shared with third parties.
+- Your Minecraft username
 
-This project is open source and community audited — you can verify exactly what data is sent and when by reviewing the source code.
+- The list of mods you have installed
 
-## ✨ Credits
+This information is used for analytics and to track compatibility. We do not send any other information, such as passwords, files chat messages or server IPs.
 
-This project wouldn't be where it is today without the help of these amazing people:
+Some features require information to be sent. For example the capes feature sends your Minecraft username and the cape you have selected to a backend server. This allows other players to see your cape in the game. We only send the information that's necessary for a feature to work.
 
-**Contributors & Maintainers**
+The information we collect is only accessible to the person who created the project. It is not shared with anyone
+
+The Aetheria (Formerly known as JEF) project is **Open source**, and you can review the source code to see exactly what information is sent and when.
+
+## ✨ Credits 
+
+This project would not be where it is today without the help of these amazing people.
+
+**Contributors and Maintainers**
 
 [Internet Protocol](https://github.com/protocol-8)
+
 [Whispering](https://github.com/ginafro1)
 
 **Discord Maintainer**
 
 [Hooman](https://github.com/mxhooman)
 
-> Full credits & project info: [justenoughfakepixel.github.io](https://justenoughfakepixel.github.io/index.html#credits)
-
+> You can find credits and project information for JustEnoughFakepixel here: [justenoughfakepixel.github.io](https://justenoughfakepixel.github.io/index.html#credits)
