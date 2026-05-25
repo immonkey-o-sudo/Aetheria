@@ -45,7 +45,7 @@ import java.io.File;
 
 public class ATHRConfig {
 
-    public static final KeyBinding openGuiKey = new KeyBinding("Open ATHR GUI", Keyboard.KEY_P, "aetheria");
+    public static final KeyBinding openGuiKey = new KeyBinding("Open ATHR GUI", Keyboard.KEY_RMENU, "aetheria");
     public static Config feature;
     public static File configDirectory = new File("config/Aetheria");
     public static GuiScreen screenToOpen = null;
@@ -276,7 +276,7 @@ public class ATHRConfig {
             }
         }
 
-        if (openGuiKey.isPressed() && Minecraft.getMinecraft().currentScreen == null) openGui();
+        if (openGuiKey.isPressed() && Minecraft.getMinecraft().currentScreen == null) openOptionsGui();
 
         boolean managerKeyDown = feature != null && isKeyOrMouseDown(feature.waypoints.waypointManagerKey);
         if (managerKeyDown && !waypointManagerKeyWasDown && Minecraft.getMinecraft().currentScreen == null)
