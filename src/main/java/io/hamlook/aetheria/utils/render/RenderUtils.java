@@ -1,5 +1,6 @@
 package io.hamlook.aetheria.utils.render;
 
+import io.hamlook.aetheria.core.config.gui.GuiTextures;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
@@ -16,11 +17,9 @@ import org.lwjgl.opengl.GL14;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.hamlook.aetheria.core.config.gui.GuiTextures;
-
 public final class RenderUtils {
 
-    private static final ResourceLocation SEARCH_BAR_TEX      = GuiTextures.SEARCH_BAR_TEX;
+    private static final ResourceLocation SEARCH_BAR_TEX = GuiTextures.SEARCH_BAR_TEX;
     private static final ResourceLocation SEARCH_BAR_TEX_GOLD = GuiTextures.SEARCH_BAR_TEX_GOLD;
     private static final Map<ResourceLocation, Boolean> RESOURCE_CACHE = new HashMap<>();
 
@@ -168,9 +167,9 @@ public final class RenderUtils {
 
     public static void drawFloatingRectDark(int x, int y, int width, int height, boolean shadow) {
         int alpha = OpenGlHelper.isFramebufferEnabled() ? 0xf0000000 : 0xff000000;
-        int main  = alpha | 0x202020;
+        int main = alpha | 0x202020;
         int light = 0xff2e2e2e;
-        int dark  = 0xff101010;
+        int dark = 0xff101010;
         Gui.drawRect(x, y, x + 1, y + height, light);
         Gui.drawRect(x + 1, y, x + width, y + 1, light);
         Gui.drawRect(x + width - 1, y + 1, x + width, y + height, dark);
@@ -284,6 +283,33 @@ public final class RenderUtils {
         GlStateManager.disableBlend();
         GlStateManager.enableAlpha();
         GlStateManager.enableTexture2D();
+    }
+
+    public static void drawLine(int x1, int y1, int x2, int y2, int color, float lineWidth) {
+        float a = (color >> 24 & 0xFF) / 255f;
+        float r = (color >> 16 & 0xFF) / 255f;
+        float g = (color >> 8 & 0xFF) / 255f;
+        float b = (color & 0xFF) / 255f;
+
+        GlStateManager.pushMatrix();
+        GlStateManager.enableBlend();
+        GlStateManager.disableTexture2D();
+        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+        GL11.glEnable(GL11.GL_LINE_SMOOTH);
+        GL11.glLineWidth(lineWidth);
+
+        Tessellator tess = Tessellator.getInstance();
+        WorldRenderer wr = tess.getWorldRenderer();
+        wr.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
+        wr.pos(x1, y1, 0).color(r, g, b, a).endVertex();
+        wr.pos(x2, y2, 0).color(r, g, b, a).endVertex();
+        tess.draw();
+
+        GL11.glLineWidth(1f);
+        GL11.glDisable(GL11.GL_LINE_SMOOTH);
+        GlStateManager.enableTexture2D();
+        GlStateManager.disableBlend();
+        GlStateManager.popMatrix();
     }
 
     public static int renderStringTrimWidth(String str, boolean shadow, int x, int y, int width, int color, int maxLines) {

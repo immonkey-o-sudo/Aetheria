@@ -82,6 +82,10 @@ public class Qol {
     public boolean anvilCombineHelper = true;
 
     @Expose
+    @Category(name = "Slot Binds", desc = "Bind inventory slots to hotbar slots for quick swapping")
+    public SlotBindsConfig slotBinds = new SlotBindsConfig();
+
+    @Expose
     @Category(name = "Better Containers", desc = "Improved Skyblock menus")
     public BetterContainersConfig betterContainers = new BetterContainersConfig();
 }
