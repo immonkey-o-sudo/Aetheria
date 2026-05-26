@@ -16,7 +16,7 @@ public class ATHRRepo {
     }
 
     public static void init() {
-        RepoHandler.register(KEY_UPDATE, BASE + "data/update.json");
+        RepoHandler.register(KEY_UPDATE, BASE + "data/ASMVersion.json");
         RepoHandler.register(KEY_PLAYERSIZES, BASE + "data/playersizes.json");
         RepoHandler.register(KEY_ENCHANTS, BASE + "data/enchants.json");
         RepoHandler.register(KEY_TIMERS, BASE + "data/timers.json");
