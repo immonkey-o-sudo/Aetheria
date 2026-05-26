@@ -4,7 +4,7 @@ package io.hamlook.aetheria.repo;
 
 public class ATHRRepo {
 
-    public static final String KEY_UPDATE = "update";
+    public static final String KEY_UPDATE = "ASMVersion";
     public static final String KEY_PLAYERSIZES = "playersizes";
     public static final String KEY_ENCHANTS = "enchants";
     public static final String KEY_TIMERS = "timers";
