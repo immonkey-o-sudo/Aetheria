@@ -4,7 +4,6 @@ import io.hamlook.aetheria.features.chatfilters.vars.FilterCase;
 import io.hamlook.aetheria.features.chatfilters.vars.FilterMode;
 
 import java.util.ArrayList;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,7 +32,7 @@ public class ChatFilter {
         String[] parts = splitPrefixAndBody(message);
         String prefix = parts[0];
         String body = parts[1];
-        
+
         boolean matched = false;
 
         FilterAction currentAction = action != null ? action : (replace ? FilterAction.REPLACE : FilterAction.CANCEL);
@@ -92,24 +91,24 @@ public class ChatFilter {
 
     private String[] splitPrefixAndBody(String msg) {
         String unformatted = net.minecraft.util.StringUtils.stripControlCodes(msg);
-        
+
         int colonIdx = unformatted.indexOf(": ");
         if (colonIdx != -1 && colonIdx < 48) {
             return splitAt(msg, colonIdx + 1);
         }
-        
+
         if (unformatted.startsWith("<")) {
             int bracketIdx = unformatted.indexOf("> ");
             if (bracketIdx != -1 && bracketIdx < 32) {
                 return splitAt(msg, bracketIdx + 1);
             }
         }
-        
+
         int arrowsIdx = unformatted.indexOf("» ");
         if (arrowsIdx != -1 && arrowsIdx < 48) {
             return splitAt(msg, arrowsIdx + 1);
         }
-        
+
         int arrow2Idx = unformatted.indexOf("-> ");
         if (arrow2Idx != -1 && arrow2Idx < 48) {
             return splitAt(msg, arrow2Idx + 2);
@@ -122,7 +121,7 @@ public class ChatFilter {
         int unformLen = 0;
         int formIdx = 0;
         while (formIdx < msg.length()) {
-            if (unformLen == unformattedSplitIdx + 1) { 
+            if (unformLen == unformattedSplitIdx + 1) {
                 break;
             }
             if (msg.charAt(formIdx) == '§' && formIdx + 1 < msg.length()) {

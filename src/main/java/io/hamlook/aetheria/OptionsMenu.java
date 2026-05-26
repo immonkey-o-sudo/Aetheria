@@ -142,7 +142,7 @@ public class OptionsMenu extends GuiScreen {
         fontRendererObj.drawStringWithShadow(ver, verX, verY, blendColor(openProgress));
 
         // Update badge
-        if (updateVersion != null) drawUpdateBadge(verY);
+        if (updateVersion != null) drawUpdateBadge();
 
         GL14.glBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
         GlStateManager.color(1f, 1f, 1f, 1f);
@@ -161,12 +161,10 @@ public class OptionsMenu extends GuiScreen {
             fontRendererObj.drawStringWithShadow(lbl, btnX + (BTN_W - fontRendererObj.getStringWidth(lbl)) / 2f, by + (BTN_H - fontRendererObj.FONT_HEIGHT) / 2f, labelColor);
         }
 
-        int totalIconW = ICON_SIZE * 3 + ICON_GAP * 2;
-        int iconBaseX = (width - totalIconW) / 2;
         int iconY = height - ICON_SIZE - 8;
 
         for (int i = 0; i < SOCIAL_ICONS.length; i++) {
-            int ix = iconBaseX + i * (ICON_SIZE + ICON_GAP);
+            int ix = iconStripX() + i * (ICON_SIZE + ICON_GAP);
             boolean hov = mouseX >= ix && mouseX <= ix + ICON_SIZE && mouseY >= iconY && mouseY <= iconY + ICON_SIZE;
 
             GlStateManager.enableBlend();
@@ -215,8 +213,7 @@ public class OptionsMenu extends GuiScreen {
         }
 
         // Social icons
-        int totalIconW = ICON_SIZE * 3 + ICON_GAP * 2;
-        int iconBaseX = (width - totalIconW) / 2;
+        int iconBaseX = iconStripX();
         int iconY = height - ICON_SIZE - 8;
         for (int i = 0; i < SOCIAL_URLS.length; i++) {
             int ix = iconBaseX + i * (ICON_SIZE + ICON_GAP);
@@ -227,36 +224,26 @@ public class OptionsMenu extends GuiScreen {
         }
     }
 
-    private void drawUpdateBadge(float verY) {
-        float pulse = 0.75f + (float) Math.sin(globalTime * 3f) * 0.15f;
+    private int iconStripX() {
+        return (width - (ICON_SIZE * SOCIAL_ICONS.length + ICON_GAP * (SOCIAL_ICONS.length - 1))) / 2;
+    }
+
+    private void drawUpdateBadge() {
         String updateText = "✦" + updateVersion + " available";
-        int textWidth = fontRendererObj.getStringWidth(updateText);
-        float padX = 8f, padY = 4f;
-        updateButtonW = textWidth + padX * 2f;
-        updateButtonH = fontRendererObj.FONT_HEIGHT + padY * 2f;
-        updateButtonX = (width - updateButtonW) / 2f;
-        updateButtonY = verY + 14;
-
-        GlStateManager.disableTexture2D();
-        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
-        GL11.glColor4f(0.20f * pulse, 0.55f * pulse, 1.45f * pulse, 0.22f);
-        GL11.glBegin(GL11.GL_QUADS);
-        GL11.glVertex2f(updateButtonX, updateButtonY);
-        GL11.glVertex2f(updateButtonX + updateButtonW, updateButtonY);
-        GL11.glVertex2f(updateButtonX + updateButtonW, updateButtonY + updateButtonH);
-        GL11.glVertex2f(updateButtonX, updateButtonY + updateButtonH);
-        GL11.glEnd();
-        GlStateManager.enableTexture2D();
-
-        int glow = new Color(0.45f * pulse, 0.92f * pulse, 1f, 1f).getRGB();
-        fontRendererObj.drawStringWithShadow(updateText, updateButtonX + padX, updateButtonY + padY, glow);
-
-        // Splash label
-        float splashScale = Math.max(1.8f, Math.min(2.8f, width / 155f)) * 0.52f;
+        float titleScale = Math.max(1.8f, Math.min(2.8f, width / 155f));
+        float splashScale = titleScale * 0.52f;
         float bounce = 1f - (float) (Math.abs(Math.sin(splashBounce)) * 0.06f);
-        float scaledW = fontRendererObj.getStringWidth(TITLE) * Math.max(1.8f, Math.min(2.8f, width / 155f));
+        float scaledW = fontRendererObj.getStringWidth(TITLE) * titleScale;
         float anchorX = (width - scaledW) / 2f + scaledW + 10f;
-        float anchorY = height * 0.22f + fontRendererObj.FONT_HEIGHT * Math.max(1.8f, Math.min(2.8f, width / 155f)) * 0.3f + 15f;
+        float anchorY = height * 0.22f + fontRendererObj.FONT_HEIGHT * titleScale * 0.3f + 15f;
+
+        float renderedW = fontRendererObj.getStringWidth(updateText) * splashScale * bounce;
+        float renderedH = fontRendererObj.FONT_HEIGHT * splashScale * bounce;
+        updateButtonX = anchorX - renderedW / 2f;
+        updateButtonY = anchorY - renderedH / 2f;
+        updateButtonW = renderedW;
+        updateButtonH = renderedH;
+
         GlStateManager.pushMatrix();
         GlStateManager.translate(anchorX, anchorY, 0f);
         GlStateManager.rotate(-12f, 0f, 0f, 1f);
