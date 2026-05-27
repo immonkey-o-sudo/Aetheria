@@ -38,7 +38,7 @@ public class EnchantChromaRenderer {
         FontRenderer fr = Minecraft.getMinecraft().fontRendererObj;
         FontRendererAccessor accessor = (FontRendererAccessor) fr;
         int base = ChromaColour.specialToChromaRGB(ATHRConfig.feature.qol.enchantParser.enchantPerfectColor);
-        int rgb = applyMode(base, accessor.ATHR$getPosX(), accessor.ATHR$getPosY());
+        int rgb = applyMode(base, accessor.ATHR$getPosX(), accessor.ATHR$getPosY(), ATHRConfig.feature.qol.enchantParser.enchantChromaMode, ATHRConfig.feature.qol.enchantParser.enchantChromaSize);
         if (renderingShadow) {
             int a = (rgb >>> 24) & 255;
             int r = ((rgb >>> 16) & 255) / 4;
@@ -56,10 +56,9 @@ public class EnchantChromaRenderer {
         GlStateManager.color(1F, 1F, 1F, 1F);
     }
 
-    private static int applyMode(int argb, float x, float y) {
-        if (ATHRConfig.feature.qol.enchantParser.enchantChromaMode == 0) return argb;
-        float size = Math.max(1F, ATHRConfig.feature.qol.enchantParser.enchantChromaSize);
-        float shift = ((x + y) / size) % 1F;
+    private static int applyMode(int argb, float x, float y, int mode, float size) {
+        if (mode == 0) return argb;
+        float shift = ((x + y) / Math.max(1F, size)) % 1F;
         int a = (argb >>> 24) & 255;
         int r = (argb >>> 16) & 255;
         int g = (argb >>> 8) & 255;
@@ -67,5 +66,9 @@ public class EnchantChromaRenderer {
         float[] hsb = Color.RGBtoHSB(r, g, b, null);
         hsb[0] = (hsb[0] + shift) % 1F;
         return (a << 24) | (Color.HSBtoRGB(hsb[0], hsb[1], hsb[2]) & 0x00FFFFFF);
+    }
+
+    public static int applyChromaShift(int argb, float x, float y, int mode, float size) {
+        return applyMode(argb, x, y, mode, size);
     }
 }
