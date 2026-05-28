@@ -26,22 +26,20 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ModInstaller {
-    private static Point initialClick;
-    private static boolean isMaximized = false;
-    private static Rectangle normalBounds;
-
     private static final Color BG_COLOR = new Color(25, 25, 25);
     private static final Color TITLE_BG = new Color(35, 35, 35);
     private static final Color FG_COLOR = new Color(240, 240, 240);
     private static final Color BTN_GRAY = new Color(70, 70, 70);
-    private static final Color ACCENT = new Color(60, 120, 200); 
+    private static final Color ACCENT = new Color(60, 120, 200);
     private static final Color HOVER_ACCENT = new Color(80, 140, 220);
     private static final Color INPUT_BG = new Color(40, 40, 40);
     private static final Color BORDER_COL = new Color(60, 60, 60);
-
     private static final Map<String, String> modLinks = new LinkedHashMap<>();
     private static final Map<String, List<ReleaseItem>> cachedReleases = new ConcurrentHashMap<>();
     private static final File CONFIG_FILE = new File(System.getProperty("user.home"), ".aetheria/config.txt");
+    private static Point initialClick;
+    private static boolean isMaximized = false;
+    private static Rectangle normalBounds;
 
     private static String loadConfig() {
         try {
@@ -49,82 +47,24 @@ public class ModInstaller {
                 byte[] bytes = java.nio.file.Files.readAllBytes(CONFIG_FILE.toPath());
                 return new String(bytes, StandardCharsets.UTF_8).trim();
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         return "";
     }
-    
+
     private static void saveConfig(String path) {
         try {
             CONFIG_FILE.getParentFile().mkdirs();
             java.nio.file.Files.write(CONFIG_FILE.toPath(), path.getBytes(StandardCharsets.UTF_8));
-        } catch (Exception ignored) {}
-    }
-
-    static class ReleaseItem implements Comparable<ReleaseItem> {
-        String name;
-        String downloadUrl;
-        String fileName;
-        Date publishedAt;
-
-        @Override
-        public int compareTo(ReleaseItem o) {
-            return o.publishedAt.compareTo(this.publishedAt);
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-    }
-
-    static class ProgressButton extends JButton {
-        public double progress = 0.0;
-        private final Color progressColor;
-        private Color bgColor;
-
-        public ProgressButton(String text, Color bg, Color progressCol, Color fg) {
-            super(text);
-            this.bgColor = bg;
-            this.progressColor = progressCol;
-            setForeground(fg);
-            setFocusPainted(false);
-            setBorderPainted(false);
-            setContentAreaFilled(false);
-            setOpaque(false);
-            setCursor(new Cursor(Cursor.HAND_CURSOR));
-            setFont(new Font("Segoe UI", Font.BOLD, 15));
-            setPreferredSize(new Dimension(0, 45));
-        }
-
-        public void setProgress(double p) {
-            this.progress = Math.max(0.0, Math.min(1.0, p));
-            repaint();
-        }
-
-        public void setBgColor(Color bg) {
-            this.bgColor = bg;
-            repaint();
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.setColor(bgColor);
-            g2.fillRect(0, 0, getWidth(), getHeight());
-
-            if (progress > 0) {
-                g2.setColor(progressColor);
-                g2.fillRect(0, 0, (int) (getWidth() * progress), getHeight());
-            }
-            g2.dispose();
-            super.paintComponent(g);
+        } catch (Exception ignored) {
         }
     }
 
     public static void main(String[] args) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Fakepixel Mods Installer | Aetheria's Skyblock Mod");
@@ -168,8 +108,13 @@ public class ModInstaller {
             });
             closeBtn.addActionListener(e -> System.exit(0));
             closeBtn.addMouseListener(new MouseAdapter() {
-                public void mouseEntered(MouseEvent e) { closeBtn.setBackground(new Color(232, 17, 35)); }
-                public void mouseExited(MouseEvent e) { closeBtn.setBackground(TITLE_BG); }
+                public void mouseEntered(MouseEvent e) {
+                    closeBtn.setBackground(new Color(232, 17, 35));
+                }
+
+                public void mouseExited(MouseEvent e) {
+                    closeBtn.setBackground(TITLE_BG);
+                }
             });
 
             controlsPanel.add(minimizeBtn);
@@ -178,11 +123,13 @@ public class ModInstaller {
             titleBar.add(controlsPanel, BorderLayout.EAST);
 
             titleBar.addMouseListener(new MouseAdapter() {
-                public void mousePressed(MouseEvent e) { initialClick = e.getPoint(); }
+                public void mousePressed(MouseEvent e) {
+                    initialClick = e.getPoint();
+                }
             });
             titleBar.addMouseMotionListener(new MouseMotionAdapter() {
                 public void mouseDragged(MouseEvent e) {
-                    if (isMaximized) return; 
+                    if (isMaximized) return;
                     int xMoved = e.getX() - initialClick.x;
                     int yMoved = e.getY() - initialClick.y;
                     frame.setLocation(frame.getLocation().x + xMoved, frame.getLocation().y + yMoved);
@@ -197,15 +144,20 @@ public class ModInstaller {
             globalConfigPanel.setBackground(BG_COLOR);
             globalConfigPanel.setBorder(new EmptyBorder(15, 30, 5, 30));
             GridBagConstraints hgbc = new GridBagConstraints();
-            hgbc.fill = GridBagConstraints.HORIZONTAL; hgbc.insets = new Insets(5, 5, 5, 5);
-            
-            hgbc.gridx = 0; hgbc.gridy = 0; hgbc.weightx = 0;
+            hgbc.fill = GridBagConstraints.HORIZONTAL;
+            hgbc.insets = new Insets(5, 5, 5, 5);
+
+            hgbc.gridx = 0;
+            hgbc.gridy = 0;
+            hgbc.weightx = 0;
             JLabel pathLabel = new JLabel("Mods Folder:");
             pathLabel.setForeground(FG_COLOR);
             pathLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
             globalConfigPanel.add(pathLabel, hgbc);
 
-            hgbc.gridx = 1; hgbc.gridy = 0; hgbc.weightx = 1.0;
+            hgbc.gridx = 1;
+            hgbc.gridy = 0;
+            hgbc.weightx = 1.0;
             JPanel pathPanel = new JPanel(new BorderLayout(10, 0));
             pathPanel.setOpaque(false);
             JTextField pathField = new JTextField(loadConfig());
@@ -213,10 +165,7 @@ public class ModInstaller {
             pathField.setForeground(FG_COLOR);
             pathField.setCaretColor(FG_COLOR);
             pathField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-            pathField.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(BORDER_COL),
-                    BorderFactory.createEmptyBorder(6, 10, 6, 10)
-            ));
+            pathField.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(BORDER_COL), BorderFactory.createEmptyBorder(6, 10, 6, 10)));
             JButton browseBtn = new JButton("Browse");
             styleButton(browseBtn, BTN_GRAY, new Color(90, 90, 90));
             browseBtn.addActionListener(e -> {
@@ -253,26 +202,35 @@ public class ModInstaller {
             installCard.setBackground(BG_COLOR);
             installCard.setBorder(new EmptyBorder(10, 30, 20, 30));
             GridBagConstraints igbc = new GridBagConstraints();
-            igbc.fill = GridBagConstraints.HORIZONTAL; igbc.insets = new Insets(10, 10, 10, 10);
+            igbc.fill = GridBagConstraints.HORIZONTAL;
+            igbc.insets = new Insets(10, 10, 10, 10);
             igbc.weightx = 1.0;
 
-            igbc.gridx = 0; igbc.gridy = 0; igbc.weightx = 0.3;
+            igbc.gridx = 0;
+            igbc.gridy = 0;
+            igbc.weightx = 0.3;
             JLabel modLabel = new JLabel("Select Mod:");
             modLabel.setForeground(FG_COLOR);
             modLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
             installCard.add(modLabel, igbc);
 
-            igbc.gridx = 1; igbc.gridy = 0; igbc.weightx = 0.7;
+            igbc.gridx = 1;
+            igbc.gridy = 0;
+            igbc.weightx = 0.7;
             JComboBox<String> modCombo = createDarkComboBox(new String[]{"Loading..."});
             installCard.add(modCombo, igbc);
 
-            igbc.gridx = 0; igbc.gridy = 1; igbc.weightx = 0.3;
+            igbc.gridx = 0;
+            igbc.gridy = 1;
+            igbc.weightx = 0.3;
             JLabel versionLabel = new JLabel("Version:");
             versionLabel.setForeground(FG_COLOR);
             versionLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
             installCard.add(versionLabel, igbc);
 
-            igbc.gridx = 1; igbc.gridy = 1; igbc.weightx = 0.7;
+            igbc.gridx = 1;
+            igbc.gridy = 1;
+            igbc.weightx = 0.7;
             JComboBox<ReleaseItem> versionCombo = new JComboBox<>();
             versionCombo.setBackground(INPUT_BG);
             versionCombo.setForeground(FG_COLOR);
@@ -288,21 +246,27 @@ public class ModInstaller {
                     return btn;
                 }
             });
-            versionCombo.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(BORDER_COL), BorderFactory.createEmptyBorder(4, 5, 4, 5)
-            ));
+            versionCombo.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(BORDER_COL), BorderFactory.createEmptyBorder(4, 5, 4, 5)));
             installCard.add(versionCombo, igbc);
 
-            igbc.gridx = 0; igbc.gridy = 2; igbc.gridwidth = 2;
+            igbc.gridx = 0;
+            igbc.gridy = 2;
+            igbc.gridwidth = 2;
             igbc.insets = new Insets(40, 10, 10, 10);
             ProgressButton downloadBtn = new ProgressButton("Install Mod", BTN_GRAY, ACCENT, FG_COLOR);
             downloadBtn.addMouseListener(new MouseAdapter() {
-                public void mouseEntered(MouseEvent e) { if (downloadBtn.isEnabled() && downloadBtn.progress == 0) downloadBtn.setBgColor(HOVER_ACCENT); }
-                public void mouseExited(MouseEvent e) { if (downloadBtn.isEnabled() && downloadBtn.progress == 0) downloadBtn.setBgColor(BTN_GRAY); }
+                public void mouseEntered(MouseEvent e) {
+                    if (downloadBtn.isEnabled() && downloadBtn.progress == 0) downloadBtn.setBgColor(HOVER_ACCENT);
+                }
+
+                public void mouseExited(MouseEvent e) {
+                    if (downloadBtn.isEnabled() && downloadBtn.progress == 0) downloadBtn.setBgColor(BTN_GRAY);
+                }
             });
             installCard.add(downloadBtn, igbc);
 
-            igbc.gridy = 3; igbc.weighty = 1.0;
+            igbc.gridy = 3;
+            igbc.weighty = 1.0;
             installCard.add(Box.createGlue(), igbc);
             cards.add(installCard, "INSTALL");
 
@@ -310,24 +274,39 @@ public class ModInstaller {
             updateCard.setBackground(BG_COLOR);
             updateCard.setBorder(new EmptyBorder(10, 30, 20, 30));
             GridBagConstraints ugbc = new GridBagConstraints();
-            ugbc.fill = GridBagConstraints.HORIZONTAL; ugbc.insets = new Insets(10, 10, 10, 10);
-            
-            ugbc.gridx = 0; ugbc.gridy = 0; ugbc.weightx = 1.0;
+            ugbc.fill = GridBagConstraints.HORIZONTAL;
+            ugbc.insets = new Insets(10, 10, 10, 10);
+
+            ugbc.gridx = 0;
+            ugbc.gridy = 0;
+            ugbc.weightx = 1.0;
             JTextArea updateInfo = new JTextArea("Click below to scan your mods folder for updates across all supported mods.");
-            updateInfo.setWrapStyleWord(true); updateInfo.setLineWrap(true);
-            updateInfo.setOpaque(false); updateInfo.setForeground(FG_COLOR); updateInfo.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+            updateInfo.setWrapStyleWord(true);
+            updateInfo.setLineWrap(true);
+            updateInfo.setOpaque(false);
+            updateInfo.setForeground(FG_COLOR);
+            updateInfo.setFont(new Font("Segoe UI", Font.PLAIN, 14));
             updateInfo.setEditable(false);
             updateCard.add(updateInfo, ugbc);
 
-            ugbc.gridy = 1; ugbc.insets = new Insets(30, 10, 10, 10);
+            ugbc.gridy = 1;
+            ugbc.insets = new Insets(30, 10, 10, 10);
             ProgressButton checkUpdatesBtn = new ProgressButton("Check for Updates", BTN_GRAY, ACCENT, FG_COLOR);
             checkUpdatesBtn.addMouseListener(new MouseAdapter() {
-                public void mouseEntered(MouseEvent e) { if (checkUpdatesBtn.isEnabled() && checkUpdatesBtn.progress == 0) checkUpdatesBtn.setBgColor(HOVER_ACCENT); }
-                public void mouseExited(MouseEvent e) { if (checkUpdatesBtn.isEnabled() && checkUpdatesBtn.progress == 0) checkUpdatesBtn.setBgColor(BTN_GRAY); }
+                public void mouseEntered(MouseEvent e) {
+                    if (checkUpdatesBtn.isEnabled() && checkUpdatesBtn.progress == 0)
+                        checkUpdatesBtn.setBgColor(HOVER_ACCENT);
+                }
+
+                public void mouseExited(MouseEvent e) {
+                    if (checkUpdatesBtn.isEnabled() && checkUpdatesBtn.progress == 0)
+                        checkUpdatesBtn.setBgColor(BTN_GRAY);
+                }
             });
             updateCard.add(checkUpdatesBtn, ugbc);
 
-            ugbc.gridy = 2; ugbc.weighty = 1.0;
+            ugbc.gridy = 2;
+            ugbc.weighty = 1.0;
             updateCard.add(Box.createGlue(), ugbc);
             cards.add(updateCard, "UPDATE");
 
@@ -378,9 +357,9 @@ public class ModInstaller {
             modCombo.addActionListener(e -> {
                 String selectedMod = (String) modCombo.getSelectedItem();
                 if (selectedMod == null) return;
-                
+
                 versionCombo.removeAllItems();
-                
+
                 new Thread(() -> {
                     List<ReleaseItem> items = fetchReleasesForMod(selectedMod);
                     SwingUtilities.invokeLater(() -> {
@@ -398,11 +377,11 @@ public class ModInstaller {
                 }
                 File modsFolder = getValidatedModsFolder(pathField.getText(), frame);
                 if (modsFolder == null) return;
-                
+
                 ReleaseItem selectedRelease = (ReleaseItem) versionCombo.getSelectedItem();
                 downloadBtn.setEnabled(false);
                 downloadBtn.setText("Downloading... 0%");
-                
+
                 new Thread(() -> {
                     boolean success = downloadFile(selectedRelease.downloadUrl, new File(modsFolder, selectedRelease.fileName), downloadBtn);
                     SwingUtilities.invokeLater(() -> {
@@ -449,10 +428,10 @@ public class ModInstaller {
                             List<ReleaseItem> releases = fetchReleasesForMod(modName);
                             if (releases.isEmpty()) continue;
                             ReleaseItem latest = releases.get(0);
-                            
+
                             String baseName = modName.replaceAll(" ", "").toLowerCase();
                             boolean hasLocal = false;
-                            
+
                             for (File localJar : localJars) {
                                 String localName = localJar.getName().toLowerCase();
                                 boolean match = false;
@@ -475,7 +454,7 @@ public class ModInstaller {
                                     }
                                 }
                             }
-                            
+
                             if (!hasLocal) {
                                 if (!toDownload.contains(latest)) toDownload.add(latest);
                             }
@@ -489,7 +468,7 @@ public class ModInstaller {
                                 JOptionPane.showMessageDialog(frame, "All mods are up to date!", "No updates", JOptionPane.INFORMATION_MESSAGE);
                                 return;
                             }
-                            
+
                             showUpdateConfirmation(frame, modsFolder, toDelete, toDownload, checkUpdatesBtn);
                         });
 
@@ -543,12 +522,17 @@ public class ModInstaller {
             listPanel.add(delLabel);
             for (File f : toDelete) {
                 JCheckBox cb = new JCheckBox(f.getName(), true);
-                cb.setOpaque(false); cb.setForeground(FG_COLOR); cb.setFocusPainted(false);
+                cb.setOpaque(false);
+                cb.setForeground(FG_COLOR);
+                cb.setFocusPainted(false);
                 cb.setAlignmentX(Component.LEFT_ALIGNMENT);
                 cb.addItemListener(e -> {
                     boolean anyUnchecked = false;
                     for (JCheckBox c : deleteChecks) {
-                        if (!c.isSelected()) { anyUnchecked = true; break; }
+                        if (!c.isSelected()) {
+                            anyUnchecked = true;
+                            break;
+                        }
                     }
                     warningLabel.setVisible(anyUnchecked);
                 });
@@ -569,7 +553,9 @@ public class ModInstaller {
             listPanel.add(dlLabel);
             for (ReleaseItem ri : toDownload) {
                 JCheckBox cb = new JCheckBox(ri.fileName, true);
-                cb.setOpaque(false); cb.setForeground(FG_COLOR); cb.setFocusPainted(false);
+                cb.setOpaque(false);
+                cb.setForeground(FG_COLOR);
+                cb.setFocusPainted(false);
                 cb.setAlignmentX(Component.LEFT_ALIGNMENT);
                 cb.putClientProperty("item", ri);
                 dlChecks.add(cb);
@@ -594,14 +580,14 @@ public class ModInstaller {
         confirmBtn.addActionListener(e -> {
             dialog.dispose();
             List<File> finalDelete = new ArrayList<>();
-            for (int i=0; i<deleteChecks.size(); i++) {
+            for (int i = 0; i < deleteChecks.size(); i++) {
                 if (deleteChecks.get(i).isSelected()) finalDelete.add(toDelete.get(i));
             }
             List<ReleaseItem> finalDownload = new ArrayList<>();
             for (JCheckBox cb : dlChecks) {
                 if (cb.isSelected()) finalDownload.add((ReleaseItem) cb.getClientProperty("item"));
             }
-            
+
             executeUpdates(modsFolder, finalDelete, finalDownload, progressBtn);
         });
 
@@ -619,7 +605,7 @@ public class ModInstaller {
             for (File f : toDelete) {
                 if (f.exists()) f.delete();
             }
-            
+
             int total = toDownload.size();
             for (int i = 0; i < total; i++) {
                 ReleaseItem ri = toDownload.get(i);
@@ -672,7 +658,7 @@ public class ModInstaller {
             URL url = new URL(urlString);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestProperty("User-Agent", "Aetheria-Installer");
-            
+
             int status = conn.getResponseCode();
             if (status != HttpURLConnection.HTTP_OK) {
                 if (status == HttpURLConnection.HTTP_MOVED_TEMP || status == HttpURLConnection.HTTP_MOVED_PERM || status == HttpURLConnection.HTTP_SEE_OTHER) {
@@ -681,10 +667,9 @@ public class ModInstaller {
                     conn.setRequestProperty("User-Agent", "Aetheria-Installer");
                 }
             }
-            
+
             long fileSize = conn.getContentLengthLong();
-            try (BufferedInputStream in = new BufferedInputStream(conn.getInputStream());
-                 FileOutputStream fos = new FileOutputStream(dest)) {
+            try (BufferedInputStream in = new BufferedInputStream(conn.getInputStream()); FileOutputStream fos = new FileOutputStream(dest)) {
                 byte[] dataBuffer = new byte[8192];
                 int bytesRead;
                 long totalRead = 0;
@@ -712,12 +697,12 @@ public class ModInstaller {
         if (cachedReleases.containsKey(modName)) {
             return cachedReleases.get(modName);
         }
-        
+
         List<ReleaseItem> items = new ArrayList<>();
         try {
             String repoUrl = modLinks.get(modName);
             if (repoUrl == null) return items;
-            
+
             String apiUrl = repoUrl.replace("github.com", "api.github.com/repos") + "/releases";
             HttpURLConnection conn = (HttpURLConnection) new URL(apiUrl).openConnection();
             conn.setRequestProperty("Accept", "application/vnd.github.v3+json");
@@ -734,7 +719,7 @@ public class ModInstaller {
                     JsonObject obj = elem.getAsJsonObject();
                     String name = obj.has("name") && !obj.get("name").isJsonNull() ? obj.get("name").getAsString() : "";
                     String publishedAt = obj.has("published_at") && !obj.get("published_at").isJsonNull() ? obj.get("published_at").getAsString() : "";
-                    
+
                     JsonArray assets = obj.has("assets") ? obj.getAsJsonArray("assets") : new JsonArray();
                     String downloadUrl = null;
                     String fileName = null;
@@ -744,7 +729,7 @@ public class ModInstaller {
                         if (aName.endsWith(".jar")) {
                             downloadUrl = asset.get("browser_download_url").getAsString();
                             fileName = aName;
-                            break; 
+                            break;
                         }
                     }
 
@@ -754,7 +739,7 @@ public class ModInstaller {
                         item.downloadUrl = downloadUrl;
                         item.fileName = fileName;
                         item.publishedAt = sdf.parse(publishedAt);
-                        
+
                         if (repoUrl.contains("JustEnoughFakepixel/JustEnoughFakepixel")) {
                             boolean isJef = name.toLowerCase().contains("justenoughfakepixel");
                             if (modName.equals("JustEnoughFakepixel") && isJef) {
@@ -792,8 +777,13 @@ public class ModInstaller {
         btn.setBorderPainted(false);
         btn.setOpaque(true);
         btn.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent e) { if (btn.getBackground().equals(ModInstaller.TITLE_BG)) btn.setBackground(new Color(60, 60, 60)); }
-            public void mouseExited(MouseEvent e) { if (btn.getBackground().equals(new Color(60, 60, 60))) btn.setBackground(ModInstaller.TITLE_BG); }
+            public void mouseEntered(MouseEvent e) {
+                if (btn.getBackground().equals(ModInstaller.TITLE_BG)) btn.setBackground(new Color(60, 60, 60));
+            }
+
+            public void mouseExited(MouseEvent e) {
+                if (btn.getBackground().equals(new Color(60, 60, 60))) btn.setBackground(ModInstaller.TITLE_BG);
+            }
         });
         return btn;
     }
@@ -808,11 +798,16 @@ public class ModInstaller {
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btn.setBorder(new EmptyBorder(8, 20, 8, 20));
         btn.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent e) { btn.setBackground(hoverBg); }
-            public void mouseExited(MouseEvent e) { btn.setBackground(bg); }
+            public void mouseEntered(MouseEvent e) {
+                btn.setBackground(hoverBg);
+            }
+
+            public void mouseExited(MouseEvent e) {
+                btn.setBackground(bg);
+            }
         });
     }
-    
+
     private static JComboBox<String> createDarkComboBox(String[] items) {
         JComboBox<String> combo = new JComboBox<>(items);
         combo.setBackground(ModInstaller.INPUT_BG);
@@ -829,10 +824,69 @@ public class ModInstaller {
                 return btn;
             }
         });
-        combo.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(ModInstaller.BORDER_COL), BorderFactory.createEmptyBorder(4, 5, 4, 5)
-        ));
+        combo.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(ModInstaller.BORDER_COL), BorderFactory.createEmptyBorder(4, 5, 4, 5)));
         return combo;
+    }
+
+    static class ReleaseItem implements Comparable<ReleaseItem> {
+        String name;
+        String downloadUrl;
+        String fileName;
+        Date publishedAt;
+
+        @Override
+        public int compareTo(ReleaseItem o) {
+            return o.publishedAt.compareTo(this.publishedAt);
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
+    static class ProgressButton extends JButton {
+        private final Color progressColor;
+        public double progress = 0.0;
+        private Color bgColor;
+
+        public ProgressButton(String text, Color bg, Color progressCol, Color fg) {
+            super(text);
+            this.bgColor = bg;
+            this.progressColor = progressCol;
+            setForeground(fg);
+            setFocusPainted(false);
+            setBorderPainted(false);
+            setContentAreaFilled(false);
+            setOpaque(false);
+            setCursor(new Cursor(Cursor.HAND_CURSOR));
+            setFont(new Font("Segoe UI", Font.BOLD, 15));
+            setPreferredSize(new Dimension(0, 45));
+        }
+
+        public void setProgress(double p) {
+            this.progress = Math.max(0.0, Math.min(1.0, p));
+            repaint();
+        }
+
+        public void setBgColor(Color bg) {
+            this.bgColor = bg;
+            repaint();
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setColor(bgColor);
+            g2.fillRect(0, 0, getWidth(), getHeight());
+
+            if (progress > 0) {
+                g2.setColor(progressColor);
+                g2.fillRect(0, 0, (int) (getWidth() * progress), getHeight());
+            }
+            g2.dispose();
+            super.paintComponent(g);
+        }
     }
 
     static class ComponentResizer extends MouseAdapter {
