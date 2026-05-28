@@ -3,6 +3,7 @@
 run/
 build/
 .gradle/
+.env
 
 gradle.properties
 settings.gradle.kts

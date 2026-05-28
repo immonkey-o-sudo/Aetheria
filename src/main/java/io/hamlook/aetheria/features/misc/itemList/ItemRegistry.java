@@ -389,6 +389,9 @@ public class ItemRegistry {
         if (data.lore != null && !data.lore.isEmpty()) item.baseLore = data.lore;
         item.enchanted = data.enchanted;
         if (data.displayName != null && !data.displayName.isEmpty()) item.displayName = data.displayName;
+        if(data.amount > 0){
+            item.amount = data.amount;
+        }
         return item;
     }
 }

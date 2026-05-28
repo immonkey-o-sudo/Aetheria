@@ -1,7 +1,6 @@
 package io.hamlook.aetheria.features.profile.viewer.ui.tabs;
 
 import io.hamlook.aetheria.core.config.gui.GuiTextures;
-import io.hamlook.aetheria.utils.render.NineSliceUtils;
 import io.hamlook.aetheria.features.misc.itemList.ItemRegistry;
 import io.hamlook.aetheria.features.misc.itemList.SkyblockItem;
 import io.hamlook.aetheria.features.profile.data.ProfileData;
@@ -169,7 +168,7 @@ public class BagsInfoTab extends Tab {
     }
 
     private void drawSlot(Minecraft mc, ItemStack icon, boolean active, int rarityScore, float x, float y, float size) {
-        net.minecraft.client.renderer.GlStateManager.color(1, 1, 1, 1);
+        GlStateManager.color(1, 1, 1, 1);
         mc.getTextureManager().bindTexture(GuiTextures.storageSlot(1));
         Gui.drawModalRectWithCustomSizedTexture((int)x, (int)y, 0, 0, (int)size, (int)size, (int)size, (int)size);
 

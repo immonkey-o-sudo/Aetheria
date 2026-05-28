@@ -88,7 +88,7 @@ dependencies {
 
     compileOnly("org.projectlombok:lombok:1.18.30")
     annotationProcessor("org.projectlombok:lombok:1.18.30")
-
+    implementation("io.github.cdimascio:dotenv-java:2.3.2")
     runtimeOnly("me.djtheredstoner:DevAuth-forge-legacy:1.2.1")
 
     shadowImpl("org.reflections:reflections:0.9.12") {
@@ -106,6 +106,7 @@ tasks.withType(JavaCompile::class) {
 tasks.withType(org.gradle.jvm.tasks.Jar::class) {
     archiveBaseName.set(modid)
     manifest.attributes.run {
+        this["Main-Class"] = "io.hamlook.aetheria.ModInstaller"
         this["FMLCorePluginContainsFMLMod"] = "true"
         this["ForceLoadAsMod"] = "true"
 
@@ -121,6 +122,8 @@ tasks.processResources {
     inputs.property("mcversion", mcVersion)
     inputs.property("modid", modid)
     inputs.property("basePackage", baseGroup)
+
+    from(project.file(".env"))
 
     filesMatching(listOf("mcmod.info", "mixins.$modid.json")) {
         expand(inputs.properties)

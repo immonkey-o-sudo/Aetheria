@@ -38,6 +38,7 @@ public class SkyblockItem {
     public transient ItemStack itemStack;
     public transient String familyId;
     public transient String familyMemberLabel;
+    public transient int amount = 1;
 
     // Filter and search cache tags
     public transient String itemType = "";
@@ -91,7 +92,7 @@ public class SkyblockItem {
                 this.itemStack = new ItemStack(Blocks.stone);
             }
         }
-
+        this.itemStack.stackSize = this.amount > 0 ? this.amount : 1;
         NBTTagCompound tag = ItemUtils.getOrCreateTag(this.itemStack);
         NBTTagCompound display = new NBTTagCompound();
         if (this.displayName != null) {

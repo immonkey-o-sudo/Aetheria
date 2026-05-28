@@ -12,6 +12,7 @@ public class ItemData {
     public List<String> lore;
     public String skyblockID;
     public boolean enchanted;
+    public int amount;
 
     public ItemData(){
         this.skyblockID = "";
