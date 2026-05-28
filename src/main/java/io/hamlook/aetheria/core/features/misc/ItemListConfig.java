@@ -21,6 +21,11 @@ public class ItemListConfig {
     public float itemListScale = 1f;
 
     @Expose
+    @ConfigAnnotations.ConfigOption(name = "Search Only Item List", desc = "Only show item list when the button to search for item list is enabled in global search bar, requires Use Global SearchBar to work")
+    @ConfigAnnotations.ConfigEditorBoolean
+    public boolean itemListSOnly = false;
+
+    @Expose
     @ConfigAnnotations.ConfigOption(name = "Wiki Source", desc = "Which wiki opens when you right-click an item")
     @ConfigAnnotations.ConfigEditorDropdown(values = {"hysb.wiki", "Hypixel Wiki (Official)"})
     public int wikiSource = 0;

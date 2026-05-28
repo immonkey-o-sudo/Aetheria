@@ -112,6 +112,7 @@ public class ItemPaneRenderer {
         if (ATHRConfig.feature == null) return true;
         if (!ATHRConfig.feature.misc.itemList.enabled) return true;
         if (StorageManager.isOverlayActive()) return true;
+        if(ATHRConfig.feature.misc.itemList.itemListSOnly && ATHRConfig.feature.misc.itemList.searchItemList) return !SearchBar.isSendToItemList();
         return !ItemRegistry.isLoaded || ItemRegistry.familyRegistry.isEmpty();
     }
 
