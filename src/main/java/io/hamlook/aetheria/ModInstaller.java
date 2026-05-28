@@ -29,8 +29,7 @@ public class ModInstaller {
     private static Point initialClick;
     private static boolean isMaximized = false;
     private static Rectangle normalBounds;
-    
-    // Theme Colors
+
     private static final Color BG_COLOR = new Color(25, 25, 25);
     private static final Color TITLE_BG = new Color(35, 35, 35);
     private static final Color FG_COLOR = new Color(240, 240, 240);
@@ -40,7 +39,6 @@ public class ModInstaller {
     private static final Color INPUT_BG = new Color(40, 40, 40);
     private static final Color BORDER_COL = new Color(60, 60, 60);
 
-    // Global State
     private static final Map<String, String> modLinks = new LinkedHashMap<>();
     private static final Map<String, List<ReleaseItem>> cachedReleases = new ConcurrentHashMap<>();
     private static final File CONFIG_FILE = new File(System.getProperty("user.home"), ".aetheria/config.txt");
@@ -140,7 +138,6 @@ public class ModInstaller {
             mainContainer.setBackground(BG_COLOR);
             mainContainer.setBorder(BorderFactory.createLineBorder(BORDER_COL, 1));
 
-            // --- TITLE BAR ---
             JPanel titleBar = new JPanel(new BorderLayout());
             titleBar.setBackground(TITLE_BG);
             titleBar.setPreferredSize(new Dimension(frame.getWidth(), 35));
@@ -192,7 +189,6 @@ public class ModInstaller {
                 }
             });
 
-            // --- GLOBAL HEADER (Path Chooser + Tabs) ---
             JPanel headerPanel = new JPanel(new BorderLayout());
             headerPanel.setBackground(BG_COLOR);
             headerPanel.add(titleBar, BorderLayout.NORTH);
@@ -233,8 +229,7 @@ public class ModInstaller {
             pathPanel.add(pathField, BorderLayout.CENTER);
             pathPanel.add(browseBtn, BorderLayout.EAST);
             globalConfigPanel.add(pathPanel, hgbc);
-            
-            // Tab Buttons
+
             JPanel tabBtnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
             tabBtnPanel.setBackground(BG_COLOR);
             JButton installTabBtn = new JButton("Install");
@@ -250,12 +245,10 @@ public class ModInstaller {
             headerPanel.add(headerBottom, BorderLayout.CENTER);
             mainContainer.add(headerPanel, BorderLayout.NORTH);
 
-            // --- CARDS ---
             CardLayout cardLayout = new CardLayout();
             JPanel cards = new JPanel(cardLayout);
             cards.setBackground(BG_COLOR);
 
-            // 1. INSTALL CARD
             JPanel installCard = new JPanel(new GridBagLayout());
             installCard.setBackground(BG_COLOR);
             installCard.setBorder(new EmptyBorder(10, 30, 20, 30));
@@ -313,7 +306,6 @@ public class ModInstaller {
             installCard.add(Box.createGlue(), igbc);
             cards.add(installCard, "INSTALL");
 
-            // 2. UPDATE CARD
             JPanel updateCard = new JPanel(new GridBagLayout());
             updateCard.setBackground(BG_COLOR);
             updateCard.setBorder(new EmptyBorder(10, 30, 20, 30));
@@ -342,7 +334,6 @@ public class ModInstaller {
             mainContainer.add(cards, BorderLayout.CENTER);
             frame.add(mainContainer);
 
-            // Tab actions
             installTabBtn.addActionListener(e -> {
                 cardLayout.show(cards, "INSTALL");
                 styleButton(installTabBtn, ACCENT, HOVER_ACCENT);
@@ -354,12 +345,10 @@ public class ModInstaller {
                 styleButton(installTabBtn, TITLE_BG, BTN_GRAY);
             });
 
-            // Resizing support
             ComponentResizer cr = new ComponentResizer();
             cr.registerComponent(frame);
             frame.setVisible(true);
 
-            // Initialization logic
             new Thread(() -> {
                 try {
                     String modLinksUrl = "https://raw.githubusercontent.com/JustEnoughFakepixel/JustEnoughFakepixel-REPO/refs/heads/main/data/modLinks.json";
@@ -386,7 +375,6 @@ public class ModInstaller {
                 }
             }).start();
 
-            // When Mod changes, fetch/display versions
             modCombo.addActionListener(e -> {
                 String selectedMod = (String) modCombo.getSelectedItem();
                 if (selectedMod == null) return;
@@ -403,7 +391,6 @@ public class ModInstaller {
                 }).start();
             });
 
-            // Install Logic
             downloadBtn.addActionListener(e -> {
                 if (versionCombo.getSelectedItem() == null) {
                     showError(frame, "Please select a valid version.");
@@ -434,7 +421,6 @@ public class ModInstaller {
                 }).start();
             });
 
-            // Update Logic
             checkUpdatesBtn.addActionListener(e -> {
                 File modsFolder = getValidatedModsFolder(pathField.getText(), frame);
                 if (modsFolder == null) return;
@@ -458,7 +444,7 @@ public class ModInstaller {
                         List<ReleaseItem> toDownload = new ArrayList<>();
 
                         for (String modName : modLinks.keySet()) {
-                            if (modName.equalsIgnoreCase("JustEnoughFakepixel")) continue; // Skip JEF updates entirely, Aetheria replaces it
+                            if (modName.equalsIgnoreCase("JustEnoughFakepixel")) continue;
 
                             List<ReleaseItem> releases = fetchReleasesForMod(modName);
                             if (releases.isEmpty()) continue;
