@@ -6,7 +6,7 @@ Aetheria's Skyblock Mod
 
 <div align="center">
 
-![jef](https://github.com/user-attachments/assets/60fb947e-813d-4565-94bd-e6fa4f8243bf)
+<img width="300" height="300" alt="logo" src="https://github.com/user-attachments/assets/3f87f5d8-7a63-426b-b58d-356c06ccb973" />
 
 
 [![Discord](https://img.shields.io/discord/1479556885769093192?label=discord&color=008b8b&logo=discord&logoColor=white&style=for-the-badge)](https://discord.gg/4zKq2RkSZS)
