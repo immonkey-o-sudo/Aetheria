@@ -67,7 +67,7 @@ public class CapeManager {
         if (!ATHRConfig.feature.cosmetics.capes.capesEnabled) return;
         String existing = activeCapes.get(playerName);
         long now = System.currentTimeMillis();
-        if (existing != null && !existing.equals("pending") && (now - lastFetched) < POLL_INTERVAL_MS) {
+        if (now - lastFetched < POLL_INTERVAL_MS) {
             return;
         }
         if (existing == null) activeCapes.put(playerName, "pending");
@@ -154,7 +154,7 @@ public class CapeManager {
     public static Cape getCapeForPlayer(String pl) {
         String capeID = activeCapes.get(pl);
 
-        if (capeID == null || (System.currentTimeMillis() - lastFetched > POLL_INTERVAL_MS)) {
+        if (System.currentTimeMillis() - lastFetched > POLL_INTERVAL_MS) {
             fetchCapeAsync(pl);
         }
         if (capeID == null || capeID.equals("pending")) return null;
