@@ -6,7 +6,7 @@ Aetheria's Skyblock Mod
 
 [![Discord](https://img.shields.io/discord/1479556885769093192?style=flat-square&logo=discord&logoColor=white&label=Discord&color=5865F2)](https://discord.gg/4zKq2RkSZS)
 [![GitHub Downloads](https://img.shields.io/github/downloads/aetheria-org/Aetheria/total?style=flat-square&logo=github&logoColor=white&label=Downloads&color=181717)](https://github.com/aetheria-org/Aetheria/releases)
-[![Modrinth Downloads](https://img.shields.io/modrinth/dt/justenoughfakepixel?style=flat-square&logo=modrinth&logoColor=white&label=Modrinth&color=00AF5C)](https://modrinth.com/mod/justenoughfakepixel)
+[![Modrinth Downloads](https://img.shields.io/modrinth/dt/aetheriamod?style=flat-square&logo=modrinth&logoColor=white&label=Modrinth&color=00AF5C)](https://modrinth.com/mod/aetheriamod)
 [![Made with Java](https://img.shields.io/badge/Made%20With-Java-ED8B00?style=flat-square&logo=openjdk&logoColor=white)](https://www.java.com)
 [![GitHub Stars](https://img.shields.io/github/stars/aetheria-org/Aetheria?style=flat-square&logo=github&logoColor=white&label=Stars&color=181717)](https://github.com/aetheria-org/Aetheria/stargazers)
 </div>

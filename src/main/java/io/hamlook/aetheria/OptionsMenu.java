@@ -36,7 +36,7 @@ public class OptionsMenu extends GuiScreen {
     private static final int ICON_SIZE = 24;
     private static final int ICON_GAP = 10;
     private static final ResourceLocation[] SOCIAL_ICONS = {GuiTextures.DISCORD, GuiTextures.GITHUB, GuiTextures.MODRINTH,GuiTextures.SKYATLAS};
-    private static final String[] SOCIAL_URLS = {"https://discord.gg/HHf5yqSy9R", "https://github.com/aetheria-org/Aetheria", "https://modrinth.com/mod/justenoughfakepixel","https://skyatlas.qzz.io"};
+    private static final String[] SOCIAL_URLS = {"https://discord.gg/HHf5yqSy9R", "https://github.com/aetheria-org/Aetheria", "https://modrinth.com/mod/aetheriamod","https://skyatlas.qzz.io"};
 
     private final List<Particle> particles = new ArrayList<>();
     private float globalTime = 0f;
@@ -184,7 +184,7 @@ public class OptionsMenu extends GuiScreen {
 
         // Update badge
         if (updateVersion != null && mouseX >= updateButtonX && mouseX <= updateButtonX + updateButtonW && mouseY >= updateButtonY && mouseY <= updateButtonY + updateButtonH) {
-            tryBrowse("https://modrinth.com/mod/justenoughfakepixel");
+            tryBrowse("https://modrinth.com/mod/aetheriamod");
             return;
         }
 
