@@ -1,4 +1,4 @@
-package io.hamlook.aetheria.features.chatfilters.ui;
+package io.hamlook.aetheria.features.chat.chatfilters.ui;
 
 import io.hamlook.aetheria.core.ATHRConfig;
 import io.hamlook.aetheria.utils.render.ResolutionUtils;

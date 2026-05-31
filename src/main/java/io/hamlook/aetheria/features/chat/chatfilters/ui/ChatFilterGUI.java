@@ -1,10 +1,10 @@
-package io.hamlook.aetheria.features.chatfilters.ui;
+package io.hamlook.aetheria.features.chat.chatfilters.ui;
 
 import io.hamlook.aetheria.core.config.gui.GuiTextures;
-import io.hamlook.aetheria.features.chatfilters.ChatFilter;
-import io.hamlook.aetheria.features.chatfilters.ChatFilterManager;
-import io.hamlook.aetheria.features.chatfilters.vars.FilterCase;
-import io.hamlook.aetheria.features.chatfilters.vars.FilterMode;
+import io.hamlook.aetheria.features.chat.chatfilters.ChatFilter;
+import io.hamlook.aetheria.features.chat.chatfilters.ChatFilterManager;
+import io.hamlook.aetheria.features.chat.chatfilters.vars.FilterCase;
+import io.hamlook.aetheria.features.chat.chatfilters.vars.FilterMode;
 import io.hamlook.aetheria.utils.render.NineSliceUtils;
 import io.hamlook.aetheria.utils.render.RenderUtils;
 import io.hamlook.aetheria.utils.render.ResolutionUtils;

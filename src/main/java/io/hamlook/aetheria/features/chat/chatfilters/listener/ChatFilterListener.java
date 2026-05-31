@@ -1,7 +1,7 @@
-package io.hamlook.aetheria.features.chatfilters.listener;
+package io.hamlook.aetheria.features.chat.chatfilters.listener;
 
 import io.hamlook.aetheria.core.ATHRConfig;
-import io.hamlook.aetheria.features.chatfilters.ChatFilterManager;
+import io.hamlook.aetheria.features.chat.chatfilters.ChatFilterManager;
 import io.hamlook.aetheria.init.RegisterEvents;
 import net.minecraft.util.IChatComponent;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;

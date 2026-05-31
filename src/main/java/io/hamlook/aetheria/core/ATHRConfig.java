@@ -4,7 +4,7 @@ import io.hamlook.aetheria.command.Command;
 import io.hamlook.aetheria.core.config.editors.GuiPositionEditor;
 import io.hamlook.aetheria.core.config.gui.GuiScreenElementWrapper;
 import io.hamlook.aetheria.core.config.gui.config.ConfigEditor;
-import io.hamlook.aetheria.features.chatfilters.ui.ChatFilterGUI;
+import io.hamlook.aetheria.features.chat.chatfilters.ui.ChatFilterGUI;
 import io.hamlook.aetheria.features.diana.GuiDianaOverlayEditor;
 import io.hamlook.aetheria.features.dungeons.DungeonStats;
 import io.hamlook.aetheria.features.dungeons.overlays.DungeonBreakerOverlay;

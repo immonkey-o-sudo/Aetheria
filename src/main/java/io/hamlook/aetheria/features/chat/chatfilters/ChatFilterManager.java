@@ -1,4 +1,4 @@
-package io.hamlook.aetheria.features.chatfilters;
+package io.hamlook.aetheria.features.chat.chatfilters;
 
 import com.google.gson.reflect.TypeToken;
 import io.hamlook.aetheria.core.ATHRConfig;

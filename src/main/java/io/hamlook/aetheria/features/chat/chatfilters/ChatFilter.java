@@ -1,14 +1,14 @@
-package io.hamlook.aetheria.features.chatfilters;
+package io.hamlook.aetheria.features.chat.chatfilters;
 
-import io.hamlook.aetheria.features.chatfilters.vars.FilterCase;
-import io.hamlook.aetheria.features.chatfilters.vars.FilterMode;
+import io.hamlook.aetheria.features.chat.chatfilters.vars.FilterCase;
+import io.hamlook.aetheria.features.chat.chatfilters.vars.FilterMode;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import io.hamlook.aetheria.features.chatfilters.vars.FilterAction;
+import io.hamlook.aetheria.features.chat.chatfilters.vars.FilterAction;
 
 public class ChatFilter {
 

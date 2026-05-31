@@ -1,4 +1,4 @@
-package io.hamlook.aetheria.features.chatfilters.vars;
+package io.hamlook.aetheria.features.chat.chatfilters.vars;
 
 import lombok.AllArgsConstructor;
 

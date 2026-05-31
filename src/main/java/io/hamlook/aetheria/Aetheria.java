@@ -1,6 +1,6 @@
 package io.hamlook.aetheria;
 
-import io.hamlook.aetheria.features.chatfilters.ChatFilterManager;
+import io.hamlook.aetheria.features.chat.chatfilters.ChatFilterManager;
 import io.hamlook.aetheria.features.misc.itemList.ItemRegistry;
 import io.hamlook.aetheria.core.ATHRConfig;
 import io.hamlook.aetheria.core.StorageManager;

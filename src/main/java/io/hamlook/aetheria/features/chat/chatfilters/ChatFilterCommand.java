@@ -1,8 +1,8 @@
-package io.hamlook.aetheria.features.chatfilters;
+package io.hamlook.aetheria.features.chat.chatfilters;
 
 import io.hamlook.aetheria.command.SimpleCommand;
 import io.hamlook.aetheria.core.ATHRConfig;
-import io.hamlook.aetheria.features.chatfilters.ui.ChatFilterGUI;
+import io.hamlook.aetheria.features.chat.chatfilters.ui.ChatFilterGUI;
 import io.hamlook.aetheria.init.RegisterCommand;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
