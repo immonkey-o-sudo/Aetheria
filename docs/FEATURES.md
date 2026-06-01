@@ -113,6 +113,7 @@
 - **Chat Copy** — Click or CTRL+click to copy a chat line with or without color codes.
 - **Transparent Chat** — Makes the chat background fully transparent.
 - **Animated Chat** — New messages slide into view.
+- **Chat Ping** - Play a sound and highlight the message when your name is mentioned in chat.
 
 
 ## Cosmetics

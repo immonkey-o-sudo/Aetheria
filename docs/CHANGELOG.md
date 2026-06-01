@@ -1,47 +1,17 @@
-# JEF 1.2.7 - Aetheria 1.0.0 Changelog
+# Aetheria 1.0.1 1.0.2 Changelog
 
-## Just Enough Fakepixel (JEF) has been rebranded to Aetheria (Aetheria's Skyblock Mod / ASM)
+- Added chat ping feature
+- Added option to have itemlist in inventory only
 
-- Added in-game Profile Viewer powered by SkyAtlas
-- Added timer (stopwatch) `/asmtimer`
-- Added in-game Item List and Recipe Viewer
-- Added SkyAtlas button in the Options menu
-- Added Hide Dungeon Blessing Messages
-- Added Pickobulus Preview
-- Added Anvil Combine Helper
-- Added `/sync` command to sync with SkyAtlas
-- Added Player Join/Leave Notifier
-- Added Better Containers (Improved SkyBlock menus)
-- Added filled Buy/Sell Order Highlights
-- Added Slot Binds
-- Added Chat Filters (`/chatfilters`)
-- Added Damage Formatter
-- Added Chat Compacting
-- Added Chat Timestamps
-- Added Chat Heads
-- Added Chat Copy
-- Added Transparent Chat
-- Added Chat Animation
+- Container name and inventory text are now black instead of vanilla grey while a dark better containers theme is selected
+- Search bar, item list search bar, storage search bar now have seperate options to persist text field contents when moving between GUI's
+- Clicking on items in item list menus now opens their respective information panels
 
-### Improvements
-- Significantly optimized capes
-- Optimized Dungeon features
-- Optimized Ordered Waypoints
-- Reworked Current Pet with major performance improvements
-- Improved Waypoint Manager GUI
-- Search Bar now has buttons to toggle between Item List and Search modes
-- Cleaned up and optimized Search Bar
-- Overall massive performance increase
 
-### Fixes
-- Fixed Chest Case animation not working when Dungeon Timers were disabled
-- Fixed Current Pet showing no head or level after relaunch
-- Fixed calculators showing calculations for plain text
+- Fixed Current pet autopet detection not working for non-skinned pets
+- Fixed itemlist breaking server connection if a recipe opened whilst a container open
+- Fixed pressing esc/e while Info panel or recipe viewer open not taking back to previous gui
+- Fixed not being able to scroll back down in storage overlay if outside of max scroll
 
-## Important Changelog
-- All commands now support `asm`, `athr`, and `jef` prefixes for backwards compatibility.
-  - Examples: `/asmprotect`, `/athrprotect`, and `/jefprotect` all perform the same action.
-- Added installer and auto-updater.
-  - Run the mod JAR directly to update Fakepixel mods.
 
 The full changelog can be found [here](https://github.com/aetheria-org/Aetheria/commits/main/).
