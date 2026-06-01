@@ -1,17 +1,18 @@
-# Aetheria 1.0.1 1.0.2 Changelog
+# Aetheria 1.0.1 - 1.0.2 Changelog
 
+### Additions
 - Added chat ping feature
-- Added option to have itemlist in inventory only
+- Added option to restrict Item List to inventory only
+- Clicking items in the Item List now opens their information panel
 
-- Container name and inventory text are now black instead of vanilla grey while a dark better containers theme is selected
-- Search bar, item list search bar, storage search bar now have seperate options to persist text field contents when moving between GUI's
-- Clicking on items in item list menus now opens their respective information panels
+### Improvements
+- Container and inventory text now use black instead of vanilla grey when a dark Better Containers theme is active
+- Search bar, Item List search bar, and Storage search bar now have separate options to persist text when moving between GUIs
 
-
-- Fixed Current pet autopet detection not working for non-skinned pets
-- Fixed itemlist breaking server connection if a recipe opened whilst a container open
-- Fixed pressing esc/e while Info panel or recipe viewer open not taking back to previous gui
-- Fixed not being able to scroll back down in storage overlay if outside of max scroll
-
+### Fixes
+- Fixed Current Pet autopet detection not working for non-skinned pets
+- Fixed Item List breaking server connection when opening a recipe while a container is open
+- Fixed Esc/E not returning to the previous GUI when the Info Panel or Recipe Viewer is open
+- Fixed Storage Overlay not scrolling back down when past the maximum scroll position
 
 The full changelog can be found [here](https://github.com/aetheria-org/Aetheria/commits/main/).
