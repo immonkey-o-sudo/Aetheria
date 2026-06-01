@@ -105,7 +105,7 @@ public class DianaTracker {
     @SubscribeEvent
     public void onChat(ClientChatReceivedEvent event) {
         if (mc.thePlayer == null) return;
-        if (ChatUtils.isFromServer(event)) return;
+        // if (ChatUtils.isFromServer(event)) return;
 
         String msg = ChatUtils.clean(event);
 
