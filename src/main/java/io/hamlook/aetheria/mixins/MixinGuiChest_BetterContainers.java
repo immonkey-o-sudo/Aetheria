@@ -10,7 +10,9 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.util.ResourceLocation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
@@ -27,6 +29,15 @@ public class MixinGuiChest_BetterContainers {
         if (!BetterContainers.getInstance().tryBindTexture(tm, location)) {
             tm.bindTexture(location);
         }
+    }
+
+    @ModifyConstant(method = "drawGuiContainerForegroundLayer", constant = @Constant(intValue = 4210752))
+    private int ATHR$modifyContainerTitleColor(int original) {
+        if (BetterContainers.isEnabled() && BetterContainers.getInstance().isLoaded()
+                && ATHRConfig.feature.qol.betterContainers.style <= 1) {
+            return 0;
+        }
+        return original;
     }
 
     @Inject(method = "drawGuiContainerForegroundLayer", at = @At("RETURN"))
