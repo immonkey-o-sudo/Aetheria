@@ -96,6 +96,13 @@ public class RecipeViewerGUI extends GuiScreen {
         if (!recipes.isEmpty()) {
             if (recipes.get(recipeIndex).mouseClicked(mx, my, btn, contentX, contentY, boxW, contentH, scrollY))
                 return;
+            if (btn == 0) {
+                SkyblockItem clicked = recipes.get(recipeIndex).getSkyblockItemAt(mx, my, contentX, contentY, boxW, contentH, scrollY);
+                if (clicked != null && clicked != item) {
+                    mc.displayGuiScreen(new RecipeViewerGUI(clicked, this));
+                    return;
+                }
+            }
         }
 
         if (recipes.size() <= 1) return;

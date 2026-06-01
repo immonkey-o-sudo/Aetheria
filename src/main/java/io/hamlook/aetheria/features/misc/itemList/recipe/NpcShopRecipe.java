@@ -106,15 +106,11 @@ public class NpcShopRecipe extends Recipe {
         int gridX = x + (width  - gridW) / 2;
         int gridY = y + (height - gridH) / 2;
 
-        int startIdx = currentPage * itemsPerPage;
-        int endIdx = Math.min(startIdx + itemsPerPage, recipes.size());
-
         for (int i = 0; i < COLS * ROWS; i++) {
             int col = i % COLS, row = i / COLS;
             int sx = gridX + col * S, sy = gridY + row * S;
             if (mouseX < sx || mouseX >= sx + S || mouseY < sy || mouseY >= sy + S) continue;
 
-            // Arrow Tooltips
             if (totalPages > 1 && row == ROWS - 1) {
                 if (col == 0 && currentPage > 0) {
                     List<String> tip = new ArrayList<>();
@@ -129,36 +125,63 @@ public class NpcShopRecipe extends Recipe {
                 }
                 return null;
             }
+            break;
+        }
 
-            // Item Tooltips
-            int itemIndex = startIdx + (row * COLS + col);
-            if (itemIndex >= recipes.size() || itemIndex >= endIdx) return null;
+        int idx = getHoveredSlotIndex(mouseX, mouseY, x, y, width, height, scrollY);
+        if (idx == -1) return null;
 
-            JsonObject recipe = recipes.get(itemIndex);
-            if (!recipe.has("result")) return null;
-            String[] rp = recipe.get("result").getAsString().split(":");
-            SkyblockItem rItem = RecipeUtils.resolve(rp[0]);
-            String rAmt = rp.length > 1 ? rp[1] : "1";
-            if (rItem == null) return null;
+        JsonObject recipe = recipes.get(idx);
+        if (!recipe.has("result")) return null;
+        String[] rp = recipe.get("result").getAsString().split(":");
+        SkyblockItem rItem = RecipeUtils.resolve(rp[0]);
+        String rAmt = rp.length > 1 ? rp[1] : "1";
+        if (rItem == null) return null;
 
-            List<String> tip = RecipeUtils.buildItemTooltipWithAmount(rItem, rAmt);
-            tip.add("§8---------------");
-            if (recipe.has("cost") && recipe.get("cost").isJsonArray()) {
-                JsonArray costArr = recipe.get("cost").getAsJsonArray();
-                for (int c = 0; c < costArr.size(); c++) {
-                    String[] cp = costArr.get(c).getAsString().split(":");
-                    String rId = cp[0], cAmt = cp.length > 1 ? cp[1] : "1";
-                    if (rId.equals("SKYBLOCK_COIN")) {
-                        tip.add("§7Cost: §6" + String.format("%,d", Long.parseLong(cAmt)) + " Coins");
-                    } else {
-                        SkyblockItem costItem = RecipeUtils.resolve(rId);
-                        if (costItem != null) tip.add("§7Cost: " + costItem.displayName + " §8x" + cAmt);
-                    }
+        List<String> tip = RecipeUtils.buildItemTooltipWithAmount(rItem, rAmt);
+        tip.add("§8---------------");
+        if (recipe.has("cost") && recipe.get("cost").isJsonArray()) {
+            JsonArray costArr = recipe.get("cost").getAsJsonArray();
+            for (int c = 0; c < costArr.size(); c++) {
+                String[] cp = costArr.get(c).getAsString().split(":");
+                String rId = cp[0], cAmt = cp.length > 1 ? cp[1] : "1";
+                if (rId.equals("SKYBLOCK_COIN")) {
+                    tip.add("§7Cost: §6" + String.format("%,d", Long.parseLong(cAmt)) + " Coins");
+                } else {
+                    SkyblockItem costItem = RecipeUtils.resolve(rId);
+                    if (costItem != null) tip.add("§7Cost: " + costItem.displayName + " §8x" + cAmt);
                 }
             }
-            return tip;
         }
-        return null;
+        return tip;
+    }
+
+    private int getHoveredSlotIndex(int mouseX, int mouseY, int x, int y, int width, int height, int scrollY) {
+        int gridW = COLS * S, gridH = ROWS * S;
+        int gridX = x + (width  - gridW) / 2;
+        int gridY = y + (height - gridH) / 2;
+        int startIdx = currentPage * itemsPerPage;
+        int endIdx = Math.min(startIdx + itemsPerPage, recipes.size());
+
+        for (int i = 0; i < COLS * ROWS; i++) {
+            int col = i % COLS, row = i / COLS;
+            int sx = gridX + col * S, sy = gridY + row * S;
+            if (mouseX < sx || mouseX >= sx + S || mouseY < sy || mouseY >= sy + S) continue;
+            if (totalPages > 1 && row == ROWS - 1) return -1;
+            int itemIndex = startIdx + (row * COLS + col);
+            if (itemIndex >= recipes.size() || itemIndex >= endIdx) return -1;
+            return itemIndex;
+        }
+        return -1;
+    }
+
+    @Override
+    public SkyblockItem getSkyblockItemAt(int mouseX, int mouseY, int x, int y, int width, int height, int scrollY) {
+        int idx = getHoveredSlotIndex(mouseX, mouseY, x, y, width, height, scrollY);
+        if (idx == -1) return null;
+        JsonObject recipe = recipes.get(idx);
+        if (!recipe.has("result")) return null;
+        return RecipeUtils.resolve(recipe.get("result").getAsString().split(":")[0]);
     }
 
     @Override

@@ -22,6 +22,10 @@ public abstract class Recipe {
         return false;
     }
 
+    public SkyblockItem getSkyblockItemAt(int mouseX, int mouseY, int x, int y, int width, int height, int scrollY) {
+        return null;
+    }
+
     public int[] preferredSize() { return new int[]{220, 100}; }
 
     public String typeLabel()      { return "Recipe"; }

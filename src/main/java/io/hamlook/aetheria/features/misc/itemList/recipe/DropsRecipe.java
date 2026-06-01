@@ -92,6 +92,24 @@ public class DropsRecipe extends Recipe {
     @Override
     public List<String> getTooltip(int mouseX, int mouseY, int x, int y,
                                    int width, int height, int scrollY) {
+        int idx = getHoveredSlotIndex(mouseX, mouseY, x, y, width, height, scrollY);
+        if (idx == -1) return null;
+        JsonObject drop = getSortedDrops().get(idx);
+        String dropIdRaw = drop.has("id") ? drop.get("id").getAsString() : "";
+        String[] parts = dropIdRaw.split(":");
+        String amt = parts.length > 1 ? parts[1] : "1";
+        SkyblockItem dropItem = RecipeUtils.resolve(parts[0]);
+        if (dropItem == null) return null;
+
+        String rawChance = drop.has("chance") ? drop.get("chance").getAsString() : "100%";
+        String fmt = RecipeUtils.formatChance(rawChance);
+        List<String> tip = RecipeUtils.buildItemTooltipWithAmount(dropItem, amt);
+        tip.add("§8---------------");
+        tip.add("§7Chance: " + RecipeUtils.getChanceColor(fmt) + fmt);
+        return tip;
+    }
+
+    private int getHoveredSlotIndex(int mouseX, int mouseY, int x, int y, int width, int height, int scrollY) {
         List<JsonObject> drops = getSortedDrops();
         int listX = x + 20;
         int listY = y + 5;
@@ -99,23 +117,17 @@ public class DropsRecipe extends Recipe {
         for (int i = 0; i < drops.size(); i++) {
             int sy = listY + i * ROW_H - scrollY;
             if (sy + ROW_H < y || sy > y + height) continue;
-
-            if (mouseX >= listX && mouseX < listX + S && mouseY >= sy && mouseY < sy + S) {
-                JsonObject drop = drops.get(i);
-                String dropIdRaw = drop.has("id") ? drop.get("id").getAsString() : "";
-                String[] parts = dropIdRaw.split(":");
-                String amt = parts.length > 1 ? parts[1] : "1";
-                SkyblockItem dropItem = RecipeUtils.resolve(parts[0]);
-                if (dropItem == null) return null;
-
-                String rawChance = drop.has("chance") ? drop.get("chance").getAsString() : "100%";
-                String fmt = RecipeUtils.formatChance(rawChance);
-                List<String> tip = RecipeUtils.buildItemTooltipWithAmount(dropItem, amt);
-                tip.add("§8---------------");
-                tip.add("§7Chance: " + RecipeUtils.getChanceColor(fmt) + fmt);
-                return tip;
-            }
+            if (mouseX >= listX && mouseX < listX + S && mouseY >= sy && mouseY < sy + S) return i;
         }
-        return null;
+        return -1;
+    }
+
+    @Override
+    public SkyblockItem getSkyblockItemAt(int mouseX, int mouseY, int x, int y, int width, int height, int scrollY) {
+        int idx = getHoveredSlotIndex(mouseX, mouseY, x, y, width, height, scrollY);
+        if (idx == -1) return null;
+        JsonObject drop = getSortedDrops().get(idx);
+        String dropIdRaw = drop.has("id") ? drop.get("id").getAsString() : "";
+        return RecipeUtils.resolve(dropIdRaw.split(":")[0]);
     }
 }

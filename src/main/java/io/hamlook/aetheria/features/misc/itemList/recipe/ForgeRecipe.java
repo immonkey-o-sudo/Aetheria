@@ -96,9 +96,7 @@ public class ForgeRecipe extends Recipe {
         if (stack != null) ItemRenderUtils.drawItemStack(stack, resultX + 1, slotY + 1);
     }
 
-    @Override
-    public List<String> getTooltip(int mouseX, int mouseY, int x, int y,
-                                   int width, int height, int scrollY) {
+    private int getHoveredSlotIndex(int mouseX, int mouseY, int x, int y, int width, int height, int scrollY) {
         JsonArray inputs = collectInputs();
         int n = inputs.size();
 
@@ -113,17 +111,34 @@ public class ForgeRecipe extends Recipe {
         int slotX    = x + (width - slotRowW) / 2;
 
         for (int i = 0; i < n; i++) {
-            String[] parts = inputs.get(i).getAsString().split(":");
-            String amt = parts.length > 1 ? parts[1] : "1";
-            SkyblockItem reqItem = RecipeUtils.resolve(parts[0]);
             int sx = slotX + i * (S + 2);
-            if (mouseX >= sx && mouseX < sx + S && mouseY >= slotY && mouseY < slotY + S && reqItem != null)
-                return RecipeUtils.buildItemTooltipWithAmount(reqItem, amt);
+            if (mouseX >= sx && mouseX < sx + S && mouseY >= slotY && mouseY < slotY + S) return i;
         }
         int resultX = slotX + n * (S + 2) + 14;
-        if (mouseX >= resultX && mouseX < resultX + S && mouseY >= slotY && mouseY < slotY + S)
-            return RecipeUtils.buildItemTooltip(targetItem);
-        return null;
+        if (mouseX >= resultX && mouseX < resultX + S && mouseY >= slotY && mouseY < slotY + S) return n;
+        return -1;
+    }
+
+    @Override
+    public List<String> getTooltip(int mouseX, int mouseY, int x, int y,
+                                   int width, int height, int scrollY) {
+        int idx = getHoveredSlotIndex(mouseX, mouseY, x, y, width, height, scrollY);
+        if (idx == -1) return null;
+        JsonArray inputs = collectInputs();
+        if (idx == inputs.size()) return RecipeUtils.buildItemTooltip(targetItem);
+        String[] parts = inputs.get(idx).getAsString().split(":");
+        SkyblockItem reqItem = RecipeUtils.resolve(parts[0]);
+        if (reqItem == null) return null;
+        return RecipeUtils.buildItemTooltipWithAmount(reqItem, parts.length > 1 ? parts[1] : "1");
+    }
+
+    @Override
+    public SkyblockItem getSkyblockItemAt(int mouseX, int mouseY, int x, int y, int width, int height, int scrollY) {
+        int idx = getHoveredSlotIndex(mouseX, mouseY, x, y, width, height, scrollY);
+        if (idx == -1) return null;
+        JsonArray inputs = collectInputs();
+        if (idx == inputs.size()) return targetItem;
+        return RecipeUtils.resolve(inputs.get(idx).getAsString().split(":")[0]);
     }
 
     protected JsonArray collectInputs() {
