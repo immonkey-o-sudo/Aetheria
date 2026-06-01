@@ -29,6 +29,7 @@ public class StorageManager {
     private static long transitionStartTime = 0;
     @Getter
     private static boolean isTransitioning = false;
+    private static long overlayActiveStartTime = 0;
     private static boolean wasMouseLocked = false;
     private static boolean switchInitiatedFromOverlay = false;
 
@@ -90,6 +91,17 @@ public class StorageManager {
         if (renderer == null && !StorageData.containers.isEmpty()) {
             renderer = new StorageRenderer(StorageData.containers);
             overlayActive = true;
+            overlayActiveStartTime = System.currentTimeMillis();
+        }
+
+        // Check if overlay has been active without a storage container for too long
+        if (overlayActive && !(Minecraft.getMinecraft().currentScreen instanceof net.minecraft.client.gui.inventory.GuiChest)) {
+            long elapsed = System.currentTimeMillis() - overlayActiveStartTime;
+            if (elapsed > TRANSITION_TIMEOUT) {
+                System.out.println("[ATHR DEBUG] Storage overlay active without container for " + TRANSITION_TIMEOUT/1000 + "s - closing overlay");
+                closeOverlay();
+                return;
+            }
         }
 
         if (isTransitioning) {
@@ -193,6 +205,7 @@ public class StorageManager {
         activeContainerId = null;
         renderer = null;
         overlayActive = false;
+        overlayActiveStartTime = 0;
         if (isTransitioning && !wasMouseLocked) {
             setMouseLockedSilent(false);
         }
