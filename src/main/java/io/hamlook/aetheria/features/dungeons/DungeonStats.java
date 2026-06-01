@@ -141,7 +141,6 @@ public class DungeonStats extends Overlay {
 
     @SubscribeEvent
     public void onChat(ClientChatReceivedEvent event) {
-        if (ChatUtils.isFromServer(event)) return;
         if (ATHRConfig.feature == null) return;
         if (!timers.isInDungeon()) return;
 

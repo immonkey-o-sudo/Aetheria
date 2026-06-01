@@ -21,7 +21,7 @@ public class PartyCommands {
 
     @SubscribeEvent
     public void onChat(ClientChatReceivedEvent event) {
-        if (ChatUtils.isFromServer(event)) return;
+     //   if (ChatUtils.isFromServer(event)) return;
         String msg = ChatUtils.clean(event);
         if (!ChatUtils.isPartyMessage(msg)) return;
 

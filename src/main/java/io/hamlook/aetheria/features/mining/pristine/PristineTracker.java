@@ -48,8 +48,7 @@ public class PristineTracker {
 
     @SubscribeEvent
     public void onChat(ClientChatReceivedEvent event) {
-        if (ChatUtils.isFromServer(event) || isActive()) return;
-
+        if (isActive()) return;
         String msg = ChatUtils.clean(event);
         if (ChatUtils.isPartyMessage(msg) || ChatUtils.isPlayerMessage(msg) ||
                 ChatUtils.isMsgReceived(msg) || ChatUtils.isMsgSent(msg)) return;
