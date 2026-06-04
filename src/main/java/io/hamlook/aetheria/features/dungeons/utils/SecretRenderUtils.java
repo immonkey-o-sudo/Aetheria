@@ -10,6 +10,7 @@ import io.hamlook.aetheria.features.waypoints.WaypointRenderer;
 import io.hamlook.aetheria.init.RegisterEvents;
 import io.hamlook.aetheria.utils.data.SkyblockData;
 import io.hamlook.aetheria.utils.render.WorldRenderUtils;
+import io.netty.util.internal.ConcurrentSet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.item.EntityTNTPrimed;
@@ -34,7 +35,7 @@ public class SecretRenderUtils {
 
     private static final Minecraft mc = Minecraft.getMinecraft();
 
-    private static final List<SecretWaypoint> currentSecrets = new ArrayList<>();
+    private static final ConcurrentSet<SecretWaypoint> currentSecrets = new ConcurrentSet<>();
     private static int lastActionBarSecrets = -1;
     private static int periodicTickCounter = 0;
     private static final Pattern SECRETS_FOUND_PATTERN = Pattern.compile("Secrets Found:\\s*(\\d+)/(\\d+)");
