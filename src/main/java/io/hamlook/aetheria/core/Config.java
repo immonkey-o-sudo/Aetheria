@@ -122,8 +122,6 @@ public class Config {
             case "openLicenseMixin": openUrl("https://github.com/SpongePowered/Mixin/"); break;
             case "openLicenseMoulConfig": openUrl("https://github.com/NotEnoughUpdates/MoulConfig"); break;
             case "openLicenseLombok": openUrl("https://projectlombok.org/"); break;
-            case "openLicenseReflections": openUrl("https://github.com/ronmamo/reflections"); break;
-            case "openLicenseJavassist": openUrl("https://github.com/jboss-javassist/javassist"); break;
             case "openLicenseJbAnnotations": openUrl("https://github.com/JetBrains/java-annotations"); break;
         }
     }

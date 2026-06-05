@@ -90,11 +90,6 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.30")
     runtimeOnly("me.djtheredstoner:DevAuth-forge-legacy:1.2.1")
     shadowImpl("com.google.code.gson:gson:2.10.1") { isTransitive = false }
-
-    shadowImpl("org.reflections:reflections:0.9.12") {
-        isTransitive = false
-    }
-    shadowImpl("org.javassist:javassist:3.21.0-GA")
 }
 
 // Tasks:
@@ -153,8 +148,6 @@ tasks.shadowJar {
     }
 
     fun relocate(name: String) = relocate(name, "$baseGroup.deps.$name")
-    relocate("org.reflections")
-    relocate("org.javassist")
     relocate("kotlin")
 }
 

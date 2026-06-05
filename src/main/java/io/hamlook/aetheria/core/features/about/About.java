@@ -44,16 +44,6 @@ public class About {
     @ConfigAccordionId(id = 0)
     public boolean lombokButton = false;
 
-    @ConfigOption(name = "Reflections", desc = "Reflections is available under the WTFPL / Apache 2 license")
-    @ConfigEditorButton(runnableId = "openLicenseReflections", buttonText = "Source")
-    @ConfigAccordionId(id = 0)
-    public boolean reflectionsButton = false;
-
-    @ConfigOption(name = "Javassist", desc = "Javassist is available under the Apache 2 / LGPL 2.1 / MPL 1.1 license")
-    @ConfigEditorButton(runnableId = "openLicenseJavassist", buttonText = "Source")
-    @ConfigAccordionId(id = 0)
-    public boolean javassistButton = false;
-
     @ConfigOption(name = "JB Annotations", desc = "JetBrains Annotations is available under the Apache 2 license")
     @ConfigEditorButton(runnableId = "openLicenseJbAnnotations", buttonText = "Source")
     @ConfigAccordionId(id = 0)

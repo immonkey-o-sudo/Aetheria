@@ -1,53 +1,98 @@
 package io.hamlook.aetheria.init;
 
+import io.hamlook.aetheria.Aetheria;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.command.ICommand;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
-import org.reflections.Reflections;
-import org.reflections.scanners.FieldAnnotationsScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
-import org.reflections.util.ConfigurationBuilder;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.Set;
+import java.util.List;
 
+/**
+ * Auto-discovers all classes in the {@code io.hamlook.aetheria} package at mod
+ * initialization and registers them based on annotations:
+ * <ul>
+ *   <li>{@link RegisterEvents {@code @RegisterEvents}} → {@link
+ *       MinecraftForge#EVENT_BUS}</li>
+ *   <li>{@link RegisterCommand {@code @RegisterCommand}} → {@link
+ *       ClientCommandHandler}</li>
+ *   <li>{@link RegisterInstance {@code @RegisterInstance}} → command or event bus
+ *       depending on field type</li>
+ *   <li>{@link RegisterKeybind {@code @RegisterKeybind}} → {@link
+ *       ClientRegistry#registerKeyBinding}</li>
+ * </ul>
+ */
 public class EventRegistrar {
 
     private static final String BASE_PACKAGE = "io.hamlook.aetheria";
 
-    private static final Reflections REFS = new Reflections(new ConfigurationBuilder().forPackages(BASE_PACKAGE).addScanners(new TypeAnnotationsScanner(), new FieldAnnotationsScanner()));
-
+    /**
+     * Scans the classpath, loads every discovered class, and attempts each of the
+     * four registration paths on it.
+     */
     public static void registerAll() {
-        registerEvents();
-        registerCommands();
-        registerKeybinds();
+        List<String> classNames = ClasspathScanner.findClassNames(EventRegistrar.class, BASE_PACKAGE);
+        List<Class<?>> classes = ClasspathScanner.loadClasses(classNames, EventRegistrar.class.getClassLoader());
+        for (Class<?> clazz : classes) {
+            tryRegisterEvents(clazz);
+            tryRegisterCommand(clazz);
+            tryRegisterInstanceFields(clazz);
+            tryRegisterKeybindFields(clazz);
+        }
     }
 
-    private static void registerEvents() {
-        for (Class<?> clazz : REFS.getTypesAnnotatedWith(RegisterEvents.class)) {
-            try {
-                MinecraftForge.EVENT_BUS.register(newInstance(clazz));
-            } catch (Throwable t) {
-                System.err.println("[ATHR] Failed to register events for " + clazz.getName());
-                t.printStackTrace();
-            }
+    /**
+     * If {@code clazz} is annotated with {@code @RegisterEvents}, instantiate it
+     * and subscribe it to {@link MinecraftForge#EVENT_BUS}.
+     */
+    private static void tryRegisterEvents(Class<?> clazz) {
+        if (!clazz.isAnnotationPresent(RegisterEvents.class)) return;
+        try {
+            MinecraftForge.EVENT_BUS.register(newInstance(clazz));
+        } catch (Throwable t) {
+            Aetheria.logger.severe("[ATHR] Failed to register events for " + clazz.getName() + ": " + t.getMessage());
         }
+    }
 
-        Set<Field> fields = REFS.getFieldsAnnotatedWith(RegisterInstance.class);
-        for (Field field : fields) {
+    /**
+     * If {@code clazz} is annotated with {@code @RegisterCommand} and implements
+     * {@link ICommand}, instantiate and register it with
+     * {@link ClientCommandHandler}.
+     */
+    private static void tryRegisterCommand(Class<?> clazz) {
+        if (!clazz.isAnnotationPresent(RegisterCommand.class)) return;
+        if (!ICommand.class.isAssignableFrom(clazz)) {
+            Aetheria.logger.severe("[ATHR] @RegisterCommand class does not implement ICommand: " + clazz.getName());
+            return;
+        }
+        try {
+            ClientCommandHandler.instance.registerCommand((ICommand) newInstance(clazz));
+        } catch (Throwable t) {
+            Aetheria.logger.severe("[ATHR] Failed to register command: " + clazz.getName() + ": " + t.getMessage());
+        }
+    }
+
+    /**
+     * For every {@code @RegisterInstance} static field in {@code clazz}, read the
+     * field value and register it, as a command if it implements {@link ICommand},
+     * otherwise as an event-bus listener.
+     */
+    private static void tryRegisterInstanceFields(Class<?> clazz) {
+        for (Field field : clazz.getDeclaredFields()) {
+            if (!field.isAnnotationPresent(RegisterInstance.class)) continue;
+            if (!Modifier.isStatic(field.getModifiers())) {
+                Aetheria.logger.severe("[ATHR] @RegisterInstance field must be static: " + clazz.getName() + "." + field.getName());
+                continue;
+            }
             try {
-                if (!Modifier.isStatic(field.getModifiers())) {
-                    System.err.println("[ATHR] @RegisterInstance field must be static: " + field.getDeclaringClass().getName() + "." + field.getName());
-                    continue;
-                }
                 field.setAccessible(true);
                 Object instance = field.get(null);
                 if (instance == null) {
-                    System.err.println("[ATHR] @RegisterInstance field is null (not yet initialized): " + field.getName());
+                    Aetheria.logger.severe("[ATHR] @RegisterInstance field is null: " + field.getName());
                     continue;
                 }
                 if (instance instanceof ICommand) {
@@ -56,48 +101,37 @@ public class EventRegistrar {
                     MinecraftForge.EVENT_BUS.register(instance);
                 }
             } catch (Throwable t) {
-                System.err.println("[ATHR] Failed to register instance field: " + field.getName());
-                t.printStackTrace();
+                Aetheria.logger.severe("[ATHR] Failed to register instance field: " + field.getName() + ": " + t.getMessage());
             }
         }
     }
 
-    private static void registerCommands() {
-        for (Class<?> clazz : REFS.getTypesAnnotatedWith(RegisterCommand.class)) {
-            try {
-                if (!ICommand.class.isAssignableFrom(clazz)) {
-                    System.err.println("[ATHR] @RegisterEvents class does not implement ICommand: " + clazz.getName());
-                    continue;
-                }
-                ClientCommandHandler.instance.registerCommand((ICommand) newInstance(clazz));
-            } catch (Throwable t) {
-                System.err.println("[ATHR] Failed to register command: " + clazz.getName());
-                t.printStackTrace();
+    /**
+     * For every {@code @RegisterKeybind} static {@link KeyBinding} field in
+     * {@code clazz}, read the field value and register it with
+     * {@link ClientRegistry#registerKeyBinding}.
+     */
+    private static void tryRegisterKeybindFields(Class<?> clazz) {
+        for (Field field : clazz.getDeclaredFields()) {
+            if (!field.isAnnotationPresent(RegisterKeybind.class)) continue;
+            if (!Modifier.isStatic(field.getModifiers())) {
+                Aetheria.logger.severe("[ATHR] @RegisterKeybind field must be static: " + clazz.getName() + "." + field.getName());
+                continue;
             }
-        }
-    }
-
-    private static void registerKeybinds() {
-        for (Field field : REFS.getFieldsAnnotatedWith(RegisterKeybind.class)) {
+            if (!KeyBinding.class.isAssignableFrom(field.getType())) {
+                Aetheria.logger.severe("[ATHR] @RegisterKeybind field is not a KeyBinding: " + field.getName());
+                continue;
+            }
             try {
-                if (!Modifier.isStatic(field.getModifiers())) {
-                    System.err.println("[ATHR] @RegisterKeybind field must be static: " + field.getDeclaringClass().getName() + "." + field.getName());
-                    continue;
-                }
-                if (!KeyBinding.class.isAssignableFrom(field.getType())) {
-                    System.err.println("[ATHR] @RegisterKeybind field is not a KeyBinding: " + field.getName());
-                    continue;
-                }
                 field.setAccessible(true);
                 KeyBinding key = (KeyBinding) field.get(null);
                 if (key == null) {
-                    System.err.println("[ATHR] @RegisterKeybind field is null: " + field.getName());
+                    Aetheria.logger.severe("[ATHR] @RegisterKeybind field is null: " + field.getName());
                     continue;
                 }
                 ClientRegistry.registerKeyBinding(key);
             } catch (Throwable t) {
-                System.err.println("[ATHR] Failed to register keybind: " + field.getName());
-                t.printStackTrace();
+                Aetheria.logger.severe("[ATHR] Failed to register keybind: " + field.getName() + ": " + t.getMessage());
             }
         }
     }
