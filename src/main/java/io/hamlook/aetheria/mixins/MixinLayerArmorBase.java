@@ -1,7 +1,5 @@
 package io.hamlook.aetheria.mixins;
 
-// Ported from https://github.com/Polyfrost/PolyPatcher/blob/main/src/main/java/club/sk1er/patcher/mixins/features/disableenchantglint/LayerItemBaseMixin_DisableEnchantGlint.java
-
 import io.hamlook.aetheria.core.ATHRConfig;
 import net.minecraft.client.renderer.entity.layers.LayerArmorBase;
 import org.spongepowered.asm.mixin.Mixin;

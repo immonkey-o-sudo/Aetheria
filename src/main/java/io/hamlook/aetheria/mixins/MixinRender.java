@@ -1,7 +1,5 @@
 package io.hamlook.aetheria.mixins;
 
-// Credit: PolyPatcher (https://github.com/Sk1erLLC/Patcher)
-
 import io.hamlook.aetheria.core.ATHRConfig;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.entity.Entity;
