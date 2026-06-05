@@ -1,6 +1,7 @@
 package io.hamlook.aetheria.repo;
 
 import com.google.gson.GsonBuilder;
+
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.concurrent.*;
@@ -11,10 +12,11 @@ public class RepoManager {
     private final JsonCache cache = new JsonCache(new GsonBuilder().create());
     private final ConcurrentMap<String, Source> sources = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, List<Runnable>> listeners = new ConcurrentHashMap<>();
-    private final ExecutorService pool = new ThreadPoolExecutor(
-            1, 2, 30, TimeUnit.SECONDS, new LinkedBlockingQueue<>(32),
-            r -> { Thread t = new Thread(r, "ATHR-IO"); t.setDaemon(true); return t; },
-            new ThreadPoolExecutor.DiscardOldestPolicy());
+    private final ExecutorService pool = new ThreadPoolExecutor(1, 2, 30, TimeUnit.SECONDS, new LinkedBlockingQueue<>(32), r -> {
+        Thread t = new Thread(r, "ATHR-IO");
+        t.setDaemon(true);
+        return t;
+    }, new ThreadPoolExecutor.DiscardOldestPolicy());
 
     public void register(String key, String url) {
         sources.put(key, new Source(url));
@@ -74,7 +76,9 @@ public class RepoManager {
         List<Runnable> cbs = listeners.get(key);
         if (cbs == null) return;
         for (Runnable cb : cbs) {
-            try { cb.run(); } catch (Exception e) {
+            try {
+                cb.run();
+            } catch (Exception e) {
                 System.err.println("[ATHR] Listener error (" + key + "): " + e.getMessage());
             }
         }
@@ -82,12 +86,19 @@ public class RepoManager {
 
     private static class Source {
         final String url;
-        volatile String etag;
         private final AtomicBoolean loading = new AtomicBoolean();
+        volatile String etag;
 
-        Source(String url) { this.url = url; }
+        Source(String url) {
+            this.url = url;
+        }
 
-        boolean claim() { return loading.compareAndSet(false, true); }
-        void release() { loading.set(false); }
+        boolean claim() {
+            return loading.compareAndSet(false, true);
+        }
+
+        void release() {
+            loading.set(false);
+        }
     }
 }

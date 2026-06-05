@@ -11,6 +11,7 @@ public class HttpFetcher {
     private static final String USER_AGENT = "ATHR/1.0 (Minecraft 1.8.9)";
 
     private static String readAll(HttpURLConnection conn) throws Exception {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
             StringBuilder sb = new StringBuilder();
             String line;
             while ((line = br.readLine()) != null) sb.append(line).append('\n');
