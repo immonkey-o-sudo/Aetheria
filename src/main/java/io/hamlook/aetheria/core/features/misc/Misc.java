@@ -33,6 +33,10 @@ public class Misc {
     @Category(name = "Bazaar Orders", desc = "Highlights filled sell and buy orders in the Bazaar Orders menu")
     public BazaarOrdersConfig bazaarOrders = new BazaarOrdersConfig();
 
+    @Expose
+    @Category(name = "Price Fetcher", desc = "Settings related to the dynamic price fetcher used for various purposes.")
+    public PriceFetcherConfig priceFetcher = new PriceFetcherConfig();
+
     // ── standalone options ───────────────────────────────────────────────────
     @Expose
     @ConfigOption(name = "Item Stack Tips", desc = "Shows enchant levels on books and floor numbers on Catacombs passes")

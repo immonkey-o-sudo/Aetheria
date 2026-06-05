@@ -1,28 +1,22 @@
 package io.hamlook.aetheria.features.price;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import io.hamlook.aetheria.Aetheria;
+import io.hamlook.aetheria.features.price.vars.PriceData;
 import io.hamlook.aetheria.repo.CapeAPI;
+import lombok.Getter;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class PriceMap {
 
     private static final Gson gson = new Gson();
-    private static final Map<String, List<ItemPrice>> priceMap = new HashMap<>();
-
-    public static Map<String, List<ItemPrice>> getPriceMap() {
-        return priceMap;
-    }
+    @Getter
+    private static final PriceData priceData = new PriceData();
 
     public static void fetch() {
         new Thread(() -> {
@@ -40,12 +34,14 @@ public class PriceMap {
                         StringBuilder sb = new StringBuilder();
                         String line;
                         while ((line = br.readLine()) != null) sb.append(line);
-                        Type type = new TypeToken<Map<String, List<ItemPrice>>>() {}.getType();
-                        Map<String, List<ItemPrice>> fetched = gson.fromJson(sb.toString(), type);
+
+                        PriceData fetched = gson.fromJson(sb.toString(), PriceData.class);
                         if (fetched != null) {
-                            synchronized (priceMap) {
-                                priceMap.clear();
-                                priceMap.putAll(fetched);
+                            synchronized (priceData) {
+                                priceData.bazaar.clear();
+                                priceData.auction.clear();
+                                if (fetched.bazaar != null) priceData.bazaar.putAll(fetched.bazaar);
+                                if (fetched.auction != null) priceData.auction.putAll(fetched.auction);
                             }
                         }
                     }

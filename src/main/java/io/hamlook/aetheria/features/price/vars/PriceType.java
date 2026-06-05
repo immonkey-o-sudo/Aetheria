@@ -1,4 +1,4 @@
-package io.hamlook.aetheria.features.price;
+package io.hamlook.aetheria.features.price.vars;
 
 public enum PriceType {
 
