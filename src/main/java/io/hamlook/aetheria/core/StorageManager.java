@@ -8,6 +8,7 @@ import io.hamlook.aetheria.features.mining.pristine.PristineStats;
 import io.hamlook.aetheria.features.misc.invbuttons.InventoryButtonStorage;
 import io.hamlook.aetheria.features.misc.pet.CurrentPetTracker;
 import io.hamlook.aetheria.features.misc.pet.PetCache;
+import io.hamlook.aetheria.features.misc.protect.ProtectedItemStorage;
 import io.hamlook.aetheria.features.scoreboard.MaxwellPowerSync;
 import io.hamlook.aetheria.features.waypoints.WaypointStorage;
 
@@ -64,6 +65,7 @@ public enum StorageManager {
         for (StorageManager entry : values()) {
             entry.instance.initFile(configDir);
         }
+        ProtectedItemStorage.INSTANCE.init(ATHRConfig.configDirectory);
     }
 
     /** Call once in clientInit. Calls load() on every registered storage. */

@@ -7,7 +7,6 @@ import io.hamlook.aetheria.core.StorageManager;
 import io.hamlook.aetheria.data.ApiHandler;
 import io.hamlook.aetheria.features.capes.CapeManager;
 import io.hamlook.aetheria.features.dungeons.caseopening.CitManager;
-import io.hamlook.aetheria.features.misc.protect.ProtectedItemStorage;
 import io.hamlook.aetheria.features.misc.invbuttons.SkyblockItemCache;
 import io.hamlook.aetheria.features.misc.pet.PetCache;
 import io.hamlook.aetheria.features.profile.GuiWaiter;
@@ -39,8 +38,8 @@ public class Aetheria {
         ATHRRepo.init();
         logger = Logger.getLogger("[ATHR] ");
         StorageManager.initAll(ATHRConfig.configDirectory);
-        // ProtectedItemStorage uses .init() rather than .initFile(), so it stays manual for now.
-        ProtectedItemStorage.INSTANCE.init(ATHRConfig.configDirectory);
+        // Moved ProtectedItemStorage to initAll()
+
         CapeManager.initialise(false);
     }
 
@@ -54,7 +53,6 @@ public class Aetheria {
         ChatFilterManager.initialise();
         new CitManager();
         if (ATHRConfig.feature.misc.currentPet.showCurrentPet) PetCache.getInstance().warmupTextures();
-
         MinecraftForge.EVENT_BUS.register(GuiWaiter.INSTANCE);
         MinecraftForge.EVENT_BUS.register(this);
         EventRegistrar.registerAll();

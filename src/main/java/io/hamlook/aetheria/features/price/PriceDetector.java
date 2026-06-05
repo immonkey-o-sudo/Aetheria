@@ -142,7 +142,6 @@ public class PriceDetector {
 
         if (mc.thePlayer != null) {
             Aetheria.logger.info("Sending " + bazaarMap.size() + " bazaar and " + auctionMap.size() + " auction entries to API");
-            GuiScreen.setClipboardString(json);
         }
 
         new Thread(() -> {
