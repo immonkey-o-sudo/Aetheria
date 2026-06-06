@@ -405,7 +405,8 @@ public class ConfigEditor extends GuiElement {
 
             Set<List<String>> paths = getExpandedPaths(catKey);
             if (categoriesWithTreeOpen.contains(catKey)) {
-                catY = renderSubTree(cat.subcategories, cat, paths, 1, catY, y, innerLeft, fr, new ArrayList<>());
+                boolean categoryHasSelection = !selectedSubcategoryPath.isEmpty() && isSelectedRoot;
+                catY = renderSubTree(cat.subcategories, cat, paths, 1, catY, y, innerLeft, fr, new ArrayList<>(), categoryHasSelection);
             }
 
             if (catY > 0) {
@@ -550,40 +551,41 @@ public class ConfigEditor extends GuiElement {
         GlStateManager.translate(0, 0, -2);
     }
 
-    private int renderSubTree(LinkedHashMap<String, ConfigProcessor.ProcessedSubcategory> subs, Object parent, Set<List<String>> expandedPaths, int depth, int catY, int y, int innerLeft, FontRenderer fr, List<String> parentPath) {
+    private int renderSubTree(LinkedHashMap<String, ConfigProcessor.ProcessedSubcategory> subs, Object parent, Set<List<String>> expandedPaths, int depth, int catY, int y, int innerLeft, FontRenderer fr, List<String> parentPath, boolean parentInSelection) {
         List<Map.Entry<String, ConfigProcessor.ProcessedSubcategory>> visible = getVisibleSubcategories(subs, parent, depth);
         int lineX = innerLeft + 9 + BASE_INDENT + TREE_INDENT * (depth - 1);
         int textBaseX = innerLeft + 9 + BASE_INDENT + TREE_INDENT * depth;
         int parentHeight = depth == 1 ? 15 : 13;
         int parentCenterY = y + 70 + catY - parentHeight;
         int currentCatY = catY;
+        int lastItemY = currentCatY;
 
-        for (Map.Entry<String, ConfigProcessor.ProcessedSubcategory> subEntry : visible) {
-            currentCatY += 13;
-            if (isPathExpanded(expandedPaths, subEntry.getKey(), depth) && !subEntry.getValue().subcategories.isEmpty()) {
-                parentPath.add(subEntry.getKey());
-                currentCatY = renderSubTree(subEntry.getValue().subcategories, subEntry.getValue(), expandedPaths, depth + 1, currentCatY, y, innerLeft, fr, parentPath);
-                parentPath.remove(parentPath.size() - 1);
-            }
-        }
+        boolean subtreeContainsSelection = parentInSelection;
+        int firstAncestorY = -1;
+        int lastAncestorY = -1;
 
-        if (!visible.isEmpty()) {
-            int trunkStart = parentCenterY + parentHeight / 2 + 3;
-            int trunkEnd = y + 70 + currentCatY - 12;
-            Gui.drawRect(lineX, trunkStart, lineX + 1, trunkEnd, 0xff606060);
-        }
-
-        currentCatY = catY;
         int pathSize = parentPath.size();
         for (Map.Entry<String, ConfigProcessor.ProcessedSubcategory> subEntry : visible) {
+            lastItemY = currentCatY;
+
             boolean inPath = isPathExpanded(expandedPaths, subEntry.getKey(), depth);
             int itemCenterY = y + 70 + currentCatY;
 
             parentPath.add(subEntry.getKey());
             boolean isDeepest = selectedSubcategoryPath.equals(parentPath);
+            boolean isAncestor = !selectedSubcategoryPath.isEmpty() &&
+                    selectedSubcategoryPath.size() >= parentPath.size() &&
+                    selectedSubcategoryPath.subList(0, parentPath.size()).equals(parentPath);
+            boolean thisInSelection = isDeepest || isAncestor;
             parentPath.remove(pathSize);
 
-            int hColor = isDeepest ? 0xff00b8b8 : 0xff606060;
+            if (thisInSelection) {
+                subtreeContainsSelection = true;
+                if (firstAncestorY == -1) firstAncestorY = currentCatY;
+                lastAncestorY = currentCatY;
+            }
+
+            int hColor = thisInSelection ? 0xff00b8b8 : 0xff606060;
             Gui.drawRect(lineX, itemCenterY + 4, textBaseX - 2, itemCenterY + 5, hColor);
 
             boolean hasChildren = !subEntry.getValue().subcategories.isEmpty();
@@ -595,8 +597,24 @@ public class ConfigEditor extends GuiElement {
 
             if (inPath && hasChildren) {
                 parentPath.add(subEntry.getKey());
-                currentCatY = renderSubTree(subEntry.getValue().subcategories, subEntry.getValue(), expandedPaths, depth + 1, currentCatY, y, innerLeft, fr, parentPath);
+                currentCatY = renderSubTree(subEntry.getValue().subcategories, subEntry.getValue(), expandedPaths, depth + 1, currentCatY, y, innerLeft, fr, parentPath, thisInSelection);
                 parentPath.remove(parentPath.size() - 1);
+            }
+        }
+
+        if (!visible.isEmpty()) {
+            int trunkStart = parentCenterY + parentHeight / 2 + 3;
+            int trunkEnd = y + 70 + lastItemY + 6;
+
+            if (subtreeContainsSelection && firstAncestorY != -1) {
+                int cyanStart = trunkStart;
+                int cyanEnd = y + 70 + lastAncestorY + 6;
+                Gui.drawRect(lineX, cyanStart, lineX + 1, cyanEnd, 0xff00b8b8);
+                if (cyanEnd < trunkEnd) {
+                    Gui.drawRect(lineX, cyanEnd, lineX + 1, trunkEnd, 0xff606060);
+                }
+            } else {
+                Gui.drawRect(lineX, trunkStart, lineX + 1, trunkEnd, 0xff606060);
             }
         }
 
