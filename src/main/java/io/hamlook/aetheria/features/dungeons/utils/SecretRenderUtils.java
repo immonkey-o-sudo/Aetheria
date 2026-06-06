@@ -36,6 +36,7 @@ public class SecretRenderUtils {
     private static final ConcurrentSet<SecretWaypoint> currentSecrets = new ConcurrentSet<>();
     private static int lastActionBarSecrets = -1;
     private static int periodicTickCounter = 0;
+    private static final int WAYPOINT_REMOVAL_GRACE_TICKS = 2; // ticks to wait before auto‑removing waypoints that become air or invalid
     private static final Pattern SECRETS_FOUND_PATTERN = Pattern.compile("Secrets Found:\\s*(\\d+)/(\\d+)");
 
     private static class SecretWaypoint {
@@ -44,6 +45,7 @@ public class SecretRenderUtils {
         final String secretName;
         final BlockPos pos;
         boolean collected;
+        int ticksExisted;
 
         SecretWaypoint(AxisAlignedBB aabb, String category, String secretName, BlockPos pos) {
             this.aabb = aabb;
@@ -51,6 +53,7 @@ public class SecretRenderUtils {
             this.secretName = secretName;
             this.pos = pos;
             this.collected = false;
+            this.ticksExisted = 0;
         }
     }
 
@@ -271,23 +274,27 @@ public class SecretRenderUtils {
         if (periodicTickCounter >= intervalTicks) {
             periodicTickCounter = 0;
             double itemRange = ATHRConfig.feature.dungeons.dungeonSecretFinder.range.itemRemovalRange;
-            for (SecretWaypoint sw : currentSecrets) {
-                if (sw.collected) continue;
-                if ("wither".equals(sw.category) || sw.secretName.contains("Essence")) {
-                    if (mc.theWorld.getBlockState(sw.pos).getBlock() != net.minecraft.init.Blocks.skull) {
-                        sw.collected = true;
-                    }
-                } else if ("item".equals(sw.category)) {
-                    double dist = mc.thePlayer.getDistance(sw.pos.getX() + 0.5, sw.pos.getY() + 0.5, sw.pos.getZ() + 0.5);
-                    if (dist <= itemRange) {
-                        sw.collected = true;
-                    }
-                } else if ("superboom".equals(sw.category) || "chest".equals(sw.category)) {
-                    if (mc.theWorld.getBlockState(sw.pos).getBlock() == net.minecraft.init.Blocks.air) {
-                        sw.collected = true;
+for (SecretWaypoint sw : currentSecrets) {
+                    if (sw.collected) continue;
+                    // Increment waypoint age counter
+                    sw.ticksExisted++;
+                    if ("wither".equals(sw.category) || sw.secretName.contains("Essence")) {
+                        if (sw.ticksExisted >= WAYPOINT_REMOVAL_GRACE_TICKS && mc.theWorld.getBlockState(sw.pos).getBlock() != net.minecraft.init.Blocks.skull) {
+                            sw.collected = true;
+                        }
+                    } else if ("item".equals(sw.category)) {
+                        double dist = mc.thePlayer.getDistance(sw.pos.getX() + 0.5, sw.pos.getY() + 0.5, sw.pos.getZ() + 0.5);
+                        if (dist <= itemRange) {
+                            sw.collected = true;
+                        }
+                    } else if ("superboom".equals(sw.category)) {
+                        if (sw.ticksExisted >= WAYPOINT_REMOVAL_GRACE_TICKS && mc.theWorld.getBlockState(sw.pos).getBlock() == net.minecraft.init.Blocks.air) {
+                            sw.collected = true;
+                        }
+                    } else if ("chest".equals(sw.category)) {
+                        // Chest waypoints are removed on interaction; no auto-removal based on block state
                     }
                 }
-            }
         }
     }
 
