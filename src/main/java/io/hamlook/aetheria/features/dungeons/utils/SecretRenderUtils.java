@@ -278,10 +278,14 @@ for (SecretWaypoint sw : currentSecrets) {
                     if (sw.collected) continue;
                     // Increment waypoint age counter
                     sw.ticksExisted++;
-                    if ("wither".equals(sw.category) || sw.secretName.contains("Essence")) {
-                        if (sw.ticksExisted >= WAYPOINT_REMOVAL_GRACE_TICKS && mc.theWorld.getBlockState(sw.pos).getBlock() != net.minecraft.init.Blocks.skull) {
-                            sw.collected = true;
-                        }
+                     if ("wither".equals(sw.category) || sw.secretName.contains("Essence")) {
+                         // Remove wither/essence waypoint only when block is not a skull and player is near
+                         double playerDist = mc.thePlayer.getDistance(sw.pos.getX() + 0.5, sw.pos.getY() + 0.5, sw.pos.getZ() + 0.5);
+                         double interactRange = ATHRConfig.feature.dungeons.dungeonSecretFinder.range.interactRemovalRange;
+                         if (sw.ticksExisted >= WAYPOINT_REMOVAL_GRACE_TICKS && mc.theWorld.getBlockState(sw.pos).getBlock() != net.minecraft.init.Blocks.skull && playerDist <= interactRange) {
+                             sw.collected = true;
+                         }
+                     }
                     } else if ("item".equals(sw.category)) {
                         double dist = mc.thePlayer.getDistance(sw.pos.getX() + 0.5, sw.pos.getY() + 0.5, sw.pos.getZ() + 0.5);
                         if (dist <= itemRange) {
