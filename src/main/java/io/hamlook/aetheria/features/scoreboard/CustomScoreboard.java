@@ -2,6 +2,7 @@ package io.hamlook.aetheria.features.scoreboard;
 
 import io.hamlook.aetheria.core.ATHRConfig;
 import io.hamlook.aetheria.core.moulconfig.editors.ChromaColour;
+import io.hamlook.aetheria.utils.KeybindHelper;
 import io.hamlook.aetheria.utils.Position;
 import io.hamlook.aetheria.features.mining.fetchur.FetchurData;
 import io.hamlook.aetheria.init.RegisterEvents;
