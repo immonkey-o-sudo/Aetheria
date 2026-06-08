@@ -233,17 +233,26 @@ as stating that a work is a fork of or compatible with Aetheria.
 Any Project or Derivative Work that is publicly distributed under this
 License must make all covered Source Code publicly available at all
 times. This is a mandatory condition of this License and cannot be
-waived. No party may
-publicly distribute a Project or Derivative Work under this License while
-keeping any portion of covered Source Code private or restricted. This
-obligation applies to the Original Author and to any party granted Written
-Permission to distribute a Derivative Work. Any Derivative Work that is
-publicly distributed under Written Permission must make publicly available
-the Source Code of all portions that incorporate or are derived from the
-Project. Works that are not derivative works of the Project and do not
-contain Project Source Code are not subject to this obligation. Source
-Code must be accessible without cost, without registration, and without
-any barrier to access, and must remain publicly available at all times.
+waived. No party may publicly distribute a Project or Derivative Work under
+this License while keeping any portion of covered Source Code private
+or restricted.
+
+This obligation applies to the Original Author and to any party granted
+Written Permission to distribute a Derivative Work. No party shall be
+exempt from the requirements of this Section solely by virtue of owning
+copyright in the Project, administering this License, or being designated
+as the Original Author.
+
+Any Derivative Work that is publicly distributed under Written Permission
+must make publicly available the Source Code of all portions that
+incorporate or are derived from the Project.
+
+Works that are not derivative works of the Project and do not contain
+Project Source Code are not subject to this obligation.
+
+Source Code must be accessible without cost, without registration, and
+without any barrier to access, and must remain publicly available at all
+times.
 
 If a party becomes unable to maintain public access to the Source Code due
 to circumstances beyond their reasonable control, such as account suspension,
