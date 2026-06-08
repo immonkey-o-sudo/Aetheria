@@ -4,9 +4,9 @@ import io.hamlook.aetheria.Aetheria;
 import io.hamlook.aetheria.Resources;
 import io.hamlook.aetheria.core.ATHRConfig;
 import io.hamlook.aetheria.core.moulconfig.editors.ChromaColour;
-import io.hamlook.aetheria.features.dungeons.utils.dung.DungeonPlayer;
 import io.hamlook.aetheria.init.RegisterEvents;
 import io.hamlook.aetheria.utils.Position;
+import io.hamlook.aetheria.utils.StringUtils;
 import io.hamlook.aetheria.utils.data.SkyblockData;
 import io.hamlook.aetheria.utils.overlay.Overlay;
 import net.minecraft.block.material.MapColor;
@@ -32,8 +32,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec4b;
 import net.minecraft.world.storage.MapData;
 import io.hamlook.aetheria.features.dungeons.utils.dung.DungeonRoomDetector;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.opengl.GL11;
 
 import java.util.*;
@@ -49,7 +47,7 @@ public class DungeonMapOverlay extends Overlay {
     private static ResourceLocation mapTexture;
     private static byte[] lastMapColors = null;
 
-    public static final List<DungeonPlayer> players = new ArrayList<>();
+    public static final List<EntityPlayer> players = new ArrayList<>();
 
     public DungeonMapOverlay() {
         super(128,128);
@@ -57,19 +55,15 @@ public class DungeonMapOverlay extends Overlay {
         mapTexture = Minecraft.getMinecraft().getTextureManager().getDynamicTextureLocation("dungeon_map",map);
     }
 
-    @SubscribeEvent
-    public void onRender(RenderGameOverlayEvent.Post event) {
-        if (event.type != RenderGameOverlayEvent.ElementType.ALL) return;
-        if (ATHRConfig.feature == null || !isEnabled()) return;
-        render(false);
-    }
-
 
     @Override
     public void render(boolean preview) {
         if (!preview && !SkyblockData.isInDungeon()) return;
         MapData info = getDungeonMap(Minecraft.getMinecraft().thePlayer);
-        if (info == null) return;
+        if (info == null){
+            if(players.isEmpty()) populatePlayers();
+            return;
+        }
 
         final int baseSize = 128;
 
@@ -96,43 +90,49 @@ public class DungeonMapOverlay extends Overlay {
             int th = mc.fontRendererObj.FONT_HEIGHT;
             mc.fontRendererObj.drawStringWithShadow(txt, (baseSize - tw) / 2f, (baseSize - th) / 2f, 0xFFFFFFFF);
         } else {
-            drawDungeonMap(0, 0, baseSize, baseSize, info);
-            if(players.isEmpty()) populatePlayers();
-
-            if (players.isEmpty()) return;
-            for (DungeonPlayer player : players) {
-                int worldX = -1 * (player.player.getPosition().getX() + 6);
-                int worldZ = -1 * (player.player.getPosition().getZ() + 6);
+        drawDungeonMap(0, 0, baseSize, baseSize, info);
+        // Populate player list if needed
+        if (players.isEmpty()) {
+            populatePlayers();
+        }
+        // Render player heads and names only when we have players
+        if (!players.isEmpty()) {
+            for (EntityPlayer player : players) {
+                int worldX = -1 * (player.getPosition().getX() + 6);
+                int worldZ = -1 * (player.getPosition().getZ() + 6);
 
                 float pixelX = baseSize - ((worldX / 186f) * baseSize);
                 float pixelZ = baseSize - ((worldZ / 186f) * baseSize);
 
                 if (ATHRConfig.feature.dungeons.dungeonMapConfig.showPlayerHead) {
-                    renderPlayerHead(pixelX, pixelZ, -1, (getScale() * getHeadScale()), new NetworkPlayerInfo(player.player.getGameProfile()), player.player.rotationYaw);
+                    renderPlayerHead(pixelX, pixelZ, -1, (getScale() * getHeadScale()), new NetworkPlayerInfo(player.getGameProfile()), player.rotationYaw);
                 }
                 if (ATHRConfig.feature.dungeons.dungeonMapConfig.showPlayerUsername) {
-                    String name = player.player.getDisplayName().getFormattedText();
-                    if(!ATHRConfig.feature.dungeons.dungeonMapConfig.showPlayerRank){
-                        name = name.substring(name.indexOf("]")+1).trim();
+                    String name = player.getDisplayName().getFormattedText();
+                    if (!ATHRConfig.feature.dungeons.dungeonMapConfig.showPlayerRank) {
+                        name = name.substring(name.indexOf("]") + 1).trim();
                     }
-                    renderName(pixelX, pixelZ + ((getScale() * getHeadScale()) * 12), -1, (getScale() * getHeadScale()),(getScale() * ATHRConfig.feature.dungeons.dungeonMapConfig.nameSize), name);
+                    renderName(pixelX, pixelZ + ((getScale() * getHeadScale()) * 12), -1, (getScale() * getHeadScale()), (getScale() * ATHRConfig.feature.dungeons.dungeonMapConfig.nameSize), name);
                 }
             }
-            if(!ATHRConfig.feature.dungeons.dungeonMapConfig.showPlayerHead){
-                drawMarkers(info.mapDecorations);
+        }
+        // Draw map markers when heads are hidden
+        if (!ATHRConfig.feature.dungeons.dungeonMapConfig.showPlayerHead) {
+            drawMarkers(info.mapDecorations);
+        }
+        // Render visited room names if enabled
+        if (ATHRConfig.feature.dungeons.dungeonMapConfig.showVisitedRoomNames) {
+            Collection<DungeonRoom> rooms = DungeonRoomDetector.getVisitedRooms();
+            for (DungeonRoom dr : rooms) {
+                int worldX = -1 * (dr.center.getX() + 6);
+                int worldZ = -1 * (dr.center.getZ() + 6);
+                float pixelX = baseSize - ((worldX / 186f) * baseSize);
+                float pixelZ = baseSize - ((worldZ / 186f) * baseSize);
+                renderName(pixelX, pixelZ, -1, 0f,
+                        getScale() * ATHRConfig.feature.dungeons.dungeonMapConfig.nameSize,
+                        dr.name);
             }
-            if (ATHRConfig.feature.dungeons.dungeonMapConfig.showVisitedRoomNames) {
-                Collection<DungeonRoom> rooms = DungeonRoomDetector.getVisitedRooms();
-                for (DungeonRoom dr : rooms) {
-                    int worldX = -1 * (dr.center.getX() + 6);
-                    int worldZ = -1 * (dr.center.getZ() + 6);
-                    float pixelX = baseSize - ((worldX / 186f) * baseSize);
-                    float pixelZ = baseSize - ((worldZ / 186f) * baseSize);
-                    renderName(pixelX, pixelZ, -1, 0f,
-                            getScale() * ATHRConfig.feature.dungeons.dungeonMapConfig.nameSize,
-                            dr.name);
-                }
-            }
+        }
         }
 
         GL11.glPopMatrix();
@@ -140,34 +140,36 @@ public class DungeonMapOverlay extends Overlay {
 
     public void populatePlayers() {
         List<String> lines = getScoreboradLines();
+
         if(lines.isEmpty()) return;
-        List<String> players = new ArrayList<>();
         for(String line : lines) {
-            String playerName = line.split(" ")[line.split(" ").length - 1];
+            if(line.isEmpty()) continue;
+            String[] word = line.split(" ");
+            if(word.length < 2) continue;
+            String playerName = word[word.length-1];
             if(playerName == null || playerName.isEmpty()) continue;
-            String playerClass = "";
-            if(line.startsWith("[B]")){
-                playerClass = "Berserk";
+            boolean player = false;
+
+            String lineToCheck = StringUtils.clean(line);
+            Aetheria.logger.info("Line: " + lineToCheck);
+            if(lineToCheck.startsWith("[B]")){
+                player = true;
+            }if(lineToCheck.startsWith("[A]")){
+                player = true;
+            }if(lineToCheck.startsWith("[H]")){
+                player = true;
+            }if(lineToCheck.startsWith("[M]")){
+                player = true;
+            }if(lineToCheck.startsWith("[T]")){
+                player = true;
             }
-            if(line.startsWith("[A]")){
-                playerClass = "Archer";
-            }
-            if(line.startsWith("[H]")){
-                playerClass = "Healer";
-            }
-            if(line.startsWith("[M]")){
-                playerClass = "Mage";
-            }
-            if(line.startsWith("[T]")){
-                playerClass = "Tank";
-            }
-            if(playerClass.isEmpty()) continue;
-            EntityPlayer player = Minecraft.getMinecraft().theWorld.getPlayerEntityByName(playerName);
-            if(player == null){
+
+            if(!player) continue;
+            EntityPlayer player1 = Minecraft.getMinecraft().theWorld.getPlayerEntityByName(playerName);
+            if(player1 == null){
                 Aetheria.logger.info("Player " + playerName + " is null.");
             }
-            DungeonPlayer player1 = new DungeonPlayer(player,playerClass);
-            players.add(playerName);
+            players.add(player1);
         }
     }
 
