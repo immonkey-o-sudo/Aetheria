@@ -40,7 +40,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 import net.minecraft.entity.player.EntityPlayer;
-import io.hamlook.aetheria.features.dungeons.utils.dung.SecretRenderUtils;
 import java.util.concurrent.Executors;
 
 @RegisterEvents
