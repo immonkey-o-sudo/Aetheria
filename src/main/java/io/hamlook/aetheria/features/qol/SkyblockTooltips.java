@@ -54,7 +54,10 @@ public class SkyblockTooltips {
             }
         }
         if(doPrice) {
-            if(doPriceWhenShift && !KeybindHelper.isKeyDown(priceShowKey)) return;
+            if(doPriceWhenShift && !KeybindHelper.isKeyDown(priceShowKey)) {
+                e.toolTip.add("§7" + KeybindHelper.getKeyName(priceShowKey) + " to view price data.");
+                return;
+            }
             String id = ItemUtils.getInternalName(e.itemStack);
             if(id == null || id.isEmpty()){
                 return;
