@@ -108,4 +108,8 @@ public class Misc {
     @Expose
     @Category(name = "Item Log Alerts", desc = "On-screen alerts when specific items are picked up")
     public ItemLogAlertsConfig itemLogAlerts = new ItemLogAlertsConfig();
+
+    @Expose
+    @Category(name = "Ghost Tracker", desc = "Settings for Ghost Tracker overlay")
+    public GhostTrackerConfig ghostTrackerConfig = new GhostTrackerConfig();
 }

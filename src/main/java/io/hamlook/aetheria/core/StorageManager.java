@@ -9,6 +9,7 @@ import io.hamlook.aetheria.features.misc.invbuttons.InventoryButtonStorage;
 import io.hamlook.aetheria.features.misc.pet.CurrentPetTracker;
 import io.hamlook.aetheria.features.misc.pet.PetCache;
 import io.hamlook.aetheria.features.misc.protect.ProtectedItemStorage;
+import io.hamlook.aetheria.features.misc.ghosttracker.GhostStats;
 import io.hamlook.aetheria.features.scoreboard.MaxwellPowerSync;
 import io.hamlook.aetheria.features.waypoints.WaypointStorage;
 
@@ -48,8 +49,8 @@ public enum StorageManager {
     MAXWELL_POWER  (MaxwellPowerSync.getInstance()),
     PET_CACHE      (PetCache.getInstance()),
     CURRENT_PET    (CurrentPetTracker.getInstance()),
-    TROPHY_FISH    (TrophyFishStorage.getInstance());
-
+    TROPHY_FISH    (TrophyFishStorage.getInstance()),
+    GHOST_STATS    (GhostStats.getInstance());
     // ─────────────────────────────────────────────────────────────────────────
 
     private final Managed instance;

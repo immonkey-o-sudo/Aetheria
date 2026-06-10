@@ -48,6 +48,16 @@ public final class Resources {
     public static final ResourceLocation CAPES_UI = new ResourceLocation("aetheria", "textures/gui/capesUI.png");
     public static final ResourceLocation DVD_LOGO = new ResourceLocation("aetheria", "textures/dvd.png");
 
+    public static final ResourceLocation GHOSTTRACKER_KILLS = new ResourceLocation("aetheria", "ghosttracker/kills.png");
+    public static final ResourceLocation GHOSTTRACKER_SORROW = new ResourceLocation("aetheria", "ghosttracker/sorrow.png");
+    public static final ResourceLocation GHOSTTRACKER_VOLTA = new ResourceLocation("aetheria", "ghosttracker/volta.png");
+    public static final ResourceLocation GHOSTTRACKER_PLASMA = new ResourceLocation("aetheria", "ghosttracker/plasma.png");
+    public static final ResourceLocation GHOSTTRACKER_BOOTS = new ResourceLocation("aetheria", "ghosttracker/ghostly boots.png");
+    public static final ResourceLocation GHOSTTRACKER_COINS = new ResourceLocation("aetheria", "ghosttracker/coin-drop.png");
+    public static final ResourceLocation GHOSTTRACKER_MAGIC_FIND = new ResourceLocation("aetheria", "ghosttracker/magic find.png");
+    public static final ResourceLocation GHOSTTRACKER_MONEY = new ResourceLocation("aetheria", "ghosttracker/money.png");
+    public static final ResourceLocation GHOSTTRACKER_TIME = new ResourceLocation("aetheria", "ghosttracker/time.png");
+
     public static final ResourceLocation DEFAULT_MAP_ICONS = new ResourceLocation("textures/map/map_icons.png");
 
     public static final int BETTER_CONTAINERS_STYLE_COUNT = 7;

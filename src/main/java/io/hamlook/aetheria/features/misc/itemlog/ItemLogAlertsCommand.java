@@ -1,4 +1,4 @@
-package io.hamlook.aetheria.features.misc;
+package io.hamlook.aetheria.features.misc.itemlog;
 
 import io.hamlook.aetheria.command.ASMCommand;
 import io.hamlook.aetheria.core.ATHRConfig;

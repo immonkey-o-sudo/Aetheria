@@ -15,10 +15,12 @@ import io.hamlook.aetheria.features.fishing.trophy.TrophyFishOverlay;
 import io.hamlook.aetheria.features.mining.fetchur.FetchurOverlay;
 import io.hamlook.aetheria.features.mining.powder.PowderOverlay;
 import io.hamlook.aetheria.features.mining.powder.PowderStats;
-import io.hamlook.aetheria.features.misc.ItemPickupLog;
+import io.hamlook.aetheria.features.misc.itemlog.ItemPickupLog;
 import io.hamlook.aetheria.features.misc.PerformanceHUD;
 import io.hamlook.aetheria.features.misc.SearchBar;
 import io.hamlook.aetheria.features.misc.pet.CurrentPetOverlay;
+import io.hamlook.aetheria.features.misc.ghosttracker.GhostOverlay;
+import io.hamlook.aetheria.features.misc.ghosttracker.GhostStats;
 import io.hamlook.aetheria.features.misc.timer.UptimeOverlay;
 import io.hamlook.aetheria.features.qol.overlays.ItemAbilityTimerOverlay;
 import io.hamlook.aetheria.features.qol.overlays.ItemCooldownOverlay;
@@ -268,6 +270,18 @@ public class ATHRConfig {
         UptimeOverlay overlay = UptimeOverlay.getInstance();
         if (overlay == null) return;
         screenToOpen = new GuiPositionEditor(feature.misc.uptimeConfig.uptimePos, overlay::getOverlayWidth, overlay::getOverlayHeight, () -> overlay.render(true), ATHRConfig::saveConfig, ATHRConfig::saveConfig).withOverlayScale(feature.misc.uptimeConfig.uptimeScale).withParent(Minecraft.getMinecraft().currentScreen);
+    }
+
+    public static void openGhostEditor() {
+        if (feature == null) return;
+        GhostOverlay overlay = GhostOverlay.getInstance();
+        if (overlay == null) return;
+        screenToOpen = new GuiPositionEditor(feature.misc.ghostTrackerConfig.ghostOverlayPos, overlay::getOverlayWidth, overlay::getOverlayHeight, () -> overlay.render(true), ATHRConfig::saveConfig, ATHRConfig::saveConfig).withOverlayScale(feature.misc.ghostTrackerConfig.ghostScale).withParent(Minecraft.getMinecraft().currentScreen);
+    }
+
+    public static void resetGhostTracker() {
+        GhostStats.getInstance().reset();
+        io.hamlook.aetheria.features.misc.ghosttracker.GhostStats.getInstance().reset();
     }
 
     public static void openChatFilterUI() {

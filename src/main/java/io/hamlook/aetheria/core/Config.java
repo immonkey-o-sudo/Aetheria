@@ -119,6 +119,8 @@ public class Config {
             case "openItemAbilityTimerEditor": ATHRConfig.openItemAbilityTimerEditor(); break;
             case "openBpsEditor": ATHRConfig.openBpsEditor(); break;
             case "openUptimeEditor": ATHRConfig.openUptimeEditor(); break;
+            case "openGhostEditor": ATHRConfig.openGhostEditor(); break;
+            case "resetGhostTracker": ATHRConfig.resetGhostTracker(); break;
             case "chatFiltersGUI": ATHRConfig.openChatFilterUI(); break;
             case "openPrivacyNotice": ATHRConfig.openPrivacyNotice(); break;
             case "reloadCapes": CapeManager.reload(); break;
