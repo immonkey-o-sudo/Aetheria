@@ -4,6 +4,7 @@ import io.hamlook.aetheria.core.ATHRConfig;
 import io.hamlook.aetheria.features.price.PriceMap;
 import io.hamlook.aetheria.features.price.vars.AuctionEntry;
 import io.hamlook.aetheria.features.price.vars.BazaarEntry;
+import io.hamlook.aetheria.features.price.vars.PriceType;
 import io.hamlook.aetheria.init.RegisterEvents;
 import io.hamlook.aetheria.utils.item.ItemUtils;
 import io.hamlook.aetheria.utils.RomanNumeralParser;
@@ -56,14 +57,34 @@ public class SkyblockIdTooltip {
                 if(ahEntry == null || ahEntry.isEmpty()) {
                     lines.add("§cThis Item does not have an updated price yet.");
                 }else{
-                    //TODO: Add AH Price
+                    double lowestBin = -1;
+                    double highestBin = -1;
+                    double averageBin = -1;
+                    double averageAH = -1;
+                    int bins = 0;
+                    for(AuctionEntry each : ahEntry) {
+                        if(each.type == PriceType.BIN) {
+                            if (each.price < lowestBin || lowestBin == -1) lowestBin = each.price;
+                            if (each.price > highestBin) highestBin = each.price;
+                            averageBin += each.price;
+                            bins++;
+                        }
+                        if(each.type == PriceType.AUCTION) averageAH += each.price;
+                    }
+                    averageBin = averageBin / bins;
+                    averageAH = averageAH / (ahEntry.size()-bins);
+
+                    lines.add("§6§bLowest BIN: §r§a" + (lowestBin > 0 ? lowestBin : "N/A") + " coins.");
+                    lines.add("§6§bHighest BIN: §r§a" + (highestBin > 0 ? highestBin : "N/A") + " coins.");
+                    lines.add("§6§bAverage BIN: §r§a" + (averageBin > 0 ? averageBin : "N/A") + " coins.");
+                    lines.add("§6§bAverage AH: §r§a" + (averageAH > 0 ? averageAH : "N/A") + " coins.");
                 }
                 return;
             }else {
                 BazaarEntry price = entry.get(0);
                 if (price != null) {
-                    lines.add("§6§bBZ Insta Buy: §r§a" + (price.iBuy >= 0 ? price.iBuy : "N/A"));
-                    lines.add("§6§bBZ Insta Sell: §r§a" + (price.iSell >= 0 ? price.iSell : "N/A"));
+                    lines.add("§6§bBZ Insta-Buy: §r§a" + (price.iBuy >= 0 ? price.iBuy : "N/A"));
+                    lines.add("§6§bBZ Insta-Sell: §r§a" + (price.iSell >= 0 ? price.iSell : "N/A"));
                     lines.add("§6§bBZ Buy Offer: §r§a" + (price.oBuy >= 0 ? price.oBuy : "N/A"));
                     lines.add("§6§bBZ Sell Order: §r§a" + (price.oSell >= 0 ? price.oSell : "N/A"));
                 }
