@@ -30,7 +30,6 @@ public class CapeManager {
     public static final Map<String, String> activeCapes = new ConcurrentHashMap<>();
 
     private static long lastFetched = 0L;
-
     private static long POLL_INTERVAL_MS = 900000;
 
     public static final String MOD_SECRET = "a7c0e73c-3b0b-4789-8c80-741dd09ba1bc";

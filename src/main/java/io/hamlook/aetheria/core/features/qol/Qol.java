@@ -51,10 +51,6 @@ public class Qol {
     @ConfigEditorBoolean
     public boolean showSkyblockId = true;
 
-    @Expose
-    @ConfigOption(name = "Price in Lore", desc = "Shows the price calculated from cape API")
-    @ConfigEditorBoolean
-    public boolean showPriceInLore = true;
 
     @Expose
     @ConfigOption(name = "Disable Enchant Glint", desc = "Removes the enchantment glint effect")

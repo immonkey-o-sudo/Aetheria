@@ -48,7 +48,7 @@ public class PriceDetector {
     private static final Map<String, List<BazaarEntry>> bazaarMap = new HashMap<>();
     private static final Map<String, List<AuctionEntry>> auctionMap = new HashMap<>();
     private static final Gson gson = new Gson();
-    private static final String MOD_SECRET = "a7c0e73c-3b0b-4789-8c80-741dd09ba1bc";
+    public static final String MOD_SECRET = "a7c0e73c-3b0b-4789-8c80-741dd09ba1bc";
     private static final long DEDUP_INTERVAL_MS = 120_000;
     private static final long REPARSE_COOLDOWN_MS = 1_000;
 
@@ -103,6 +103,7 @@ public class PriceDetector {
     public void onTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
 
+
         if (!initialised) {
             Aetheria.logger.info("[PriceDetector] Starting Initialised Ticking of PriceDetector");
             initialised = true;
@@ -110,12 +111,7 @@ public class PriceDetector {
             fetchIntervalMs = OtherDataAPI.getPriceFetchInterval();
             lastFetchTime = System.currentTimeMillis();
             PriceMap.fetch();
-        }
-
-        tickCounter++;
-        if (tickCounter >= sendIntervalTicks) {
-            tickCounter = 0;
-            sendPrices();
+            return;
         }
 
         long now = System.currentTimeMillis();
@@ -124,6 +120,12 @@ public class PriceDetector {
             lastFetchTime = now;
             PriceMap.fetch();
             Aetheria.logger.info("[PriceDetector] Updated PriceMap");
+        }
+
+        tickCounter++;
+        if (tickCounter >= sendIntervalTicks) {
+            tickCounter = 0;
+            sendPrices();
         }
     }
 
@@ -167,6 +169,9 @@ public class PriceDetector {
 
                 int responseCode = conn.getResponseCode();
                 Aetheria.logger.info("Sent all prices, response: " + responseCode + " | " + conn.getResponseMessage());
+                bazaarMap.clear();
+                auctionMap.clear();
+                PriceMap.fetch();
             } catch (Exception e) {
                 Aetheria.logger.info("Failed to send prices: " + e.getMessage());
             }

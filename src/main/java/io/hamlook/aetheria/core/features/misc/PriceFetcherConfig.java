@@ -2,6 +2,7 @@ package io.hamlook.aetheria.core.features.misc;
 
 import com.google.gson.annotations.Expose;
 import io.hamlook.aetheria.core.moulconfig.gui.config.ConfigAnnotations;
+import org.lwjgl.input.Keyboard;
 
 public class PriceFetcherConfig {
 
@@ -23,6 +24,20 @@ public class PriceFetcherConfig {
     @Expose
     @ConfigAnnotations.ConfigOption(name = "Send Fetched Data to API", desc = "Allow sending the data to the database, so it can actually be used.")
     @ConfigAnnotations.ConfigEditorBoolean
-    public boolean sendToDB = true;
+    public boolean sendToDB = true;;
 
+    @Expose
+    @ConfigAnnotations.ConfigOption(name = "Price in Lore", desc = "Allow showing the price in the lore of an item | WARNING: the price may not always be accurate.")
+    @ConfigAnnotations.ConfigEditorBoolean
+    public boolean showPriceInLore = true;;
+
+    @Expose
+    @ConfigAnnotations.ConfigOption(name = "Show Price when Holding a Key", desc = "Make it so that item prices are only visible when a key is held")
+    @ConfigAnnotations.ConfigEditorBoolean
+    public boolean showPriceWhenShift = true;
+
+    @Expose
+    @ConfigAnnotations.ConfigOption(name = "Show Price Key",desc = "The key to hold to see price | Requires Show Price when Holding a Key to be enabled")
+    @ConfigAnnotations.ConfigEditorKeybind(defaultKey = Keyboard.KEY_LSHIFT)
+    public int showPriceKey = Keyboard.KEY_LSHIFT;
 }

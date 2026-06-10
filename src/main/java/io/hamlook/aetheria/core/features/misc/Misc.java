@@ -34,7 +34,7 @@ public class Misc {
     public BazaarOrdersConfig bazaarOrders = new BazaarOrdersConfig();
 
     @Expose
-    @Category(name = "Price Fetcher", desc = "Settings related to the dynamic price fetcher used for various purposes.")
+    @Category(name = "Item Prices", desc = "Settings related to the dynamic price fetcher and display used for various purposes.")
     public PriceFetcherConfig priceFetcher = new PriceFetcherConfig();
 
     @Expose
