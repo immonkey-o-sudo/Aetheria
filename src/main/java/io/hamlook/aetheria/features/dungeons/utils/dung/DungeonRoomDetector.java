@@ -39,6 +39,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
+import net.minecraft.entity.player.EntityPlayer;
+import io.hamlook.aetheria.features.dungeons.utils.dung.SecretRenderUtils;
 import java.util.concurrent.Executors;
 
 @RegisterEvents
@@ -153,7 +155,7 @@ public class DungeonRoomDetector {
                     JsonElement jfh = lastRoomJson.get("floorhash");
                     if (jfh == null || (floorHash != null && floorHash.equals(jfh.getAsString()))) {
                         computeRoomBounds(x, top, z);
-                        addVisitedRoom(lastRoomJson);
+                        addVisitedRoom(lastRoomJson); updateAllPlayerRooms();
                         if (sfOn) processSecrets();
                         if (sfOn && originBlock != null && originCorner != null) {
                             BlockPos rel = actualToRelative(new BlockPos(x, y, z));
@@ -216,7 +218,7 @@ public class DungeonRoomDetector {
                 }
 
                 computeRoomBounds(x, top, z);
-                addVisitedRoom(lastRoomJson);
+                addVisitedRoom(lastRoomJson); updateAllPlayerRooms();
                 if (sfOn) processSecrets();
 
                 if (sfOn && originBlock != null && originCorner != null) {
@@ -340,6 +342,58 @@ public class DungeonRoomDetector {
         visitedRooms.putIfAbsent(hash, dr);
     }
 
+
+    /**
+     * Returns the currently detected dungeon room based on the latest detection.
+     * Returns null if no room has been detected or bounds are invalid.
+     */
+    public static DungeonRoom getCurrentRoom() {
+        if (lastRoomHash == null || lastRoomJson == null || !roomBoundsValid) return null;
+        String name = lastRoomJson.get("name").getAsString();
+        BlockPos origin = new BlockPos(roomMinX, roomFloorY, roomMinZ);
+        BlockPos center = new BlockPos((roomMinX + roomMaxX) / 2, roomFloorY, (roomMinZ + roomMaxZ) / 2);
+        int width = Math.abs(roomMaxX - roomMinX) + 1;
+        int height = Math.abs(roomMaxZ - roomMinZ) + 1;
+        return new DungeonRoom(name, lastRoomHash, origin, center, width, height);
+    }
+
+    // Helper to determine if a player is inside a given DungeonRoom
+    private static boolean isPlayerInRoom(EntityPlayer player, DungeonRoom room) {
+        int px = (int) Math.floor(player.posX);
+        int pz = (int) Math.floor(player.posZ);
+        int minX = room.origin.getX();
+        int minZ = room.origin.getZ();
+        int maxX = minX + room.width - 1;
+        int maxZ = minZ + room.height - 1;
+        return px >= minX && px <= maxX && pz >= minZ && pz <= maxZ;
+    }
+
+    /**
+     * Scans all players and ensures known rooms are tracked. If a player is not inside any
+     * visited room, attempts to add the current detected room for them.
+     */
+    public static void updateAllPlayerRooms() {
+        Minecraft mc = Minecraft.getMinecraft();
+        if (mc.theWorld == null) return;
+        for (EntityPlayer player : mc.theWorld.playerEntities) {
+            boolean known = false;
+            for (DungeonRoom dr : visitedRooms.values()) {
+                if (isPlayerInRoom(player, dr)) {
+                    known = true;
+                    break;
+                }
+            }
+            if (!known) {
+                DungeonRoom dr = getCurrentRoom();
+                if (dr != null) {
+                    visitedRooms.putIfAbsent(dr.hash, dr);
+                    if (ATHRConfig.feature.dungeons.dungeonSecretFinder.enabled && secretLocationsJson != null) {
+                        SecretRenderUtils.loadSecrets(dr.name, secretLocationsJson);
+                    }
+                }
+            }
+        }
+    }
 
     private void checkCorner(BlockPos blockPos) {
         World world = Minecraft.getMinecraft().theWorld;

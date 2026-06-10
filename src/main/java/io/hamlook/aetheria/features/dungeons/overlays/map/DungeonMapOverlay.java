@@ -139,37 +139,39 @@ public class DungeonMapOverlay extends Overlay {
     }
 
     public void populatePlayers() {
-        List<String> lines = getScoreboradLines();
+        players.clear();
 
-        if(lines.isEmpty()) return;
-        for(String line : lines) {
-            if(line.isEmpty()) continue;
+        List<String> lines = getScoreboradLines();
+        if (lines.isEmpty()) return;
+
+        for (String line : lines) {
+            if (line.isEmpty()) continue;
+            line = line.replace("[L","");
             String[] word = line.split(" ");
-            if(word.length < 2) continue;
-            String playerName = word[word.length-1];
-            if(playerName == null || playerName.isEmpty()) continue;
-            boolean player = false;
+            if (word.length < 2) continue;
 
             String lineToCheck = StringUtils.clean(line);
             Aetheria.logger.info("Line: " + lineToCheck);
-            if(lineToCheck.startsWith("[B]")){
-                player = true;
-            }if(lineToCheck.startsWith("[A]")){
-                player = true;
-            }if(lineToCheck.startsWith("[H]")){
-                player = true;
-            }if(lineToCheck.startsWith("[M]")){
-                player = true;
-            }if(lineToCheck.startsWith("[T]")){
-                player = true;
-            }
 
-            if(!player) continue;
-            EntityPlayer player1 = Minecraft.getMinecraft().theWorld.getPlayerEntityByName(playerName);
-            if(player1 == null){
-                Aetheria.logger.info("Player " + playerName + " is null.");
+            if (!(lineToCheck.startsWith("[B]") || lineToCheck.startsWith("[A]") ||
+                  lineToCheck.startsWith("[H]") || lineToCheck.startsWith("[M]") ||
+                  lineToCheck.startsWith("[T]"))) {
+                continue;
             }
-            players.add(player1);
+            EntityPlayer player;
+            String name = word[word.length - 1];
+            player = Minecraft.getMinecraft().theWorld.getPlayerEntityByName(name);
+
+            if(player != null) {
+                players.add(player);
+                continue;
+            }
+            for(String s : word){
+                player = Minecraft.getMinecraft().theWorld.getPlayerEntityByName(s);
+                if(player != null) break;
+            }
+            if(player == null) continue;
+            players.add(player);
         }
     }
 

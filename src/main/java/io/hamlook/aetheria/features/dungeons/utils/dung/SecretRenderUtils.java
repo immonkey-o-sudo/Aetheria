@@ -11,10 +11,12 @@ import io.hamlook.aetheria.init.RegisterEvents;
 import io.hamlook.aetheria.utils.data.SkyblockData;
 import io.hamlook.aetheria.utils.render.WorldRenderUtils;
 import io.netty.util.internal.ConcurrentSet;
+import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.item.EntityTNTPrimed;
 import net.minecraft.entity.passive.EntityBat;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.Vec3;
@@ -27,6 +29,10 @@ import org.lwjgl.opengl.GL11;
 import java.awt.Color;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import io.hamlook.aetheria.utils.chat.ChatUtils;
+import net.minecraftforge.client.event.ClientChatReceivedEvent;
+import java.util.Map;
+import java.util.HashMap;
 
 @RegisterEvents
 public class SecretRenderUtils {
@@ -34,9 +40,9 @@ public class SecretRenderUtils {
     private static final Minecraft mc = Minecraft.getMinecraft();
 
     private static final ConcurrentSet<SecretWaypoint> currentSecrets = new ConcurrentSet<>();
-    private static int lastActionBarSecrets = -1;
     private static int periodicTickCounter = 0;
-    private static final int WAYPOINT_REMOVAL_GRACE_TICKS = 5; // ticks to wait before auto‑removing waypoints that become air or invalid
+    private static final Map<SecretWaypoint, Integer> chestPendingRestore = new HashMap<>();
+    private static final int WAYPOINT_REMOVAL_GRACE_TICKS = 20;
     private static final Pattern SECRETS_FOUND_PATTERN = Pattern.compile("Secrets Found:\\s*(\\d+)/(\\d+)");
 
     private static class SecretWaypoint {
@@ -61,12 +67,11 @@ public class SecretRenderUtils {
 
     public static void clearSecrets() {
         currentSecrets.clear();
-        lastActionBarSecrets = -1;
+        chestPendingRestore.clear();
     }
 
     public static void loadSecrets(String roomName, JsonObject secretLocationsJson) {
         currentSecrets.clear();
-        lastActionBarSecrets = -1;
 
         if (!secretLocationsJson.has(roomName)) return;
 
@@ -256,6 +261,19 @@ public class SecretRenderUtils {
         if (event.phase != TickEvent.Phase.START) return;
         if (mc.thePlayer == null || !isInDungeonContext()) return;
 
+        // Decrement chest restore timers
+        java.util.Iterator<java.util.Map.Entry<SecretWaypoint,Integer>> it = chestPendingRestore.entrySet().iterator();
+        while (it.hasNext()) {
+            java.util.Map.Entry<SecretWaypoint,Integer> entry = it.next();
+            int remaining = entry.getValue() - 1;
+            if (remaining <= 0) {
+                entry.getKey().collected = false;
+                it.remove();
+            } else {
+                entry.setValue(remaining);
+            }
+        }
+
         for (SecretWaypoint sw : currentSecrets) {
             if (sw.collected) continue;
 
@@ -280,12 +298,12 @@ for (SecretWaypoint sw : currentSecrets) {
                     if (sw.collected) continue;
                     sw.ticksExisted++;
                     if (!sw.everSeen) {
-                        if (mc.theWorld.getBlockState(sw.pos).getBlock() != net.minecraft.init.Blocks.air) {
+                        if (mc.theWorld.getBlockState(sw.pos).getBlock() != Blocks.air) {
                             sw.everSeen = true;
                         }
                     }
                     if ("wither".equals(sw.category) || sw.secretName.contains("Essence")) {
-                        if (sw.everSeen && sw.ticksExisted >= WAYPOINT_REMOVAL_GRACE_TICKS && mc.theWorld.getBlockState(sw.pos).getBlock() == net.minecraft.init.Blocks.air) {
+                        if (sw.everSeen && sw.ticksExisted >= WAYPOINT_REMOVAL_GRACE_TICKS && mc.theWorld.getBlockState(sw.pos).getBlock() == Blocks.air) {
                             sw.collected = true;
                         }
                     } else if ("item".equals(sw.category)) {
@@ -294,7 +312,7 @@ for (SecretWaypoint sw : currentSecrets) {
                             sw.collected = true;
                         }
                     } else if ("superboom".equals(sw.category) || "chest".equals(sw.category)) {
-                        if (sw.everSeen && sw.ticksExisted >= WAYPOINT_REMOVAL_GRACE_TICKS && mc.theWorld.getBlockState(sw.pos).getBlock() == net.minecraft.init.Blocks.air) {
+                        if (sw.everSeen && sw.ticksExisted >= WAYPOINT_REMOVAL_GRACE_TICKS && mc.theWorld.getBlockState(sw.pos).getBlock() == Blocks.air) {
                             sw.collected = true;
                         }
                     }
@@ -329,6 +347,20 @@ for (SecretWaypoint sw : currentSecrets) {
     }
 
     @SubscribeEvent
+    public void onChat(ClientChatReceivedEvent event) {
+        if (!ChatUtils.isFromServer(event)) return;
+        String clean = ChatUtils.clean(event);
+        if (clean.equalsIgnoreCase("This chest is locked")) {
+            java.util.Iterator<java.util.Map.Entry<SecretWaypoint,Integer>> it = chestPendingRestore.entrySet().iterator();
+            while (it.hasNext()) {
+                java.util.Map.Entry<SecretWaypoint,Integer> entry = it.next();
+                entry.getKey().collected = false;
+                it.remove();
+            }
+        }
+    }
+
+    @SubscribeEvent
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (event.world == null || event.action != PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) return;
         if (event.pos == null || currentSecrets.isEmpty()) return;
@@ -344,12 +376,13 @@ for (SecretWaypoint sw : currentSecrets) {
             if (dist > range) continue;
 
             if ("chest".equals(sw.category)) {
-                net.minecraft.block.Block b = event.world.getBlockState(clickedPos).getBlock();
-                if (b == net.minecraft.init.Blocks.chest || b == net.minecraft.init.Blocks.trapped_chest || b == net.minecraft.init.Blocks.ender_chest) {
-                    sw.collected = true;
-                }
+                    Block b = event.world.getBlockState(clickedPos).getBlock();
+                    if (b == Blocks.chest || b == Blocks.trapped_chest || b == Blocks.ender_chest) {
+                        sw.collected = true;
+                        chestPendingRestore.put(sw, 2);
+                    }
             } else if ("lever".equals(sw.category)) {
-                if (event.world.getBlockState(clickedPos).getBlock() == net.minecraft.init.Blocks.lever) {
+                if (event.world.getBlockState(clickedPos).getBlock() == Blocks.lever) {
                     sw.collected = true;
                 }
             }
