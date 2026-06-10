@@ -136,8 +136,8 @@ public class PriceDetector {
 
     private static void sendPrices() {
         if(!NetworkGuard.apiAllowed()) return;
-        if(!ATHRConfig.feature.misc.priceFetcher.enabled
-        || !ATHRConfig.feature.misc.priceFetcher.sendToDB) return;
+        if(!ATHRConfig.feature.misc.itemPriceConfig.enabled
+        || !ATHRConfig.feature.misc.itemPriceConfig.sendToDB) return;
         if (bazaarMap.isEmpty() && auctionMap.isEmpty()) return;
 
         Minecraft mc = Minecraft.getMinecraft();
@@ -183,7 +183,7 @@ public class PriceDetector {
 
     @SubscribeEvent
     public void onDraw(GuiScreenEvent.BackgroundDrawnEvent event) {
-        if (scanning || !ATHRConfig.feature.misc.priceFetcher.enabled) return;
+        if (scanning || !ATHRConfig.feature.misc.itemPriceConfig.enabled) return;
         long now = System.currentTimeMillis();
         if (now - lastParseTime < REPARSE_COOLDOWN_MS) return;
 
@@ -192,12 +192,12 @@ public class PriceDetector {
         if (chest == null) return;
         String title = chest.getLowerChestInventory().getName();
 
-        if (title.contains("Auction Browser") && ATHRConfig.feature.misc.priceFetcher.auctionEnabled) {
+        if (title.contains("Auction Browser") && ATHRConfig.feature.misc.itemPriceConfig.auctionEnabled) {
             scanning = true;
             parseAuctionHouse(chest);
             return;
         }
-        if(ATHRConfig.feature.misc.priceFetcher.bazaarEnabled){
+        if(ATHRConfig.feature.misc.itemPriceConfig.bazaarEnabled){
             scanning = parseBZMenus(chest);
             lastParseTime = now;
         }

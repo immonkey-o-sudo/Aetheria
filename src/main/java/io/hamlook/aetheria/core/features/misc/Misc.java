@@ -35,7 +35,7 @@ public class Misc {
 
     @Expose
     @Category(name = "Item Prices", desc = "Settings related to the dynamic price fetcher and display used for various purposes.")
-    public PriceFetcherConfig priceFetcher = new PriceFetcherConfig();
+    public ItemPriceConfig itemPriceConfig = new ItemPriceConfig();
 
     @Expose
     @ConfigOption(name = "Item Stack Tips", desc = "Shows enchant levels on books and floor numbers on Catacombs passes")

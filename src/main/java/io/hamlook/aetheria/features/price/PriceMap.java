@@ -54,7 +54,7 @@ public class PriceMap {
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
                 conn.setRequestProperty("x-mod-secret", PriceDetector.MOD_SECRET);
-                conn.setRequestProperty("x-type","full_month");
+                conn.setRequestProperty("x-type",getDetailType());
                 conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
                 conn.setConnectTimeout(5000);
                 conn.setReadTimeout(5000);
@@ -89,6 +89,16 @@ public class PriceMap {
                 Aetheria.logger.info("[PriceDetector] Failed to fetch prices: " + e.getMessage());
             }
         }).start();
+    }
+
+    private static String getDetailType() {
+        switch (ATHRConfig.feature.misc.itemPriceConfig.priceDetail){
+            case 0: return "latest";
+            case 1: return "full_day";
+            case 2: return "full_week";
+            case 3: return "full_month";
+        }
+        return "full_month";
     }
 
 }

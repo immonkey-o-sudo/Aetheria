@@ -4,7 +4,7 @@ import com.google.gson.annotations.Expose;
 import io.hamlook.aetheria.core.moulconfig.gui.config.ConfigAnnotations;
 import org.lwjgl.input.Keyboard;
 
-public class PriceFetcherConfig {
+public class ItemPriceConfig {
 
     @Expose
     @ConfigAnnotations.ConfigOption(name = "Enable", desc = "Dynamically Fetch Prices while you play the game without affecting performance.")
@@ -40,4 +40,9 @@ public class PriceFetcherConfig {
     @ConfigAnnotations.ConfigOption(name = "Show Price Key",desc = "The key to hold to see price | Requires Show Price when Holding a Key to be enabled")
     @ConfigAnnotations.ConfigEditorKeybind(defaultKey = Keyboard.KEY_LSHIFT)
     public int showPriceKey = Keyboard.KEY_LSHIFT;
+
+    @Expose
+    @ConfigAnnotations.ConfigOption(name = "Price Detail Level", desc = "How far back should the mod fetch the prices for, the further back you go, it gives more data but also causes more lag")
+    @ConfigAnnotations.ConfigEditorDropdown(values = {"Latest Only","24 Hours","1 Week","1 Month"}, initialIndex = 3)
+    public int priceDetail = 3;
 }

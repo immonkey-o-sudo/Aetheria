@@ -35,9 +35,9 @@ public class SkyblockTooltips {
 
         boolean doRoman = ATHRConfig.feature.qol.romanNumerals;
         boolean doSkyblock = ATHRConfig.feature.qol.showSkyblockId;
-        boolean doPrice = ATHRConfig.feature.misc.priceFetcher.showPriceInLore;
-        boolean doPriceWhenShift = ATHRConfig.feature.misc.priceFetcher.showPriceWhenShift;
-        int priceShowKey = ATHRConfig.feature.misc.priceFetcher.showPriceKey;
+        boolean doPrice = ATHRConfig.feature.misc.itemPriceConfig.showPriceInLore;
+        boolean doPriceWhenShift = ATHRConfig.feature.misc.itemPriceConfig.showPriceWhenShift;
+        int priceShowKey = ATHRConfig.feature.misc.itemPriceConfig.showPriceKey;
 
         if (doRoman) {
             for (int i = 1; i < e.toolTip.size(); i++) {
