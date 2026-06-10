@@ -1,6 +1,9 @@
 package io.hamlook.aetheria.features.qol;
 
 import io.hamlook.aetheria.core.ATHRConfig;
+import io.hamlook.aetheria.features.price.PriceMap;
+import io.hamlook.aetheria.features.price.vars.AuctionEntry;
+import io.hamlook.aetheria.features.price.vars.BazaarEntry;
 import io.hamlook.aetheria.init.RegisterEvents;
 import io.hamlook.aetheria.utils.item.ItemUtils;
 import io.hamlook.aetheria.utils.RomanNumeralParser;
@@ -12,7 +15,9 @@ import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 @RegisterEvents
 public class SkyblockIdTooltip {
@@ -26,6 +31,8 @@ public class SkyblockIdTooltip {
 
         boolean doRoman = ATHRConfig.feature.qol.romanNumerals;
         boolean doSkyblock = ATHRConfig.feature.qol.showSkyblockId;
+        boolean doPrice = ATHRConfig.feature.qol.showPriceInLore;
+        String id = ItemUtils.getInternalName(e.itemStack);
 
         if (doRoman) {
             for (int i = 1; i < e.toolTip.size(); i++) {
@@ -35,11 +42,33 @@ public class SkyblockIdTooltip {
         }
 
         if (doSkyblock) {
-            String id = ItemUtils.getInternalName(e.itemStack);
             if (!id.isEmpty()) {
                 String line = EnumChatFormatting.DARK_GRAY + "skyblock:" + id;
                 if (!e.toolTip.contains(line)) e.toolTip.add(line);
             }
+        }
+        if(doPrice) {
+            if(id == null || id.isEmpty()) return;
+            List<BazaarEntry> entry = PriceMap.getBZPrice(id,1);
+            List<String> lines = new ArrayList<>();
+            if(entry == null || entry.isEmpty()) {
+                List<AuctionEntry> ahEntry = PriceMap.getAHPrice(id,-1);
+                if(ahEntry == null || ahEntry.isEmpty()) {
+                    lines.add("§cThis Item does not have an updated price yet.");
+                }else{
+                    //TODO: Add AH Price
+                }
+                return;
+            }else {
+                BazaarEntry price = entry.get(0);
+                if (price != null) {
+                    lines.add("§6§bBZ Insta Buy: §r§a" + (price.iBuy >= 0 ? price.iBuy : "N/A"));
+                    lines.add("§6§bBZ Insta Sell: §r§a" + (price.iSell >= 0 ? price.iSell : "N/A"));
+                    lines.add("§6§bBZ Buy Offer: §r§a" + (price.oBuy >= 0 ? price.oBuy : "N/A"));
+                    lines.add("§6§bBZ Sell Order: §r§a" + (price.oSell >= 0 ? price.oSell : "N/A"));
+                }
+            }
+            e.toolTip.addAll(lines);
         }
     }
 

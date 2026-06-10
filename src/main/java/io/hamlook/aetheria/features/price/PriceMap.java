@@ -3,6 +3,8 @@ package io.hamlook.aetheria.features.price;
 import com.google.gson.Gson;
 import io.hamlook.aetheria.Aetheria;
 import io.hamlook.aetheria.core.ATHRConfig;
+import io.hamlook.aetheria.features.price.vars.AuctionEntry;
+import io.hamlook.aetheria.features.price.vars.BazaarEntry;
 import io.hamlook.aetheria.features.price.vars.PriceData;
 import io.hamlook.aetheria.network.NetworkGuard;
 import io.hamlook.aetheria.repo.CapeAPI;
@@ -13,12 +15,31 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 public class PriceMap {
 
     private static final Gson gson = new Gson();
     @Getter
     private static final PriceData priceData = new PriceData();
+
+    public static List<BazaarEntry> getBZPrice(String id,int entries){
+        List<BazaarEntry> prices = priceData.bazaar.get(id);
+        if(prices == null) return null;
+        prices.sort((c,c1) -> {
+            return Long.compare(c1.timestamp, c.timestamp);
+        });
+        return prices.subList(0, entries);
+    }
+
+    public static List<AuctionEntry> getAHPrice(String id, int entries){
+        List<AuctionEntry> prices = priceData.auction.get(id);
+        if(prices == null) return null;
+        prices.sort((c,c1) -> {
+            return Double.compare(c1.price, c.price);
+        });
+        return prices.subList(0, (entries > 0) ? entries : prices.size());
+    }
 
     public static void fetch() {
         if (ATHRConfig.feature != null && !NetworkGuard.apiAllowed()) return;
