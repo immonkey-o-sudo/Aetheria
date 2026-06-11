@@ -10,7 +10,8 @@ public class PriceAPI {
 
     private static final Map<String, Double> HARDCODED_PRICES = new HashMap<>();
     private static final Map<String, CachedPrice> PRICE_CACHE = new HashMap<>();
-    private static final long CACHE_TIME_MS = 30_000L;
+    private static final long VALID_PRICE_CACHE_MS = 30_000L;
+    private static final long NOT_FOUND_CACHE_MS = 300_000L;
 
     static {
         HARDCODED_PRICES.put("GHOSTLY_BOOTS", 77_000.0);
@@ -18,8 +19,9 @@ public class PriceAPI {
     }
 
     /**
-     * Get the price of an item by its internal name
-     * First checks hardcoded prices, then queries the price database
+     * Get the price of an item by its internal name.
+     * First checks hardcoded prices, then queries the price database with caching.
+     * Not found results are cached longer to prevent log spam from repeated queries.
      *
      * @param internalItemId The internal Skyblock item ID
      * @return The price in coins, or -1 if not available
@@ -43,7 +45,9 @@ public class PriceAPI {
 
         double price = getPriceFromMap(internalItemId);
 
-        PRICE_CACHE.put(internalItemId, new CachedPrice(price, System.currentTimeMillis()));
+        // Cache longer if price not found to reduce spam
+        long cacheDuration = price > 0 ? VALID_PRICE_CACHE_MS : NOT_FOUND_CACHE_MS;
+        PRICE_CACHE.put(internalItemId, new CachedPrice(price, System.currentTimeMillis(), cacheDuration));
 
         return price;
     }
@@ -69,14 +73,16 @@ public class PriceAPI {
     private static class CachedPrice {
         double price;
         long timestamp;
+        long cacheDurationMs;
 
-        CachedPrice(double price, long timestamp) {
+        CachedPrice(double price, long timestamp, long cacheDurationMs) {
             this.price = price;
             this.timestamp = timestamp;
+            this.cacheDurationMs = cacheDurationMs;
         }
 
         boolean isExpired() {
-            return System.currentTimeMillis() - timestamp > CACHE_TIME_MS;
+            return System.currentTimeMillis() - timestamp > cacheDurationMs;
         }
     }
 }
