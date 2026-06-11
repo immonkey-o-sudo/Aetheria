@@ -7,17 +7,17 @@ import io.hamlook.aetheria.features.price.vars.BazaarEntry;
 import io.hamlook.aetheria.features.price.vars.PriceType;
 import io.hamlook.aetheria.init.RegisterEvents;
 import io.hamlook.aetheria.utils.KeybindHelper;
+import io.hamlook.aetheria.utils.RomanNumeralParser;
 import io.hamlook.aetheria.utils.Utils;
 import io.hamlook.aetheria.utils.item.ItemUtils;
-import io.hamlook.aetheria.utils.RomanNumeralParser;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,53 +53,57 @@ public class SkyblockTooltips {
                 if (!e.toolTip.contains(line)) e.toolTip.add(line);
             }
         }
-        if(doPrice) {
-            if(doPriceWhenShift && !KeybindHelper.isKeyDown(priceShowKey)) {
+        if (doPrice) {
+            if (doPriceWhenShift && !KeybindHelper.isKeyDown(priceShowKey)) {
                 e.toolTip.add("§7" + KeybindHelper.getKeyName(priceShowKey) + " to view price data.");
                 return;
             }
-            String id = ItemUtils.getInternalName(e.itemStack);
-            if(id == null || id.isEmpty()){
+            // Check if item has a valid Skyblock ID
+            if (!ItemUtils.isSkyblockItem(e.itemStack)) {
                 return;
             }
-            List<BazaarEntry> entry = PriceMap.getBZPrice(id,1);
+            String id = ItemUtils.getInternalName(e.itemStack);
+            if (id == null || id.isEmpty()) {
+                return;
+            }
+            List<BazaarEntry> entry = PriceMap.getBZPrice(id, 1);
             List<String> lines = new ArrayList<>();
-            if(entry == null || entry.isEmpty()) {
+            if (entry == null || entry.isEmpty()) {
 
-                List<AuctionEntry> ahEntry = PriceMap.getAHPrice(id,-1);
-                if(ahEntry == null || ahEntry.isEmpty()) {
+                List<AuctionEntry> ahEntry = PriceMap.getAHPrice(id, -1);
+                if (ahEntry == null || ahEntry.isEmpty()) {
                     lines.add("§cThis Item does not have an updated price yet.");
-                }else{
+                } else {
                     double lowestBin = -1;
                     double highestBin = -1;
                     double averageBin = -1;
                     double averageAH = -1;
                     int bins = 0;
-                    for(AuctionEntry each : ahEntry) {
-                        if(each.type == PriceType.BIN) {
+                    for (AuctionEntry each : ahEntry) {
+                        if (each.type == PriceType.BIN) {
                             if (each.price < lowestBin || lowestBin == -1) lowestBin = each.price;
                             if (each.price > highestBin) highestBin = each.price;
                             averageBin += each.price;
                             bins++;
                         }
-                        if(each.type == PriceType.AUCTION) averageAH += each.price;
+                        if (each.type == PriceType.AUCTION) averageAH += each.price;
                     }
                     averageBin = averageBin / bins;
-                    averageAH = averageAH / (ahEntry.size()-bins);
+                    averageAH = averageAH / (ahEntry.size() - bins);
 
-                    lines.add("§6§bLowest BIN: §r§a" + (lowestBin > 0 ? Utils.shortNumberFormat(lowestBin,0) : "N/A") + " coins.");
-                    lines.add("§6§bHighest BIN: §r§a" + (highestBin > 0 ? Utils.shortNumberFormat(highestBin,0) : "N/A") + " coins.");
-                    lines.add("§6§bAverage BIN: §r§a" + (averageBin > 0 ? Utils.shortNumberFormat(averageBin,0) : "N/A") + " coins.");
-                    lines.add("§6§bAverage AH: §r§a" + (averageAH > 0 ? Utils.shortNumberFormat(averageAH,0) : "N/A") + " coins.");
+                    lines.add("§6§bLowest BIN: §r§a" + (lowestBin > 0 ? Utils.shortNumberFormat(lowestBin, 0) : "N/A") + " coins.");
+                    lines.add("§6§bHighest BIN: §r§a" + (highestBin > 0 ? Utils.shortNumberFormat(highestBin, 0) : "N/A") + " coins.");
+                    lines.add("§6§bAverage BIN: §r§a" + (averageBin > 0 ? Utils.shortNumberFormat(averageBin, 0) : "N/A") + " coins.");
+                    lines.add("§6§bAverage AH: §r§a" + (averageAH > 0 ? Utils.shortNumberFormat(averageAH, 0) : "N/A") + " coins.");
                 }
-            }else {
+            } else {
                 BazaarEntry price = entry.get(0);
                 if (price != null) {
-                    lines.add("§6§bBZ Insta-Buy: §r§a" + (price.iBuy >= 0 ? Utils.shortNumberFormat(price.iBuy,0) : "N/A"));
-                    lines.add("§6§bBZ Insta-Sell: §r§a" + (price.iSell >= 0 ? Utils.shortNumberFormat(price.iSell,0) : "N/A"));
+                    lines.add("§6§bBZ Insta-Buy: §r§a" + (price.iBuy >= 0 ? Utils.shortNumberFormat(price.iBuy, 0) : "N/A"));
+                    lines.add("§6§bBZ Insta-Sell: §r§a" + (price.iSell >= 0 ? Utils.shortNumberFormat(price.iSell, 0) : "N/A"));
                     if (price.priceType == PriceType.BZ_WITH_OFFER) {
-                        lines.add("§6§bBZ Buy Offer: §r§a" + (price.oBuy >= 0 ? Utils.shortNumberFormat(price.oBuy,0) : "N/A"));
-                        lines.add("§6§bBZ Sell Order: §r§a" + (price.oSell >= 0 ? Utils.shortNumberFormat(price.oSell,0) : "N/A"));
+                        lines.add("§6§bBZ Buy Offer: §r§a" + (price.oBuy >= 0 ? Utils.shortNumberFormat(price.oBuy, 0) : "N/A"));
+                        lines.add("§6§bBZ Sell Order: §r§a" + (price.oSell >= 0 ? Utils.shortNumberFormat(price.oSell, 0) : "N/A"));
                     }
                 }
             }
