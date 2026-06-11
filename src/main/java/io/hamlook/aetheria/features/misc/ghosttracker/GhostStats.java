@@ -3,6 +3,7 @@ package io.hamlook.aetheria.features.misc.ghosttracker;
 import com.google.gson.annotations.Expose;
 import io.hamlook.aetheria.core.GsonBuilder;
 import io.hamlook.aetheria.core.StorageManager;
+import io.hamlook.aetheria.features.price.PriceAPI;
 
 import java.io.File;
 
@@ -230,5 +231,25 @@ public class GhostStats implements StorageManager.Managed, StorageManager.AutoSa
 
     public long getSessionDurationMs() {
         return activeTimeMs;
+    }
+
+    public long getEstimatedProfit() {
+        long profit = 0;
+
+        double sorrowPrice = PriceAPI.getPrice("SORROW");
+        double voltaPrice = PriceAPI.getPrice("VOLTA");
+        double plasmaPrice = PriceAPI.getPrice("PLASMA");
+        double bootsPrice = PriceAPI.getPrice("GHOSTLY_BOOTS");
+        double bagPrice = PriceAPI.getPrice("BAG_OF_CASH");
+
+        if (sorrowPrice > 0) profit += (long) (totalSorrow * sorrowPrice);
+        if (voltaPrice > 0) profit += (long) (totalVolta * voltaPrice);
+        if (plasmaPrice > 0) profit += (long) (totalPlasma * plasmaPrice);
+        if (bootsPrice > 0) profit += (long) (totalBoots * bootsPrice);
+        if (bagPrice > 0) profit += (long) (totalBagOfCash * bagPrice);
+
+        profit += totalScavenger;
+
+        return profit;
     }
 }

@@ -30,10 +30,12 @@ public class GhostTrackerConfig {
             "Bag of Cash: 6 (567)",
             "Scavenger: 45,678",
             "Avg MF: 234",
-            "Best MF: 567"
+            "Best MF: 567",
+            "Time: 1h 23m",
+            "Estimated Profit: 1.2M"
     })
     public List<Integer> ghostTrackerLines = new ArrayList<>(Arrays.asList(
-            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
     ));
 
     @Expose

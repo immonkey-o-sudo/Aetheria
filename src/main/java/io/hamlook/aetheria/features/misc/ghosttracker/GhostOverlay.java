@@ -114,7 +114,9 @@ public class GhostOverlay extends Overlay {
                 // 11 Best MF
                 new HudEntry("Best MF: ", stats.highestMagicFind > 0 ? String.valueOf(stats.highestMagicFind) : "-", Resources.GHOSTTRACKER_MAGIC_FIND, COLOR_AQUA),
                 // 12 Session Time
-                new HudEntry("Time: ", TimeFormatter.formatCountdown(stats.getSessionDurationMs()), Resources.GHOSTTRACKER_TIME, COLOR_GOLD),};
+                new HudEntry("Time: ", TimeFormatter.formatCountdown(stats.getSessionDurationMs()), Resources.GHOSTTRACKER_TIME, COLOR_GOLD),
+                // 13 Estimated Profit
+                new HudEntry("Estimated Profit: ", Utils.shortNumberFormat(stats.getEstimatedProfit(), 0), Resources.GHOSTTRACKER_MONEY, COLOR_GOLD),};
 
         List<HudEntry> entries = new ArrayList<>();
         for (int idx : cfg.ghostTrackerLines) {
