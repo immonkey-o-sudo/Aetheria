@@ -46,6 +46,7 @@ public class DungeonMapOverlay extends Overlay {
     private static final DynamicTexture map = new DynamicTexture(128,128);
     private static ResourceLocation mapTexture;
     private static byte[] lastMapColors = null;
+    private static int ticks = 0;
 
     public static final List<EntityPlayer> players = new ArrayList<>();
 
@@ -90,49 +91,46 @@ public class DungeonMapOverlay extends Overlay {
             int th = mc.fontRendererObj.FONT_HEIGHT;
             mc.fontRendererObj.drawStringWithShadow(txt, (baseSize - tw) / 2f, (baseSize - th) / 2f, 0xFFFFFFFF);
         } else {
-        drawDungeonMap(0, 0, baseSize, baseSize, info);
-        // Populate player list if needed
-        if (players.isEmpty()) {
-            populatePlayers();
-        }
-        // Render player heads and names only when we have players
-        if (!players.isEmpty()) {
-            for (EntityPlayer player : players) {
-                int worldX = -1 * (player.getPosition().getX() + 6);
-                int worldZ = -1 * (player.getPosition().getZ() + 6);
+            ticks++;
+            drawDungeonMap(0, 0, baseSize, baseSize, info);
+            if (players.isEmpty()) {
+                populatePlayers();
+            }
+            if (!players.isEmpty()) {
+                for (EntityPlayer player : players) {
+                    int worldX = -1 * (player.getPosition().getX() + 6);
+                    int worldZ = -1 * (player.getPosition().getZ() + 6);
 
-                float pixelX = baseSize - ((worldX / 186f) * baseSize);
-                float pixelZ = baseSize - ((worldZ / 186f) * baseSize);
+                    float pixelX = baseSize - ((worldX / 186f) * baseSize);
+                    float pixelZ = baseSize - ((worldZ / 186f) * baseSize);
 
-                if (ATHRConfig.feature.dungeons.dungeonMapConfig.showPlayerHead) {
-                    renderPlayerHead(pixelX, pixelZ, -1, (getScale() * getHeadScale()), new NetworkPlayerInfo(player.getGameProfile()), player.rotationYaw);
-                }
-                if (ATHRConfig.feature.dungeons.dungeonMapConfig.showPlayerUsername) {
-                    String name = player.getDisplayName().getFormattedText();
-                    if (!ATHRConfig.feature.dungeons.dungeonMapConfig.showPlayerRank) {
-                        name = name.substring(name.indexOf("]") + 1).trim();
+                    if (ATHRConfig.feature.dungeons.dungeonMapConfig.showPlayerHead) {
+                        renderPlayerHead(pixelX, pixelZ, -1, (getScale() * getHeadScale()), new NetworkPlayerInfo(player.getGameProfile()), player.rotationYaw);
                     }
-                    renderName(pixelX, pixelZ + ((getScale() * getHeadScale()) * 12), -1, (getScale() * getHeadScale()), (getScale() * ATHRConfig.feature.dungeons.dungeonMapConfig.nameSize), name);
+                    if (ATHRConfig.feature.dungeons.dungeonMapConfig.showPlayerUsername) {
+                        String name = player.getDisplayName().getFormattedText();
+                        if (!ATHRConfig.feature.dungeons.dungeonMapConfig.showPlayerRank) {
+                            name = name.substring(name.indexOf("]") + 1).trim();
+                        }
+                        renderName(pixelX, pixelZ + ((getScale() * getHeadScale()) * 12), -1, (getScale() * getHeadScale()), (getScale() * ATHRConfig.feature.dungeons.dungeonMapConfig.nameSize), name);
+                    }
                 }
             }
-        }
-        // Draw map markers when heads are hidden
-        if (!ATHRConfig.feature.dungeons.dungeonMapConfig.showPlayerHead) {
-            drawMarkers(info.mapDecorations);
-        }
-        // Render visited room names if enabled
-        if (ATHRConfig.feature.dungeons.dungeonMapConfig.showVisitedRoomNames) {
-            Collection<DungeonRoom> rooms = DungeonRoomDetector.getVisitedRooms();
-            for (DungeonRoom dr : rooms) {
-                int worldX = -1 * (dr.center.getX() + 6);
-                int worldZ = -1 * (dr.center.getZ() + 6);
-                float pixelX = baseSize - ((worldX / 186f) * baseSize);
-                float pixelZ = baseSize - ((worldZ / 186f) * baseSize);
-                renderName(pixelX, pixelZ, -1, 0f,
-                        getScale() * ATHRConfig.feature.dungeons.dungeonMapConfig.nameSize,
-                        dr.name);
+            if (!ATHRConfig.feature.dungeons.dungeonMapConfig.showPlayerHead) {
+                drawMarkers(info.mapDecorations);
             }
-        }
+            if (ATHRConfig.feature.dungeons.dungeonMapConfig.showVisitedRoomNames) {
+                Collection<DungeonRoom> rooms = DungeonRoomDetector.getVisitedRooms();
+                for (DungeonRoom dr : rooms) {
+                    int worldX = -1 * (dr.center.getX() + 6);
+                    int worldZ = -1 * (dr.center.getZ() + 6);
+                    float pixelX = baseSize - ((worldX / 186f) * baseSize);
+                    float pixelZ = baseSize - ((worldZ / 186f) * baseSize);
+                    renderName(pixelX, pixelZ, -1, 0f,
+                            getScale() * ATHRConfig.feature.dungeons.dungeonMapConfig.nameSize,
+                            dr.name);
+                }
+            }
         }
 
         GL11.glPopMatrix();
@@ -253,8 +251,8 @@ public class DungeonMapOverlay extends Overlay {
 
     public static void drawDungeonMap(int x, int y, int w, int h, MapData info) {
         if (info == null) return;
-        if (!Arrays.equals(info.colors, lastMapColors)) {
-            lastMapColors = java.util.Arrays.copyOf(info.colors, info.colors.length);
+        if (!Arrays.equals(info.colors, lastMapColors) || ticks % 40 == 0) {
+            lastMapColors = Arrays.copyOf(info.colors, info.colors.length);
             byte[] colors = info.colors;
             int[] pixels = map.getTextureData();
             for (int i = 0; i < 16384; i++) {
