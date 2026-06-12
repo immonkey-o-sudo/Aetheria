@@ -139,7 +139,7 @@ public class DungeonMapOverlay extends Overlay {
     public void populatePlayers() {
         players.clear();
 
-        List<String> lines = getScoreboradLines();
+        List<String> lines = getScoreboardLines();
         if (lines.isEmpty()) return;
 
         for (String line : lines) {
@@ -174,7 +174,7 @@ public class DungeonMapOverlay extends Overlay {
         if(!players.contains(Minecraft.getMinecraft().thePlayer)) players.add(Minecraft.getMinecraft().thePlayer);
     }
 
-    private List<String> getScoreboradLines() {
+    private List<String> getScoreboardLines() {
         Minecraft mc = Minecraft.getMinecraft();
         if(mc.theWorld == null || mc.theWorld.getScoreboard() == null) return new ArrayList<>();
 
