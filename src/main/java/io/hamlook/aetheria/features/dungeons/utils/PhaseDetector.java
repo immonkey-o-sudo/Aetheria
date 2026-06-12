@@ -1,5 +1,7 @@
 package io.hamlook.aetheria.features.dungeons.utils;
 
+import io.hamlook.aetheria.features.dungeons.overlays.map.DungeonMapOverlay;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,6 +59,7 @@ public class PhaseDetector {
         if (RUN_FAILED.matcher(clean).find()) {
             timers.setRunFailed(true);
             timers.setRunEnded(true);
+            DungeonMapOverlay.dungeonRunEnded = true;
             timers.setBossDeadTime(timers.elapsed());
             timers.freezeOpenPhases();
             return true;
@@ -66,6 +69,7 @@ public class PhaseDetector {
         if (m.find()) {
             timers.setBossDeadTime(timers.elapsed());
             timers.setRunEnded(true);
+            DungeonMapOverlay.dungeonRunEnded = true;
             endStats.setBossName(m.group(1).trim());
             timers.freezeOpenPhases();
             pbTracker.checkAndSaveRunPb(timers);
@@ -118,6 +122,7 @@ public class PhaseDetector {
             timers.setScarfP2End(timers.elapsed());
             timers.setBossDeadTime(timers.getScarfP2End());
             timers.setRunEnded(true);
+            DungeonMapOverlay.dungeonRunEnded = true;
             endStats.setBossName("Scarf");
             timers.freezeOpenPhases();
             pbTracker.checkPhasePb(timers.getCurrentFloor().name() + "_p2", 
@@ -148,6 +153,7 @@ public class PhaseDetector {
             timers.setProfessorP3End(timers.elapsed());
             timers.setBossDeadTime(timers.getProfessorP3End());
             timers.setRunEnded(true);
+            DungeonMapOverlay.dungeonRunEnded = true;
             endStats.setBossName("The Professor");
             timers.freezeOpenPhases();
             pbTracker.checkPhasePb(timers.getCurrentFloor().name() + "_p3", 
@@ -178,6 +184,7 @@ public class PhaseDetector {
             timers.setSadanEnd(timers.elapsed());
             timers.setBossDeadTime(timers.getSadanEnd());
             timers.setRunEnded(true);
+            DungeonMapOverlay.dungeonRunEnded = true;
             endStats.setBossName("Sadan");
             timers.freezeOpenPhases();
             pbTracker.checkPhasePb(timers.getCurrentFloor().name() + "_sadan", 
@@ -227,6 +234,7 @@ public class PhaseDetector {
             if (!timers.getCurrentFloor().isMasterMode()) {
                 timers.setBossDeadTime(timers.getNecronEnd());
                 timers.setRunEnded(true);
+                DungeonMapOverlay.dungeonRunEnded = true;
                 pbTracker.checkAndSaveRunPb(timers);
             }
         }
@@ -237,6 +245,7 @@ public class PhaseDetector {
             timers.setWitherEnd(timers.elapsed());
             timers.setBossDeadTime(timers.getWitherEnd());
             timers.setRunEnded(true);
+            DungeonMapOverlay.dungeonRunEnded = true;
             pbTracker.checkPhasePb(timers.getCurrentFloor().name() + "_p5", 
                 timers.getWitherEnd() - timers.getWitherStart(), "P5 (Wither King)");
             pbTracker.checkAndSaveRunPb(timers);

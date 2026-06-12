@@ -148,7 +148,6 @@ public class DungeonStats extends Overlay {
         String clean = ChatUtils.clean(event);
 
         if (!timers.isRunEnded()) {
-            DungeonMapOverlay.dungeonRunEnded = true;
             boolean handled = phaseDetector.handleGeneralEvents(clean);
             if (handled && timers.isRunEnded()) {
                 if (ATHRConfig.feature.dungeons.dungeonOverlay.dungeonStats) statsPrinter.printEndStats();
