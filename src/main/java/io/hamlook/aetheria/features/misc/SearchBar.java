@@ -52,7 +52,7 @@ public class SearchBar {
     private static int toggleBtnX, toggleBtnY;
 
     @Getter
-    private static boolean sendToItemList = true;
+    private static boolean sendToItemList = false;
 
     public static SearchBar getInstance() {
         return INSTANCE;
