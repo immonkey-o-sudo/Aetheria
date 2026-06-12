@@ -2,6 +2,7 @@ package io.hamlook.aetheria.features.dungeons;
 
 import io.hamlook.aetheria.core.ATHRConfig;
 import io.hamlook.aetheria.core.moulconfig.editors.ChromaColour;
+import io.hamlook.aetheria.features.dungeons.overlays.map.DungeonMapOverlay;
 import io.hamlook.aetheria.utils.Position;
 import io.hamlook.aetheria.features.dungeons.overlays.PhaseOverlay;
 import io.hamlook.aetheria.features.dungeons.utils.*;
@@ -147,6 +148,7 @@ public class DungeonStats extends Overlay {
         String clean = ChatUtils.clean(event);
 
         if (!timers.isRunEnded()) {
+            DungeonMapOverlay.dungeonRunEnded = true;
             boolean handled = phaseDetector.handleGeneralEvents(clean);
             if (handled && timers.isRunEnded()) {
                 if (ATHRConfig.feature.dungeons.dungeonOverlay.dungeonStats) statsPrinter.printEndStats();

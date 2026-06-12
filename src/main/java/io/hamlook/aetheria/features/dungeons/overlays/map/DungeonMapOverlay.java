@@ -51,8 +51,10 @@ public class DungeonMapOverlay extends Overlay {
     private static byte[] lastMapColors = null;
     private static int ticks = 0;
 
+    public static boolean dungeonRunEnded = false;
+
     public static final List<EntityPlayer> players = new ArrayList<>();
-    public static Pattern PLAYER_REGEX = Pattern.compile("^\\[\\d+\\]\\s\\w+$\n");
+    public static Pattern PLAYER_REGEX = Pattern.compile("^\\[\\d+]\\s\\w+$\n");
     public DungeonMapOverlay() {
         super(128,128);
         instance = this;
@@ -67,11 +69,12 @@ public class DungeonMapOverlay extends Overlay {
         ticks = 0;
         players.clear();
         DungeonRoomDetector.getVisitedRooms().clear();
+        dungeonRunEnded = false;
     }
 
     @Override
     public void render(boolean preview) {
-        if (!preview && !SkyblockData.isInDungeon()) return;
+        if (!preview && !SkyblockData.isInDungeon() || dungeonRunEnded) return;
         MapData info = getDungeonMap(Minecraft.getMinecraft().thePlayer);
         if (info == null){
             if(players.isEmpty()) populatePlayers();

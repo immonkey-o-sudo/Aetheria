@@ -53,6 +53,11 @@ public class Dungeons {
     public boolean hideBlessingMessages = false;
 
     @Expose
+    @ConfigOption(name = "Dungeon Reward Profit Estimator", desc = "Estimates whether you will get profit by taking a reward chest or not.")
+    @ConfigEditorBoolean
+    public boolean rewardProfitEstimator = false;
+
+    @Expose
     public java.util.Map<String, Long> floorPbs = new java.util.HashMap<>();
 
     public long getPb(String key) { Long v = floorPbs.get(key); return v == null ? 0L : v; }
