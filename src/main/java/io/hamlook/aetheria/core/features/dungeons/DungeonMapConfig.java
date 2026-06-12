@@ -30,7 +30,7 @@ public class DungeonMapConfig {
     public int cornerRadius = 4;
 
     @Expose
-    @ConfigOption(name = "Scale", desc = "Size of the Dungeon Breaker overlay")
+    @ConfigOption(name = "Scale", desc = "Size of the Dungeon Map overlay")
     @ConfigEditorSliderAnnotation(minValue = 0.5f, maxValue = 3f, minStep = 0.1f)
     public float scale = 1f;
 
@@ -68,6 +68,11 @@ public class DungeonMapConfig {
     @ConfigOption(name = "Show Visited Room Names",desc = "Display the name of each room you have visited on the dungeon map")
     @ConfigEditorBoolean
     public boolean showVisitedRoomNames = true;
+
+    @Expose
+    @ConfigOption(name = "Room Name Font Size",desc = "Control how big the room name display is")
+    @ConfigEditorSliderAnnotation(minValue = 0.25f,maxValue = 2f,minStep = 0.05f)
+    public float roomnameSize = 1f;
 
 
 

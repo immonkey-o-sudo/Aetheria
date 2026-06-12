@@ -1,18 +1,18 @@
 package io.hamlook.aetheria.features.dungeons.overlays.map;
 
-import io.hamlook.aetheria.Aetheria;
 import io.hamlook.aetheria.Resources;
 import io.hamlook.aetheria.core.ATHRConfig;
 import io.hamlook.aetheria.core.moulconfig.editors.ChromaColour;
 import io.hamlook.aetheria.init.RegisterEvents;
+import io.hamlook.aetheria.utils.ColorUtils;
 import io.hamlook.aetheria.utils.Position;
-import io.hamlook.aetheria.utils.StringUtils;
 import io.hamlook.aetheria.utils.data.SkyblockData;
 import io.hamlook.aetheria.utils.overlay.Overlay;
 import net.minecraft.block.material.MapColor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiPlayerTabOverlay;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.client.renderer.GlStateManager;
@@ -37,6 +37,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.opengl.GL11;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 import io.hamlook.aetheria.features.dungeons.utils.dung.DungeonRoom;
 
@@ -51,7 +52,7 @@ public class DungeonMapOverlay extends Overlay {
     private static int ticks = 0;
 
     public static final List<EntityPlayer> players = new ArrayList<>();
-
+    public static Pattern PLAYER_REGEX = Pattern.compile("^\\[\\d+\\]\\s\\w+$\n");
     public DungeonMapOverlay() {
         super(128,128);
         instance = this;
@@ -123,7 +124,7 @@ public class DungeonMapOverlay extends Overlay {
                         if (!ATHRConfig.feature.dungeons.dungeonMapConfig.showPlayerRank) {
                             name = name.substring(name.indexOf("]") + 1).trim();
                         }
-                        renderName(pixelX, pixelZ + ((getScale() * getHeadScale()) * 12), -1, (getScale() * getHeadScale()), (getScale() * ATHRConfig.feature.dungeons.dungeonMapConfig.nameSize), name);
+                        renderName(pixelX, pixelZ + ((getScale() * getHeadScale()) * 12), -1, (getScale() * getHeadScale()), (getScale() * ATHRConfig.feature.dungeons.dungeonMapConfig.nameSize * 0.75f), name,false);
                     }
                 }
             }
@@ -135,11 +136,11 @@ public class DungeonMapOverlay extends Overlay {
                 for (DungeonRoom dr : rooms) {
                     int worldX = -1 * (dr.center.getX() + 6);
                     int worldZ = -1 * (dr.center.getZ() + 6);
-                    float pixelX = baseSize - ((worldX / 186f) * baseSize);
-                    float pixelZ = baseSize - ((worldZ / 186f) * baseSize);
+                    float pixelX = baseSize - ((worldX / 186f) * baseSize) + Math.round(dr.width/32f);
+                    float pixelZ = baseSize - ((worldZ / 186f) * baseSize) + Math.round(dr.height/32f);
                     renderName(pixelX, pixelZ, -1, 0f,
-                            getScale() * ATHRConfig.feature.dungeons.dungeonMapConfig.nameSize,
-                            dr.name);
+                            getScale() * ATHRConfig.feature.dungeons.dungeonMapConfig.roomnameSize* 0.75f,
+                            dr.name,true);
                 }
             }
         }
@@ -149,40 +150,28 @@ public class DungeonMapOverlay extends Overlay {
 
     public void populatePlayers() {
         players.clear();
+        Minecraft mc = Minecraft.getMinecraft();
+        GuiPlayerTabOverlay tab = mc.ingameGUI.getTabList();
+        List<NetworkPlayerInfo> infos = mc.thePlayer.sendQueue.getPlayerInfoMap().stream().sorted((a, b) -> {
+            String ta = a.getPlayerTeam() != null ? a.getPlayerTeam().getRegisteredName() : "";
+            String tb = b.getPlayerTeam() != null ? b.getPlayerTeam().getRegisteredName() : "";
+            int cmp = ta.compareTo(tb);
+            return cmp != 0 ? cmp : a.getGameProfile().getName().compareTo(b.getGameProfile().getName());
+        }).collect(java.util.stream.Collectors.toList());
 
-        List<String> lines = getScoreboardLines();
-        if (lines.isEmpty()) return;
-
-        for (String line : lines) {
-            if (line.isEmpty()) continue;
-            line = line.replace("[L","");
-            String[] word = line.split(" ");
-            if (word.length < 2) continue;
-
-            String lineToCheck = StringUtils.clean(line);
-            Aetheria.logger.info("Line: " + lineToCheck);
-
-            if (!(lineToCheck.startsWith("[B]") || lineToCheck.startsWith("[A]") ||
-                  lineToCheck.startsWith("[H]") || lineToCheck.startsWith("[M]") ||
-                  lineToCheck.startsWith("[T]"))) {
-                continue;
-            }
-            EntityPlayer player;
-            String name = word[word.length - 1];
-            player = Minecraft.getMinecraft().theWorld.getPlayerEntityByName(name);
-
-            if(player != null) {
+        for (NetworkPlayerInfo info : infos) {
+            String raw = tab.getPlayerName(info);
+            String stripped = ColorUtils.stripColor(raw != null ? raw : "").trim();
+            if(stripped.isEmpty())continue;
+            if(PLAYER_REGEX.matcher(stripped).matches()) {
+                String[] words = stripped.split(" ");
+                String username = words[words.length - 1];
+                if(username.isEmpty()) continue;
+                EntityPlayer player = Minecraft.getMinecraft().theWorld.getPlayerEntityByName(username);
+                if(player == null) continue;
                 players.add(player);
-                continue;
             }
-            for(String s : word){
-                player = Minecraft.getMinecraft().theWorld.getPlayerEntityByName(s);
-                if(player != null) break;
-            }
-            if(player == null) continue;
-            players.add(player);
         }
-        if(!players.contains(Minecraft.getMinecraft().thePlayer)) players.add(Minecraft.getMinecraft().thePlayer);
     }
 
     private List<String> getScoreboardLines() {
@@ -233,7 +222,7 @@ public class DungeonMapOverlay extends Overlay {
         }
     }
 
-    public static void renderName(float pixelX, float pixelZ, int color, float headScale, float scale, String name) {
+    public static void renderName(float pixelX, float pixelZ, int color, float headScale, float scale, String name,boolean centered) {
         if (name == null || name.isEmpty()) return;
         float headSize = headScale * 8f;
         float half = headSize / 2f;
