@@ -11,6 +11,7 @@ import io.hamlook.aetheria.core.moulconfig.editors.GuiOptionEditorAccordion;
 import io.hamlook.aetheria.core.moulconfig.gui.GlScissorStack;
 import io.hamlook.aetheria.core.moulconfig.gui.GuiElement;
 import io.hamlook.aetheria.core.moulconfig.gui.GuiElementTextField;
+import io.hamlook.aetheria.utils.KeybindHelper;
 import io.hamlook.aetheria.utils.LerpUtils;
 import io.hamlook.aetheria.utils.LerpUtils.LerpingInteger;
 import io.hamlook.aetheria.utils.StringUtils;
@@ -388,8 +389,8 @@ public class ConfigEditor extends GuiElement {
         ScaledResolution scaledResolution = new ScaledResolution(Minecraft.getMinecraft());
         int width = scaledResolution.getScaledWidth();
         int height = scaledResolution.getScaledHeight();
-        int mouseX = Mouse.getX() * width / Minecraft.getMinecraft().displayWidth;
-        int mouseY = height - Mouse.getY() * height / Minecraft.getMinecraft().displayHeight - 1;
+        int[] mouse = KeybindHelper.getMouseCoords(width, height);
+        int mouseX = mouse[0], mouseY = mouse[1];
 
         handleDragScroll(mouseX, mouseY);
 

@@ -4,6 +4,7 @@ import io.hamlook.aetheria.core.ATHRConfig;
 import io.hamlook.aetheria.events.GuiContainerRenderButtonsEvent;
 import io.hamlook.aetheria.features.storage.StorageManager;
 import io.hamlook.aetheria.init.RegisterEvents;
+import io.hamlook.aetheria.utils.KeybindHelper;
 import io.hamlook.aetheria.utils.Utils;
 import io.hamlook.aetheria.utils.chat.ChatUtils;
 import io.hamlook.aetheria.utils.render.HighlightUtils;
@@ -142,8 +143,8 @@ public class InvButtonRenderer {
 
         GuiContainer gui = (GuiContainer) event.gui;
         int gl = gui.guiLeft, gt = gui.guiTop, gw = gui.xSize, gh = gui.ySize;
-        int mx = Mouse.getEventX() * event.gui.width / Minecraft.getMinecraft().displayWidth;
-        int my = event.gui.height - Mouse.getEventY() * event.gui.height / Minecraft.getMinecraft().displayHeight - 1;
+        int mx = KeybindHelper.getScaledEventX(event.gui.width);
+        int my = KeybindHelper.getScaledEventY(event.gui.height);
 
         InventoryButton btn = hitTest(mx, my, gl, gt, gw, gh, gui);
         if (btn == null) return;

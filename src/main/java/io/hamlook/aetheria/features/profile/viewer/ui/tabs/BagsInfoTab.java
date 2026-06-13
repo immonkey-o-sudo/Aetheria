@@ -1,5 +1,6 @@
 package io.hamlook.aetheria.features.profile.viewer.ui.tabs;
 
+import io.hamlook.aetheria.utils.KeybindHelper;
 import io.hamlook.aetheria.Resources;
 import io.hamlook.aetheria.features.misc.itemList.ItemRegistry;
 import io.hamlook.aetheria.features.misc.itemList.SkyblockItem;
@@ -56,8 +57,8 @@ public class BagsInfoTab extends Tab {
         RenderHelper.disableStandardItemLighting();
 
         if (hoveredItem != null) {
-            int mouseX = Mouse.getX() * mc.currentScreen.width / mc.displayWidth;
-            int mouseY = mc.currentScreen.height - (Mouse.getY() * mc.currentScreen.height / mc.displayHeight) - 1;
+            int[] mouse = KeybindHelper.getMouseCoords(mc.currentScreen.width, mc.currentScreen.height);
+            int mouseX = mouse[0], mouseY = mouse[1];
             drawItemTooltip(mc, hoveredItem, mouseX, mouseY);
         }
     }
@@ -88,8 +89,8 @@ public class BagsInfoTab extends Tab {
         GlStateManager.translate(0, -accScrollY, 0);
 
         int index = 0;
-        int mouseX = Mouse.getX() * mc.currentScreen.width / mc.displayWidth;
-        int mouseY = mc.currentScreen.height - (Mouse.getY() * mc.currentScreen.height / mc.displayHeight) - 1;
+        int[] mouse = KeybindHelper.getMouseCoords(mc.currentScreen.width, mc.currentScreen.height);
+        int mouseX = mouse[0], mouseY = mouse[1];
         ItemData hoveredAcc = null;
 
         List<ItemData> sortedAccs = new ArrayList<>(accData.accessories);
@@ -189,8 +190,8 @@ public class BagsInfoTab extends Tab {
     }
 
     private void handleVerticalScroll(float x, float y, float w, float h, float contentH) {
-        int mx = Mouse.getX() * Minecraft.getMinecraft().currentScreen.width / Minecraft.getMinecraft().displayWidth;
-        int my = Minecraft.getMinecraft().currentScreen.height - (Mouse.getY() * Minecraft.getMinecraft().currentScreen.height / Minecraft.getMinecraft().displayHeight) - 1;
+        int[] mouse = KeybindHelper.getMouseCoords(Minecraft.getMinecraft().currentScreen.width, Minecraft.getMinecraft().currentScreen.height);
+        int mx = mouse[0], my = mouse[1];
 
         if (mx >= x && mx <= x + w && my >= y && my <= y + h) {
             int dWheel = Mouse.getDWheel();

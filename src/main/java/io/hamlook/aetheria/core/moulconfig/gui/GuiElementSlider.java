@@ -4,6 +4,7 @@
 package io.hamlook.aetheria.core.moulconfig.gui;
 
 import io.hamlook.aetheria.Resources;
+import io.hamlook.aetheria.utils.KeybindHelper;
 import net.minecraft.client.Minecraft;
 import io.hamlook.aetheria.utils.Utils;
 import net.minecraft.client.gui.ScaledResolution;
@@ -39,7 +40,7 @@ public class GuiElementSlider extends GuiElement {
     @Override
     public void render() {
         ScaledResolution sr = new ScaledResolution(Minecraft.getMinecraft());
-        int mouseX = Mouse.getX() * sr.getScaledWidth() / Minecraft.getMinecraft().displayWidth;
+        int mouseX = KeybindHelper.getMouseCoords(sr)[0];
 
         float v = value;
         if (clicked) {

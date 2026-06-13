@@ -4,8 +4,8 @@
 package io.hamlook.aetheria.core.moulconfig.gui;
 
 import io.hamlook.aetheria.core.ATHRConfig;
+import io.hamlook.aetheria.utils.KeybindHelper;
 import net.minecraft.client.gui.GuiScreen;
-import org.lwjgl.input.Mouse;
 
 import java.io.IOException;
 
@@ -26,8 +26,8 @@ public class GuiScreenElementWrapper extends GuiScreen {
     @Override
     public void handleMouseInput() throws IOException {
         super.handleMouseInput();
-        int i = Mouse.getEventX() * this.width / this.mc.displayWidth;
-        int j = this.height - Mouse.getEventY() * this.height / this.mc.displayHeight - 1;
+        int i = KeybindHelper.getScaledEventX(this.width);
+        int j = KeybindHelper.getScaledEventY(this.height);
         element.mouseInput(i, j);
     }
 

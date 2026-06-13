@@ -2,6 +2,7 @@ package io.hamlook.aetheria.features.storage.utils;
 
 import io.hamlook.aetheria.core.ATHRConfig;
 import io.hamlook.aetheria.features.storage.StorageManager;
+import io.hamlook.aetheria.utils.KeybindHelper;
 import io.hamlook.aetheria.utils.ContainerUtils;
 import io.hamlook.aetheria.utils.render.RenderUtils;
 import io.hamlook.aetheria.features.storage.data.StorageData;
@@ -135,10 +136,10 @@ public class StorageListener {
         if (!ContainerUtils.isChestOpen(event.gui)) return;
 
         GuiChest guiChest = (GuiChest) event.gui;
-        int mouseX = Mouse.getX() * guiChest.width / Minecraft.getMinecraft().displayWidth;
-        int mouseY = guiChest.height - Mouse.getY() * guiChest.height / Minecraft.getMinecraft().displayHeight - 1;
-
-        if (handleScrollInput()) {
+        int[] mouse = KeybindHelper.getMouseCoords(guiChest.width, guiChest.height);
+        int mouseX = mouse[0], mouseY = mouse[1];
+ 
+         if (handleScrollInput()) {
             event.setCanceled(true);
             return;
         }
@@ -159,8 +160,8 @@ public class StorageListener {
 
             // Only scroll if mouse is over the storage overlay area
             GuiChest guiChest = (GuiChest) Minecraft.getMinecraft().currentScreen;
-            int mouseX = Mouse.getX() * guiChest.width / Minecraft.getMinecraft().displayWidth;
-            int mouseY = guiChest.height - Mouse.getY() * guiChest.height / Minecraft.getMinecraft().displayHeight - 1;
+            int[] mouse = KeybindHelper.getMouseCoords(guiChest.width, guiChest.height);
+            int mouseX = mouse[0], mouseY = mouse[1];
 
             if (StorageManager.isMouseOverStorageArea(mouseX, mouseY)) {
                 StorageManager.handleMouseInput();
@@ -245,8 +246,8 @@ public class StorageListener {
         RenderUtils.drawGradientRect(0, 0, 0, width, height, -1072689136, -804253680);
         net.minecraft.client.renderer.GlStateManager.disableBlend();
 
-        int mouseX = Mouse.getX() * width / Minecraft.getMinecraft().displayWidth;
-        int mouseY = height - Mouse.getY() * height / Minecraft.getMinecraft().displayHeight - 1;
+        int[] mouse = KeybindHelper.getMouseCoords(width, height);
+        int mouseX = mouse[0], mouseY = mouse[1];
         StorageManager.renderOverlay(mouseX, mouseY);
     }
 

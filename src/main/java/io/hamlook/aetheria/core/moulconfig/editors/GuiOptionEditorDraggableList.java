@@ -4,6 +4,7 @@
 package io.hamlook.aetheria.core.moulconfig.editors;
 
 import io.hamlook.aetheria.core.moulconfig.gui.config.ConfigProcessor;
+import io.hamlook.aetheria.utils.KeybindHelper;
 import io.hamlook.aetheria.utils.LerpUtils;
 import io.hamlook.aetheria.utils.render.RenderUtils;
 import io.hamlook.aetheria.utils.render.TextRenderUtils;
@@ -158,8 +159,8 @@ public class GuiOptionEditorDraggableList extends GuiOptionEditor {
             if (opacity < 20) return;
 
             ScaledResolution scaledResolution = new ScaledResolution(Minecraft.getMinecraft());
-            int mouseX = Mouse.getX() * scaledResolution.getScaledWidth() / Minecraft.getMinecraft().displayWidth;
-            int mouseY = scaledResolution.getScaledHeight() - Mouse.getY() * scaledResolution.getScaledHeight() / Minecraft.getMinecraft().displayHeight - 1;
+            int[] mouse = KeybindHelper.getMouseCoords(scaledResolution);
+            int mouseX = mouse[0], mouseY = mouse[1];
 
             String str = exampleText[currentDragging];
 

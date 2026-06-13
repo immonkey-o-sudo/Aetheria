@@ -6,6 +6,7 @@ import io.hamlook.aetheria.features.storage.StorageManager;
 import io.hamlook.aetheria.init.RegisterEvents;
 import io.hamlook.aetheria.utils.CalculatorUtils;
 import io.hamlook.aetheria.utils.ContainerUtils;
+import io.hamlook.aetheria.utils.KeybindHelper;
 import io.hamlook.aetheria.utils.Position;
 import io.hamlook.aetheria.utils.render.NineSliceUtils;
 import io.hamlook.aetheria.utils.render.RenderUtils;
@@ -13,6 +14,7 @@ import io.hamlook.aetheria.utils.render.TextRenderUtils;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.inventory.GuiContainer;
@@ -20,8 +22,6 @@ import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.input.Mouse;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -160,10 +160,7 @@ public class SearchBar {
     }
 
     private static int[] getMouseCoords() {
-        ScaledResolution sr = new ScaledResolution(MC);
-        int mouseX = Mouse.getX() * sr.getScaledWidth() / MC.displayWidth;
-        int mouseY = sr.getScaledHeight() - Mouse.getY() * sr.getScaledHeight() / MC.displayHeight - 1;
-        return new int[]{mouseX, mouseY};
+        return KeybindHelper.getMouseCoords(new ScaledResolution(MC));
     }
 
     private static void drawToggleButton(int barX, int barY) {
@@ -225,7 +222,7 @@ public class SearchBar {
     public void onGuiInit(GuiScreenEvent.InitGuiEvent.Post event) {
         if (!isEnabled() || !isSupportedGui(event.gui)) return;
 
-        Keyboard.enableRepeatEvents(true);
+        KeybindHelper.enableRepeatEvents(true);
 
         ScaledResolution sr = new ScaledResolution(MC);
         int[] pos = calculateBarPosition(sr);
@@ -236,15 +233,28 @@ public class SearchBar {
         searchBar.setEnableBackgroundDrawing(false);
         searchBar.setFocused(false);
         if (!ATHRConfig.feature.misc.searchBarConfig.persistSearchText) searchText = "";
+        if (!isItemListActive()) sendToItemList = false;
         searchBar.setText(searchText);
     }
 
     @SubscribeEvent
     public void onKeyboardInput(GuiScreenEvent.KeyboardInputEvent.Pre event) {
-        if (isEnabled() && event.gui instanceof GuiContainer && searchBar != null && searchBar.isFocused() && Keyboard.getEventKeyState()) {
-            char typedChar = Keyboard.getEventCharacter();
-            int keyCode = Keyboard.getEventKey();
-            if (keyCode != Keyboard.KEY_ESCAPE && searchBar.textboxKeyTyped(typedChar, keyCode)) {
+        if (isEnabled() && event.gui instanceof GuiContainer && searchBar != null && searchBar.isFocused() && KeybindHelper.getEventKeyState()) {
+            char typedChar = KeybindHelper.getEventCharacter();
+            int keyCode = KeybindHelper.getEventKeyCode();
+
+            if ((keyCode == KeybindHelper.KEY_RETURN || keyCode == KeybindHelper.KEY_NUMPADENTER) && isCalcMode() && lastCalcResult != null) {
+                if (ATHRConfig.feature.misc.searchBarConfig.calcEnterCopyResult)
+                    GuiScreen.setClipboardString(lastCalcResult);
+                if (ATHRConfig.feature.misc.searchBarConfig.calcEnterClearText) {
+                    searchText = lastCalcResult;
+                    searchBar.setText(lastCalcResult);
+                }
+                event.setCanceled(true);
+                return;
+            }
+
+            if (keyCode != KeybindHelper.KEY_ESCAPE && searchBar.textboxKeyTyped(typedChar, keyCode)) {
                 searchText = searchBar.getText();
                 event.setCanceled(true);
             }
@@ -254,17 +264,17 @@ public class SearchBar {
     @SubscribeEvent
     public void onMouseInput(GuiScreenEvent.MouseInputEvent.Pre event) {
         if (!isEnabled() || !(event.gui instanceof GuiContainer)) return;
-        if (searchBar == null || !Mouse.getEventButtonState()) return;
+        if (searchBar == null || !KeybindHelper.getEventButtonState()) return;
 
-        int mouseX = Mouse.getEventX() * event.gui.width / MC.displayWidth;
-        int mouseY = event.gui.height - Mouse.getEventY() * event.gui.height / MC.displayHeight - 1;
+        int mouseX = KeybindHelper.getScaledEventX(event.gui.width);
+        int mouseY = KeybindHelper.getScaledEventY(event.gui.height);
 
         boolean inside = mouseX >= searchBar.xPosition && mouseX <= searchBar.xPosition + searchBar.width && mouseY >= searchBar.yPosition && mouseY <= searchBar.yPosition + searchBar.height;
 
         searchBar.setFocused(inside);
         if (inside) {
-            searchBar.mouseClicked(mouseX, mouseY, Mouse.getEventButton());
-        } else if (isItemListActive() && Mouse.getEventButton() == 0 && mouseX >= toggleBtnX && mouseX < toggleBtnX + TOGGLE_BTN_W && mouseY >= toggleBtnY && mouseY < toggleBtnY + BAR_HEIGHT) {
+            searchBar.mouseClicked(mouseX, mouseY, KeybindHelper.getEventButton());
+        } else if (isItemListActive() && KeybindHelper.getEventButton() == 0 && mouseX >= toggleBtnX && mouseX < toggleBtnX + TOGGLE_BTN_W && mouseY >= toggleBtnY && mouseY < toggleBtnY + BAR_HEIGHT) {
             sendToItemList = !sendToItemList;
             event.setCanceled(true);
         }

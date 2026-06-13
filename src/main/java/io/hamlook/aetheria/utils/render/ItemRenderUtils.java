@@ -1,5 +1,6 @@
 package io.hamlook.aetheria.utils.render;
 
+import io.hamlook.aetheria.utils.KeybindHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.ScaledResolution;
@@ -7,7 +8,6 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.item.ItemStack;
-import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
@@ -63,9 +63,8 @@ public class ItemRenderUtils {
         if (held == null) return;
 
         ScaledResolution sr = new ScaledResolution(Minecraft.getMinecraft());
-        int cursorX = Mouse.getX() * sr.getScaledWidth() / Minecraft.getMinecraft().displayWidth;
-        int cursorY = sr.getScaledHeight()
-                - Mouse.getY() * sr.getScaledHeight() / Minecraft.getMinecraft().displayHeight - 1;
+        int[] cursor = KeybindHelper.getMouseCoords(sr);
+        int cursorX = cursor[0], cursorY = cursor[1];
 
         RenderHelper.enableGUIStandardItemLighting();
         GlStateManager.pushMatrix();

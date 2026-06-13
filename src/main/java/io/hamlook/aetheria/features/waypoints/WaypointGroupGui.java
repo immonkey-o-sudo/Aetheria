@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import io.hamlook.aetheria.core.moulconfig.gui.GuiElement;
 import io.hamlook.aetheria.Resources;
+import io.hamlook.aetheria.utils.KeybindHelper;
 import io.hamlook.aetheria.utils.render.NineSliceUtils;
 import io.hamlook.aetheria.utils.render.TextRenderUtils;
 import net.minecraft.client.Minecraft;
@@ -612,8 +613,8 @@ public class WaypointGroupGui extends GuiElement {
     private boolean isHovered(int x, int y, int w, int h) {
         Minecraft mc = Minecraft.getMinecraft();
         ScaledResolution sr = new ScaledResolution(mc);
-        int mx = Mouse.getX() * sr.getScaledWidth() / mc.displayWidth;
-        int my = sr.getScaledHeight() - Mouse.getY() * sr.getScaledHeight() / mc.displayHeight - 1;
+        int[] mouse = KeybindHelper.getMouseCoords(sr);
+        int mx = mouse[0], my = mouse[1];
         return inBounds(mx, my, x, y, w, h);
     }
 

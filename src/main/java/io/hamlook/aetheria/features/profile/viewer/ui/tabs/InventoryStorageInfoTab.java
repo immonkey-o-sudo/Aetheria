@@ -8,6 +8,7 @@ import io.hamlook.aetheria.features.profile.data.ProfileData;
 import io.hamlook.aetheria.features.profile.data.storage.ContainerData;
 import io.hamlook.aetheria.features.profile.vars.EquipmentSlot;
 import io.hamlook.aetheria.features.profile.viewer.ui.ProfileViewerGUI;
+import io.hamlook.aetheria.utils.KeybindHelper;
 import io.hamlook.aetheria.utils.render.ItemRenderUtils;
 import io.hamlook.aetheria.utils.render.TextRenderUtils;
 import net.minecraft.client.Minecraft;
@@ -69,8 +70,8 @@ public class InventoryStorageInfoTab extends Tab {
 
         // 3. Draw Tooltip at very top
         if (hoveredItem != null) {
-            int mouseX = Mouse.getX() * mc.currentScreen.width / mc.displayWidth;
-            int mouseY = mc.currentScreen.height - (Mouse.getY() * mc.currentScreen.height / mc.displayHeight) - 1;
+            int[] mouse = KeybindHelper.getMouseCoords(mc.currentScreen.width, mc.currentScreen.height);
+            int mouseX = mouse[0], mouseY = mouse[1];
             drawItemTooltip(mc, hoveredItem, mouseX, mouseY);
         }
     }
@@ -277,18 +278,18 @@ public class InventoryStorageInfoTab extends Tab {
     }
 
     private int getMouseY() {
-        return Minecraft.getMinecraft().currentScreen.height - (Mouse.getY() * Minecraft.getMinecraft().currentScreen.height / Minecraft.getMinecraft().displayHeight) - 1;
+        return KeybindHelper.getMouseCoords(Minecraft.getMinecraft().currentScreen.width, Minecraft.getMinecraft().currentScreen.height)[1];
     }
 
     private boolean isMouseOver(float x, float y, float w, float h) {
-        int mouseX = Mouse.getX() * Minecraft.getMinecraft().currentScreen.width / Minecraft.getMinecraft().displayWidth;
-        int mouseY = getMouseY();
+        int[] mouse = KeybindHelper.getMouseCoords(Minecraft.getMinecraft().currentScreen.width, Minecraft.getMinecraft().currentScreen.height);
+        int mouseX = mouse[0], mouseY = mouse[1];
         return mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h;
     }
 
     private void handleVerticalScroll(float x, float y, float w, float h, float contentH) {
-        int mx = Mouse.getX() * Minecraft.getMinecraft().currentScreen.width / Minecraft.getMinecraft().displayWidth;
-        int my = getMouseY();
+        int[] mouse = KeybindHelper.getMouseCoords(Minecraft.getMinecraft().currentScreen.width, Minecraft.getMinecraft().currentScreen.height);
+        int mx = mouse[0], my = mouse[1];
 
         if (mx >= x && mx <= x + w && my >= y && my <= y + h) {
             int dWheel = Mouse.getDWheel();

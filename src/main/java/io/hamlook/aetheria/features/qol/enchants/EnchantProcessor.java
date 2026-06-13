@@ -9,6 +9,7 @@ import io.hamlook.aetheria.init.RegisterEvents;
 import io.hamlook.aetheria.repo.ATHRRepo;
 import io.hamlook.aetheria.repo.RepoHandler;
 import io.hamlook.aetheria.utils.ColorUtils;
+import io.hamlook.aetheria.utils.KeybindHelper;
 import io.hamlook.aetheria.utils.RomanNumeralParser;
 import io.hamlook.aetheria.utils.item.ItemUtils;
 import net.minecraft.client.Minecraft;
@@ -19,7 +20,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import org.lwjgl.input.Mouse;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -196,7 +196,7 @@ public class EnchantProcessor {
 
     private int correctTooltipWidth(int maxTooltipWidth) {
         final ScaledResolution scaled = new ScaledResolution(Minecraft.getMinecraft());
-        final int mouseX = Mouse.getX() * scaled.getScaledWidth() / Minecraft.getMinecraft().displayWidth;
+        final int mouseX = KeybindHelper.getMouseCoords(scaled)[0];
         int tooltipX = mouseX + 12;
         if (tooltipX + maxTooltipWidth + 4 > scaled.getScaledWidth()) {
             tooltipX = mouseX - 16 - maxTooltipWidth;

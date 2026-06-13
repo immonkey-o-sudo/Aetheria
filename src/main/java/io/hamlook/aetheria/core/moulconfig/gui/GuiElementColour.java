@@ -5,6 +5,7 @@ package io.hamlook.aetheria.core.moulconfig.gui;
 
 import io.hamlook.aetheria.Resources;
 import io.hamlook.aetheria.core.moulconfig.editors.ChromaColour;
+import io.hamlook.aetheria.utils.KeybindHelper;
 import io.hamlook.aetheria.utils.render.RenderUtils;
 import io.hamlook.aetheria.utils.render.TextRenderUtils;
 import net.minecraft.client.Minecraft;
@@ -198,9 +199,8 @@ public class GuiElementColour extends GuiElement {
 
     @Override
     public boolean mouseInput(int mouseX, int mouseY) {
-        ScaledResolution sr = new ScaledResolution(Minecraft.getMinecraft());
-        float mxF = (float)(Mouse.getX() * sr.getScaledWidth_double() / Minecraft.getMinecraft().displayWidth);
-        float myF = (float)(sr.getScaledHeight_double() - Mouse.getY() * sr.getScaledHeight_double() / Minecraft.getMinecraft().displayHeight - 1);
+        float[] mf = KeybindHelper.getMouseCoordsFloat(new ScaledResolution(Minecraft.getMinecraft()));
+        float mxF = mf[0], myF = mf[1];
 
         if ((Mouse.getEventButton() == 0 || Mouse.getEventButton() == 1) && Mouse.getEventButtonState()) {
             if (mouseX > x+5+8 && mouseX < x+5+56 && mouseY > y+5+64+5 && mouseY < y+5+74) {

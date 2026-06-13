@@ -3,6 +3,7 @@ package io.hamlook.aetheria.features.misc.itemList;
 import io.hamlook.aetheria.Resources;
 import io.hamlook.aetheria.features.misc.itemList.recipe.Recipe;
 import io.hamlook.aetheria.features.misc.itemList.recipe.RecipeFactory;
+import io.hamlook.aetheria.utils.KeybindHelper;
 import io.hamlook.aetheria.utils.render.ItemRenderUtils;
 import io.hamlook.aetheria.utils.render.NineSliceUtils;
 import io.hamlook.aetheria.utils.render.TextRenderUtils;
@@ -125,8 +126,8 @@ public class RecipeViewerGUI extends GuiScreen {
         if (dw != 0) {
             if (ItemPaneRenderer.INSTANCE != null) {
                 Minecraft mc = Minecraft.getMinecraft();
-                int mx = Mouse.getEventX() * width / mc.displayWidth;
-                int my = height - Mouse.getEventY() * height / mc.displayHeight - 1;
+                int mx = KeybindHelper.getScaledEventX(width);
+                int my = KeybindHelper.getScaledEventY(height);
                 ItemPaneRenderer.INSTANCE.handleMouseInput(width, height, mx, my, null);
             }
             scrollY += dw > 0 ? -20 : 20;

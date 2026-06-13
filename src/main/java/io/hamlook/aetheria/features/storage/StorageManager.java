@@ -8,6 +8,7 @@ import io.hamlook.aetheria.features.storage.utils.SContainer;
 import io.hamlook.aetheria.features.storage.utils.StorageListener;
 import io.hamlook.aetheria.features.storage.utils.StorageParser;
 import io.hamlook.aetheria.init.RegisterEvents;
+import io.hamlook.aetheria.utils.KeybindHelper;
 import io.hamlook.aetheria.utils.ContainerUtils;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
@@ -143,8 +144,8 @@ public class StorageManager {
             int mouseButton = org.lwjgl.input.Mouse.getEventButton();
             if (mouseButton == 0) {
                 net.minecraft.client.gui.ScaledResolution sr = new net.minecraft.client.gui.ScaledResolution(Minecraft.getMinecraft());
-                int mouseX = org.lwjgl.input.Mouse.getX() * sr.getScaledWidth() / Minecraft.getMinecraft().displayWidth;
-                int mouseY = sr.getScaledHeight() - org.lwjgl.input.Mouse.getY() * sr.getScaledHeight() / Minecraft.getMinecraft().displayHeight - 1;
+                int[] mouse = KeybindHelper.getMouseCoords(sr);
+                int mouseX = mouse[0], mouseY = mouse[1];
 
                 renderer.handleClick(mouseX, mouseY);
             }

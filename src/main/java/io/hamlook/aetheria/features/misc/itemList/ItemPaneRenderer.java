@@ -5,6 +5,7 @@ import io.hamlook.aetheria.Resources;
 import io.hamlook.aetheria.features.misc.SearchBar;
 import io.hamlook.aetheria.features.storage.StorageManager;
 import io.hamlook.aetheria.init.RegisterEvents;
+import io.hamlook.aetheria.utils.KeybindHelper;
 import io.hamlook.aetheria.utils.render.ItemRenderUtils;
 import io.hamlook.aetheria.utils.render.NineSliceUtils;
 import io.hamlook.aetheria.utils.render.TextRenderUtils;
@@ -421,8 +422,8 @@ private boolean shouldntShow() {
         if (shouldntShow()) return;
 
         Minecraft mc = Minecraft.getMinecraft();
-        int mouseX = Mouse.getEventX() * event.gui.width / mc.displayWidth;
-        int mouseY = event.gui.height - Mouse.getEventY() * event.gui.height / mc.displayHeight - 1;
+        int mouseX = KeybindHelper.getScaledEventX(event.gui.width);
+        int mouseY = KeybindHelper.getScaledEventY(event.gui.height);
         handleMouseInput(event.gui.width, event.gui.height, mouseX, mouseY, event);
     }
 

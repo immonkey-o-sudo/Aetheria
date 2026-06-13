@@ -1,5 +1,6 @@
 package io.hamlook.aetheria.features.profile.viewer.ui.tabs;
 
+import io.hamlook.aetheria.utils.KeybindHelper;
 import io.hamlook.aetheria.utils.StringUtils;
 import io.hamlook.aetheria.features.profile.data.ProfileData;
 import io.hamlook.aetheria.features.profile.data.collection.CollectionBase;
@@ -285,8 +286,8 @@ public class CollectionInfoTab extends Tab {
 
         NineSliceUtils.draw(ProfileViewerGUI.CONTAINER_BG, (int) dropX, (int) dropY, (int) dropW, (int) dropH, 6, 18);
 
-        int mouseX = Mouse.getX() * mc.currentScreen.width / mc.displayWidth;
-        int mouseY = mc.currentScreen.height - (Mouse.getY() * mc.currentScreen.height / mc.displayHeight) - 1;
+        int[] mouse = KeybindHelper.getMouseCoords(mc.currentScreen.width, mc.currentScreen.height);
+        int mouseX = mouse[0], mouseY = mouse[1];
 
         for (int i = 0; i < categories.length; i++) {
             CollectionBase base = categories[i];
@@ -307,8 +308,8 @@ public class CollectionInfoTab extends Tab {
     }
 
     private void handleInputEvents(Minecraft mc, float xPos, float yPos, int width, int height, float maxScroll) {
-        int mouseX = Mouse.getX() * mc.currentScreen.width / mc.displayWidth;
-        int mouseY = mc.currentScreen.height - (Mouse.getY() * mc.currentScreen.height / mc.displayHeight) - 1;
+        int[] mouse = KeybindHelper.getMouseCoords(mc.currentScreen.width, mc.currentScreen.height);
+        int mouseX = mouse[0], mouseY = mouse[1];
 
         boolean isMouseDown = Mouse.isButtonDown(0);
         boolean isLeftClick = isMouseDown && !wasMouseDown;

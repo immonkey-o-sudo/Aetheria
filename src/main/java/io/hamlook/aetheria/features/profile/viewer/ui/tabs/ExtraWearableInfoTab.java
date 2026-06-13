@@ -8,6 +8,7 @@ import io.hamlook.aetheria.features.profile.data.ItemData;
 import io.hamlook.aetheria.features.profile.data.pets.Pet;
 import io.hamlook.aetheria.features.profile.data.wardrobe.WardrobeSet;
 import io.hamlook.aetheria.features.profile.viewer.ui.ProfileViewerGUI;
+import io.hamlook.aetheria.utils.KeybindHelper;
 import io.hamlook.aetheria.utils.render.ItemRenderUtils;
 
 import io.hamlook.aetheria.utils.render.TextRenderUtils;
@@ -123,13 +124,11 @@ public class ExtraWearableInfoTab extends Tab {
         RenderHelper.disableStandardItemLighting();
 
         if (hoveredPet != null) {
-            int mouseX = Mouse.getX() * mc.currentScreen.width / mc.displayWidth;
-            int mouseY = mc.currentScreen.height - (Mouse.getY() * mc.currentScreen.height / mc.displayHeight) - 1;
-            drawPetTooltip(mc, hoveredPet, mouseX, mouseY);
+            int[] m1 = KeybindHelper.getMouseCoords(mc.currentScreen.width, mc.currentScreen.height);
+            drawPetTooltip(mc, hoveredPet, m1[0], m1[1]);
         } else if (hoveredWardrobe != null) {
-            int mouseX = Mouse.getX() * mc.currentScreen.width / mc.displayWidth;
-            int mouseY = mc.currentScreen.height - (Mouse.getY() * mc.currentScreen.height / mc.displayHeight) - 1;
-            drawItemTooltip(mc, hoveredWardrobe, mouseX, mouseY);
+            int[] m2 = KeybindHelper.getMouseCoords(mc.currentScreen.width, mc.currentScreen.height);
+            drawItemTooltip(mc, hoveredWardrobe, m2[0], m2[1]);
         }
     }
 
@@ -153,8 +152,8 @@ public class ExtraWearableInfoTab extends Tab {
         GlStateManager.translate(x + offsetX - petScrollX, 0, 0);
 
         int totalSlots = cols * rows;
-        int mouseX = Mouse.getX() * mc.currentScreen.width / mc.displayWidth;
-        int mouseY = mc.currentScreen.height - (Mouse.getY() * mc.currentScreen.height / mc.displayHeight) - 1;
+        int[] mouse = KeybindHelper.getMouseCoords(mc.currentScreen.width, mc.currentScreen.height);
+        int mouseX = mouse[0], mouseY = mouse[1];
         RenderablePet hoveredPet = null;
 
         for (int i = 0; i < totalSlots; i++) {
@@ -205,8 +204,8 @@ public class ExtraWearableInfoTab extends Tab {
         GlStateManager.translate(x + offsetX - wardScrollX, 0, 0);
 
         int index = 0;
-        int mouseX = Mouse.getX() * mc.currentScreen.width / mc.displayWidth;
-        int mouseY = mc.currentScreen.height - (Mouse.getY() * mc.currentScreen.height / mc.displayHeight) - 1;
+        int[] mouse = KeybindHelper.getMouseCoords(mc.currentScreen.width, mc.currentScreen.height);
+        int mouseX = mouse[0], mouseY = mouse[1];
         ItemData hoveredWardrobe = null;
 
         for (WardrobeSet set : data.wardrobeData.wardrobe.values()) {
@@ -301,8 +300,8 @@ public class ExtraWearableInfoTab extends Tab {
     }
 
     private void handleHorizontalScroll(float x, float y, float w, float h, float contentW, boolean isPet) {
-        int mx = Mouse.getX() * Minecraft.getMinecraft().currentScreen.width / Minecraft.getMinecraft().displayWidth;
-        int my = Minecraft.getMinecraft().currentScreen.height - (Mouse.getY() * Minecraft.getMinecraft().currentScreen.height / Minecraft.getMinecraft().displayHeight) - 1;
+        int[] mouse = KeybindHelper.getMouseCoords(Minecraft.getMinecraft().currentScreen.width, Minecraft.getMinecraft().currentScreen.height);
+        int mx = mouse[0], my = mouse[1];
 
         if (mx >= x && mx <= x + w && my >= y && my <= y + h) {
             int dWheel = Mouse.getDWheel();

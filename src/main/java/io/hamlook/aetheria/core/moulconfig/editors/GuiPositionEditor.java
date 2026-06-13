@@ -3,6 +3,7 @@
 
 package io.hamlook.aetheria.core.moulconfig.editors;
 
+import io.hamlook.aetheria.utils.KeybindHelper;
 import io.hamlook.aetheria.utils.Position;
 import io.hamlook.aetheria.utils.Utils;
 import net.minecraft.client.Minecraft;
@@ -81,8 +82,9 @@ public class GuiPositionEditor extends GuiScreen {
 
         this.width = scaledResolution.getScaledWidth();
         this.height = scaledResolution.getScaledHeight();
-        mouseX = Mouse.getX() * width / Minecraft.getMinecraft().displayWidth;
-        mouseY = height - Mouse.getY() * height / Minecraft.getMinecraft().displayHeight - 1;
+        int[] coords = KeybindHelper.getMouseCoords(this.width, this.height);
+        mouseX = coords[0];
+        mouseY = coords[1];
 
         drawDefaultBackground();
 
@@ -120,8 +122,9 @@ public class GuiPositionEditor extends GuiScreen {
             } else {
                 scaledResolution = new ScaledResolution(Minecraft.getMinecraft());
             }
-            mouseX = Mouse.getX() * width / Minecraft.getMinecraft().displayWidth;
-            mouseY = height - Mouse.getY() * height / Minecraft.getMinecraft().displayHeight - 1;
+            int[] coords = KeybindHelper.getMouseCoords(width, height);
+            mouseX = coords[0];
+            mouseY = coords[1];
 
             int x = position.getAbsX(scaledResolution, scaledW());
             int y = position.getAbsY(scaledResolution, scaledH());
@@ -186,8 +189,9 @@ public class GuiPositionEditor extends GuiScreen {
             } else {
                 scaledResolution = new ScaledResolution(Minecraft.getMinecraft());
             }
-            mouseX = Mouse.getX() * width / Minecraft.getMinecraft().displayWidth;
-            mouseY = height - Mouse.getY() * height / Minecraft.getMinecraft().displayHeight - 1;
+            int[] coords = KeybindHelper.getMouseCoords(width, height);
+            mouseX = coords[0];
+            mouseY = coords[1];
 
             grabbedX += position.moveX(mouseX - grabbedX, scaledW(), scaledResolution);
             grabbedY += position.moveY(mouseY - grabbedY, scaledH(), scaledResolution);

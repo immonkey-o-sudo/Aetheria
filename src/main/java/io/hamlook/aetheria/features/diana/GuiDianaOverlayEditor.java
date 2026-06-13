@@ -1,6 +1,7 @@
 package io.hamlook.aetheria.features.diana;
 
 import io.hamlook.aetheria.core.ATHRConfig;
+import io.hamlook.aetheria.utils.KeybindHelper;
 import io.hamlook.aetheria.utils.Position;
 import io.hamlook.aetheria.features.diana.overlays.DianaEventOverlay;
 import io.hamlook.aetheria.features.diana.overlays.DianaLootOverlay;
@@ -11,7 +12,7 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
 import org.lwjgl.input.Keyboard;
-import org.lwjgl.input.Mouse;
+
 
 import java.io.IOException;
 import java.util.function.IntSupplier;
@@ -47,10 +48,11 @@ public class GuiDianaOverlayEditor extends GuiScreen {
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         super.drawScreen(mouseX, mouseY, partialTicks);
         ScaledResolution sr = new ScaledResolution(mc);
+        int[] m = KeybindHelper.getMouseCoords(sr);
+        mouseX = m[0];
+        mouseY = m[1];
         this.width = sr.getScaledWidth();
         this.height = sr.getScaledHeight();
-        mouseX = Mouse.getX() * width / mc.displayWidth;
-        mouseY = height - Mouse.getY() * height / mc.displayHeight - 1;
 
         drawDefaultBackground();
 
@@ -80,8 +82,9 @@ public class GuiDianaOverlayEditor extends GuiScreen {
         if (mouseButton != 0) return;
 
         ScaledResolution sr = new ScaledResolution(mc);
-        mouseX = Mouse.getX() * width / mc.displayWidth;
-        mouseY = height - Mouse.getY() * height / mc.displayHeight - 1;
+        int[] m = KeybindHelper.getMouseCoords(width, height);
+        mouseX = m[0];
+        mouseY = m[1];
 
         for (int i = 0; i < overlays.length; i++) {
             OverlayEntry e = overlays[i];
@@ -113,8 +116,9 @@ public class GuiDianaOverlayEditor extends GuiScreen {
         if (draggedIndex < 0) return;
 
         ScaledResolution sr = new ScaledResolution(mc);
-        mouseX = Mouse.getX() * width / mc.displayWidth;
-        mouseY = height - Mouse.getY() * height / mc.displayHeight - 1;
+        int[] m = KeybindHelper.getMouseCoords(width, height);
+        mouseX = m[0];
+        mouseY = m[1];
 
         OverlayEntry e = overlays[draggedIndex];
         grabbedX += e.position.moveX(mouseX - grabbedX, e.scaledW(), sr);

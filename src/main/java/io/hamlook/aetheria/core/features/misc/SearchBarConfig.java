@@ -38,4 +38,14 @@ public class SearchBarConfig {
     @ConfigOption(name = "Persist Storage Search", desc = "Keep Storage Overlay search text between GUI opens")
     @ConfigEditorBoolean
     public boolean persistStorageSearch = false;
+
+    @Expose
+    @ConfigOption(name = "Enter Clears Expression", desc = "In calculator mode, pressing Enter will remove the expression and leave only the result in the search bar")
+    @ConfigEditorBoolean
+    public boolean calcEnterClearText = true;
+
+    @Expose
+    @ConfigOption(name = "Result on Enter", desc = "In calculator mode, pressing Enter will copy the result to your clipboard")
+    @ConfigEditorBoolean
+    public boolean calcEnterCopyResult = true;
 }
