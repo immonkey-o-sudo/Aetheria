@@ -2,17 +2,19 @@ package io.hamlook.aetheria.features.diana;
 
 import io.hamlook.aetheria.core.GsonBuilder;
 import io.hamlook.aetheria.core.StorageManager;
+import io.hamlook.aetheria.features.price.PriceMap;
 import io.hamlook.aetheria.utils.data.SkyblockData;
+import io.hamlook.aetheria.utils.data.TablistParser;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.StringUtils;
 
-import java.io.*;
+import java.io.File;
 
 public class DianaStats implements StorageManager.Managed, StorageManager.AutoSaveable {
 
-    private static final long INACTIVITY_LIMIT_MS = 90_000L;
+    private static final long INACTIVITY_LIMIT_MS = 120_000L;
     private static final Minecraft mc = Minecraft.getMinecraft();
     private static DianaStats INSTANCE;
     public volatile String lastDropType = null;
@@ -26,6 +28,7 @@ public class DianaStats implements StorageManager.Managed, StorageManager.AutoSa
     private volatile long lastLootShareMs = 0L;
     private volatile boolean hasTrackedInqLs = false;
     private long sessionStartMs = -1L;
+    private long sessionActiveTimeMs = 0L;
     private boolean timerRunning = false;
     private boolean timerStartedOnce = false;
     private boolean inactivityFlagged = false;
@@ -67,12 +70,6 @@ public class DianaStats implements StorageManager.Managed, StorageManager.AutoSa
         return sb.toString().trim();
     }
 
-    public static String fmtCoins(long coins) {
-        if (coins >= 1_000_000) return String.format("%.1fM", coins / 1_000_000.0);
-        if (coins >= 1_000) return String.format("%.1fK", coins / 1_000.0);
-        return String.valueOf(coins);
-    }
-
     @Override
     public void initFile(File configDir) {
         this.file = new File(configDir, "diana_stats.json");
@@ -106,6 +103,7 @@ public class DianaStats implements StorageManager.Managed, StorageManager.AutoSa
         inactivityFlagged = false;
         timerStartTime = 0L;
         lastActivityTime = 0L;
+        sessionActiveTimeMs = 0L;
     }
 
     public boolean toggleTracking() {
@@ -117,8 +115,13 @@ public class DianaStats implements StorageManager.Managed, StorageManager.AutoSa
         return trackingEnabled && hasSpadeInHotbar() && SkyblockData.getCurrentLocation() == SkyblockData.Location.HUB;
     }
 
+    public boolean isDianaMayor() {
+        return TablistParser.isDianaMayor();
+    }
+
     public void onClientLogin() {
         sessionStartMs = System.currentTimeMillis();
+        sessionActiveTimeMs = 0L;
     }
 
     public void onClientLogout() {
@@ -127,8 +130,7 @@ public class DianaStats implements StorageManager.Managed, StorageManager.AutoSa
     }
 
     public long getSessionTimeMs() {
-        if (sessionStartMs <= 0) return 0L;
-        return System.currentTimeMillis() - sessionStartMs;
+        return sessionActiveTimeMs;
     }
 
     public void onLootshare() {
@@ -175,11 +177,18 @@ public class DianaStats implements StorageManager.Managed, StorageManager.AutoSa
     public void timerTick() {
         if (!timerRunning) return;
         long now = System.currentTimeMillis();
-        data.activeTimeMs += now - timerStartTime;
-        timerStartTime = now;
-        if (now - lastActivityTime > INACTIVITY_LIMIT_MS) {
+        if (isTracking() && isDianaMayor()) {
+            data.activeTimeMs += now - timerStartTime;
+            sessionActiveTimeMs += now - timerStartTime;
+            timerStartTime = now;
+            if (now - lastActivityTime > INACTIVITY_LIMIT_MS) {
+                timerRunning = false;
+                inactivityFlagged = true;
+            }
+        } else {
+            timerStartTime = now;
             timerRunning = false;
-            inactivityFlagged = true;
+            inactivityFlagged = false;
         }
     }
 
@@ -187,6 +196,7 @@ public class DianaStats implements StorageManager.Managed, StorageManager.AutoSa
         if (!timerRunning) return;
         long now = System.currentTimeMillis();
         data.activeTimeMs += now - timerStartTime;
+        sessionActiveTimeMs += now - timerStartTime;
         timerRunning = false;
         save();
     }
@@ -208,5 +218,20 @@ public class DianaStats implements StorageManager.Managed, StorageManager.AutoSa
 
     public String formatMobPct(int count) {
         return data.totalMobs > 0 ? String.format("%.2f%%", getMobPercent(count)) : "-.--%%";
+    }
+
+    public long getEstimatedProfit() {
+        long profit = 0;
+        profit += (long) (data.totalChimeras * PriceMap.Cached.getPrice("CHIMERA_1"));
+        profit += (long) (data.griffinFeathers * PriceMap.Cached.getPrice("GRIFFIN_FEATHER"));
+        profit += (long) (data.dwarfTurtleShelmets * PriceMap.Cached.getPrice("DWARF_TURTLE_SHELMET"));
+        profit += (long) (data.antiqueRemedies * PriceMap.Cached.getPrice("ANTIQUE_REMEDIES"));
+        profit += (long) (data.crochetTigerPlushies * PriceMap.Cached.getPrice("CROCHET_TIGER_PLUSHIE"));
+        profit += (long) (data.totalSticks * PriceMap.Cached.getPrice("DAEDALUS_STICK"));
+        profit += (long) (data.totalRelics * PriceMap.Cached.getPrice("MINOS_RELIC"));
+        profit += (long) (data.souvenirs * PriceMap.Cached.getPrice("WASHED_UP_SOUVENIR"));
+        profit += (long) (data.crownsOfGreed * PriceMap.Cached.getPrice("CROWN_OF_GREED"));
+        profit += data.totalCoins;
+        return profit;
     }
 }

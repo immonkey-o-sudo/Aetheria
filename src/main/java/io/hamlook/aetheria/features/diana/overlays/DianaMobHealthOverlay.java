@@ -2,9 +2,10 @@ package io.hamlook.aetheria.features.diana.overlays;
 
 import io.hamlook.aetheria.core.ATHRConfig;
 import io.hamlook.aetheria.core.moulconfig.editors.ChromaColour;
-import io.hamlook.aetheria.utils.Position;
+import io.hamlook.aetheria.features.diana.DianaStats;
 import io.hamlook.aetheria.features.diana.LootshareDetect;
 import io.hamlook.aetheria.init.RegisterEvents;
+import io.hamlook.aetheria.utils.Position;
 import io.hamlook.aetheria.utils.overlay.Overlay;
 import lombok.Getter;
 
@@ -46,6 +47,12 @@ public class DianaMobHealthOverlay extends Overlay {
     @Override
     public int getCornerRadius() {
         return ATHRConfig.feature.diana.dianaMobHp.mobCornerRadius;
+    }
+
+    @Override
+    protected boolean extraGuard() {
+        DianaStats s = DianaStats.getInstance();
+        return s.isTracking() && s.isDianaMayor();
     }
 
     @Override

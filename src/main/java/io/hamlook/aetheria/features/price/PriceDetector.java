@@ -120,6 +120,9 @@ public class PriceDetector {
             lastFetchTime = now;
             PriceMap.fetch();
             Aetheria.logger.info("[PriceDetector] Updated PriceMap");
+        } else if (PriceMap.fetchFailCount > 0 && PriceMap.fetchFailCount < PriceMap.MAX_RETRIES && now - lastFetchTime >= 60_000L) {
+            lastFetchTime = now;
+            PriceMap.fetch();
         }
 
         tickCounter++;

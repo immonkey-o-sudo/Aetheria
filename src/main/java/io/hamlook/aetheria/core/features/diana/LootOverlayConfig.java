@@ -4,6 +4,10 @@ import com.google.gson.annotations.Expose;
 import io.hamlook.aetheria.core.moulconfig.gui.config.ConfigAnnotations.*;
 import io.hamlook.aetheria.utils.Position;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class LootOverlayConfig {
 
     @Expose
@@ -28,4 +32,19 @@ public class LootOverlayConfig {
 
     @Expose
     public Position lootOverlayPos = new Position(4, 310);
+
+    @Expose
+    @ConfigOption(name = "Loot Overlay Lines", desc = "Choose which lines to show. Drag to reorder, drag to trash to hide.")
+    @ConfigEditorDraggableList(exampleText = {
+        "Inqs since Chimera",
+        "Chimeras",
+        "Feathers",
+        "Shelmets / Remedies / Plushies",
+        "Daedalus Sticks",
+        "Minos Relics",
+        "Souvenirs / Crowns",
+        "Coins",
+        "Estimated Profit"
+    })
+    public List<Integer> lootLines = new ArrayList<>(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8));
 }

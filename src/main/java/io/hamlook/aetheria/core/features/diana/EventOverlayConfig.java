@@ -4,6 +4,10 @@ import com.google.gson.annotations.Expose;
 import io.hamlook.aetheria.core.moulconfig.gui.config.ConfigAnnotations.*;
 import io.hamlook.aetheria.utils.Position;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class EventOverlayConfig {
 
     @Expose
@@ -28,4 +32,19 @@ public class EventOverlayConfig {
 
     @Expose
     public Position eventOverlayPos = new Position(4, 200);
+
+    @Expose
+    @ConfigOption(name = "Event Overlay Lines", desc = "Choose which lines to show. Drag to reorder, drag to trash to hide.")
+    @ConfigEditorDraggableList(exampleText = {
+        "Total Mobs",
+        "Playtime / Session",
+        "Burrows",
+        "Inquisitor",
+        "Minotaur",
+        "Minos Champion",
+        "Gaia Construct",
+        "Minos Hunter",
+        "Siamese Lynx"
+    })
+    public List<Integer> eventLines = new ArrayList<>(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8));
 }

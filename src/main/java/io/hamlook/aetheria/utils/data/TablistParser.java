@@ -36,8 +36,13 @@ public class TablistParser {
     private static long mithrilPowder = 0;
     @Getter
     private static long glacitePowder = 0;
+    private static String currentMayor = "";
     @Setter
     private static java.util.function.BiConsumer<Long, Long> gemstonePowderChangeListener = null;
+
+    public static boolean isDianaMayor() {
+        return "Diana".equals(currentMayor);
+    }
     private int tickCounter = 0;
 
     public static boolean isEventActive(String eventName) {
@@ -227,6 +232,10 @@ public class TablistParser {
                     BankParser.setPurse(amt.isEmpty() ? line.substring(colon + 2) : amt);
                     continue;
                 }
+                if (line.startsWith("Current Mayor: ")) {
+                    currentMayor = line.substring("Current Mayor: ".length()).trim();
+                    continue;
+                }
             }
         }
 
@@ -280,6 +289,7 @@ public class TablistParser {
         gemstonePowder = 0;
         mithrilPowder = 0;
         glacitePowder = 0;
+        currentMayor = "";
         BankParser.clear();
     }
 

@@ -88,7 +88,7 @@ public class LootshareDetect {
         if (mc.theWorld == null) return;
         if (!(event.entity instanceof EntityArmorStand)) return;
         // Only bother tracking if spade in hotbar (diana active) or a mob was just dug
-        if (DianaStats.hasSpadeInHotbar() || nonInqMobActive)
+        if ((DianaStats.hasSpadeInHotbar() || nonInqMobActive) && DianaStats.getInstance().isDianaMayor())
             unconfirmed.put(event.entity.getEntityId(), System.currentTimeMillis());
     }
 

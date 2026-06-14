@@ -1,6 +1,7 @@
 package io.hamlook.aetheria.features.diana;
 
 import io.hamlook.aetheria.init.RegisterEvents;
+import io.hamlook.aetheria.utils.Utils;
 import io.hamlook.aetheria.utils.chat.ChatUtils;
 import io.hamlook.aetheria.utils.data.SkyblockData;
 import net.minecraft.client.Minecraft;
@@ -72,7 +73,7 @@ public class DianaTracker {
 
     public static String getLootMessage() {
         DianaData d = DianaStats.getInstance().getData();
-        return String.format("F:%d Sh:%d Re:%d Pl:%d St:%d Rl:%d Ch:%d So:%d Cr:%d G:%s", d.griffinFeathers, d.dwarfTurtleShelmets, d.antiqueRemedies, d.crochetTigerPlushies, d.totalSticks, d.totalRelics, d.totalChimeras, d.souvenirs, d.crownsOfGreed, DianaStats.fmtCoins(d.totalCoins));
+        return String.format("F:%d Sh:%d Re:%d Pl:%d St:%d Rl:%d Ch:%d So:%d Cr:%d G:%s", d.griffinFeathers, d.dwarfTurtleShelmets, d.antiqueRemedies, d.crochetTigerPlushies, d.totalSticks, d.totalRelics, d.totalChimeras, d.souvenirs, d.crownsOfGreed, Utils.shortNumberFormat(d.totalCoins, 0));
     }
 
     public static String getTimeMessage() {
@@ -105,35 +106,28 @@ public class DianaTracker {
     @SubscribeEvent
     public void onChat(ClientChatReceivedEvent event) {
         if (mc.thePlayer == null) return;
-        // if (ChatUtils.isFromServer(event)) return;
 
         String msg = ChatUtils.clean(event);
 
-        // Ignore party messages, player messages, and private messages
-        if (ChatUtils.isPartyMessage(msg) || ChatUtils.isPlayerMessage(msg) ||
-                ChatUtils.isMsgReceived(msg) || ChatUtils.isMsgSent(msg)) {
+        if (ChatUtils.isPartyMessage(msg) || ChatUtils.isPlayerMessage(msg) || ChatUtils.isMsgReceived(msg) || ChatUtils.isMsgSent(msg)) {
             return;
         }
         DianaStats stats = DianaStats.getInstance();
 
-        if (LOOT_SHARE.matcher(msg).find() && isInHub()) {
-            stats.onLootshare();
-            if (LootshareDetect.wasInqKilledByOther()) {
-                stats.getData().totalInqsLootshared++;
-                LootshareDetect.clearInqDisappear();
+        if (stats.isTracking() && stats.isDianaMayor()) {
+            if (LOOT_SHARE.matcher(msg).find()) {
+                stats.onLootshare();
+                if (LootshareDetect.wasInqKilledByOther()) {
+                    stats.getData().totalInqsLootshared++;
+                    LootshareDetect.clearInqDisappear();
+                }
             }
-        }
-
-        if (isInHub()) {
             handleBorrowDrops(msg, stats);
             handleRareMobDrops(msg, stats);
             handleMobSpawnHP(msg);
+            handleBorrowDig(msg, stats);
+            handleMobSpawn(msg, stats);
         }
-
-        if (!stats.isTracking()) return;
-
-        handleBorrowDig(msg, stats);
-        handleMobSpawn(msg, stats);
     }
 
     private void handleBorrowDig(String msg, DianaStats stats) {
@@ -207,29 +201,35 @@ public class DianaTracker {
         DianaData d = stats.getData();
         boolean changed = false;
         if (RARE_STICK.matcher(msg).find()) {
+            stats.updateActivity();
             d.minotaursSinceStick = 0;
             d.totalSticks++;
             changed = true;
         }
         if (RARE_RELIC.matcher(msg).find()) {
+            stats.updateActivity();
             d.champsSinceRelic = 0;
             d.totalRelics++;
             changed = true;
         }
         if (RARE_CHIMERA.matcher(msg).find()) {
+            stats.updateActivity();
             d.inqsSinceChimera = 0;
             d.totalChimeras++;
             changed = true;
         }
         if (RARE_SHELMET.matcher(msg).find()) {
+            stats.updateActivity();
             d.dwarfTurtleShelmets++;
             changed = true;
         }
         if (RARE_REMEDIES.matcher(msg).find()) {
+            stats.updateActivity();
             d.antiqueRemedies++;
             changed = true;
         }
         if (RARE_PLUSHIE.matcher(msg).find()) {
+            stats.updateActivity();
             d.crochetTigerPlushies++;
             changed = true;
         }
@@ -240,12 +240,14 @@ public class DianaTracker {
         DianaData d = stats.getData();
 
         if (GRIFFIN_DOUBLED.matcher(msg).find()) {
+            stats.updateActivity();
             if (stats.lastDropType != null) applyDoubledReward(stats);
             else pendingDouble = true;
             return;
         }
 
         if (DROP_FEATHER.matcher(msg).find()) {
+            stats.updateActivity();
             d.griffinFeathers++;
             recordDrop(stats, "feather", 1L);
             if (pendingDouble) {
@@ -254,6 +256,7 @@ public class DianaTracker {
             }
             stats.save();
         } else if (DROP_SOUVENIR.matcher(msg).find()) {
+            stats.updateActivity();
             d.souvenirs++;
             recordDrop(stats, "souvenir", 1L);
             if (pendingDouble) {
@@ -262,6 +265,7 @@ public class DianaTracker {
             }
             stats.save();
         } else if (DROP_CROWN.matcher(msg).find()) {
+            stats.updateActivity();
             d.crownsOfGreed++;
             recordDrop(stats, "crown", 1L);
             if (pendingDouble) {
@@ -272,6 +276,7 @@ public class DianaTracker {
         } else {
             Matcher coins = DROP_COINS.matcher(msg);
             if (coins.find()) {
+                stats.updateActivity();
                 long amount = parseLong(coins.group(1));
                 d.totalCoins += amount;
                 recordDrop(stats, "coins", amount);
