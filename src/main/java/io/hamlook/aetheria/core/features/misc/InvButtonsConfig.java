@@ -24,4 +24,9 @@ public class InvButtonsConfig {
     @ConfigOption(name = "Tooltip Delay (ms)", desc = "Hover time before command tooltip appears")
     @ConfigEditorSliderAnnotation(minValue = 0f, maxValue = 1500f, minStep = 50f)
     public int invButtonTooltipDelay = 600;
+
+    @Expose
+    @ConfigOption(name = "Disable in Terminals", desc = "Hide inventory buttons in terminal menus")
+    @ConfigEditorBoolean
+    public boolean disableInTerminals = true;
 }

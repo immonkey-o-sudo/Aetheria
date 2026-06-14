@@ -4,6 +4,7 @@ import io.hamlook.aetheria.core.ATHRConfig;
 import io.hamlook.aetheria.events.GuiContainerRenderButtonsEvent;
 import io.hamlook.aetheria.features.storage.StorageManager;
 import io.hamlook.aetheria.init.RegisterEvents;
+import io.hamlook.aetheria.utils.ContainerUtils;
 import io.hamlook.aetheria.utils.KeybindHelper;
 import io.hamlook.aetheria.utils.Utils;
 import io.hamlook.aetheria.utils.chat.ChatUtils;
@@ -66,6 +67,15 @@ public class InvButtonRenderer {
         return btn.isActive() && (!btn.playerInvOnly || gui instanceof GuiInventory);
     }
 
+    private static boolean isTerminalMenu(GuiContainer gui) {
+        String name = ContainerUtils.getContainerName(gui);
+        if (name == null) return false;
+        return name.equals("Click in order!") ||
+               name.startsWith("Select all the") ||
+               name.startsWith("What starts with") ||
+               name.contains("Complete the maze!");
+    }
+
     private static InventoryButton hitTest(int mx, int my, int gl, int gt, int gw, int gh, GuiContainer gui) {
         for (InventoryButton btn : InventoryButtonStorage.getInstance().getButtons()) {
             if (!isVisible(btn, gui)) continue;
@@ -82,6 +92,7 @@ public class InvButtonRenderer {
         if (StorageManager.isOverlayActive()) return;
 
         GuiContainer gui = event.gui;
+        if (ATHRConfig.feature.misc.invButtons.disableInTerminals && isTerminalMenu(gui)) return;
         int gl = gui.guiLeft, gt = gui.guiTop, gw = gui.xSize, gh = gui.ySize;
         int mx = event.mouseX, my = event.mouseY;
 
@@ -142,6 +153,7 @@ public class InvButtonRenderer {
         if (!(event.gui instanceof GuiContainer)) return;
 
         GuiContainer gui = (GuiContainer) event.gui;
+        if (ATHRConfig.feature.misc.invButtons.disableInTerminals && isTerminalMenu(gui)) return;
         int gl = gui.guiLeft, gt = gui.guiTop, gw = gui.xSize, gh = gui.ySize;
         int mx = KeybindHelper.getScaledEventX(event.gui.width);
         int my = KeybindHelper.getScaledEventY(event.gui.height);
