@@ -1,7 +1,7 @@
 package io.hamlook.aetheria.features.misc;
 
-import io.hamlook.aetheria.core.ATHRConfig;
 import io.hamlook.aetheria.Resources;
+import io.hamlook.aetheria.core.ATHRConfig;
 import io.hamlook.aetheria.features.storage.StorageManager;
 import io.hamlook.aetheria.init.RegisterEvents;
 import io.hamlook.aetheria.utils.CalculatorUtils;
@@ -20,7 +20,7 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.renderer.GlStateManager;
-import io.hamlook.aetheria.events.GuiContainerRenderButtonsEvent;
+import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.util.Arrays;
@@ -81,7 +81,8 @@ public class SearchBar {
         storageSearchBar.setMaxStringLength(50);
         storageSearchBar.setEnableBackgroundDrawing(false);
         storageSearchBar.setFocused(false);
-        if (ATHRConfig.feature != null && !ATHRConfig.feature.misc.searchBarConfig.persistStorageSearch) storageSearchText = "";
+        if (ATHRConfig.feature != null && !ATHRConfig.feature.misc.searchBarConfig.persistStorageSearch)
+            storageSearchText = "";
         storageSearchBar.setText(storageSearchText);
         return storageSearchBar;
     }
@@ -281,7 +282,7 @@ public class SearchBar {
     }
 
     @SubscribeEvent
-    public void onDrawGui(GuiContainerRenderButtonsEvent event) {
+    public void onDrawGui(GuiScreenEvent event) {
         if (isEnabled() && isSupportedGui(event.gui) && searchBar != null && !StorageManager.isOverlayActive()) {
             searchBar.updateCursorCounter();
             drawSearchBar(searchBar);
