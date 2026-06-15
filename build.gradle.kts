@@ -141,6 +141,7 @@ tasks.shadowJar {
     destinationDirectory.set(layout.buildDirectory.dir("intermediates"))
     archiveClassifier.set("non-obfuscated-with-deps")
     configurations = listOf(shadowImpl)
+    from(rootProject.file("LICENSE.txt"))
     doLast {
         configurations.forEach {
             println("Copying dependencies into mod: ${it.files}")
