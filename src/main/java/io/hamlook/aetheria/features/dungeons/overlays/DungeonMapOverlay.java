@@ -170,7 +170,7 @@ public class DungeonMapOverlay extends Overlay {
                 continue;
             }
 
-            Matcher matcher = PLAYER_REGEX.matcher(stripped);
+            Matcher matcher = PLAYER_REGEX.matcher(stripped.trim());
             if (matcher.lookingAt()) {
                 String username = matcher.group(1);
 
