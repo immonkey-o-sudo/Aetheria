@@ -29,7 +29,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec4b;
 import net.minecraft.world.storage.MapData;
-import io.hamlook.aetheria.features.dungeons.utils.dung.DungeonRoomDetector;
+import io.hamlook.aetheria.features.dungeons.rooms.DungeonRoomDetector;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.opengl.GL11;
@@ -38,7 +38,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import io.hamlook.aetheria.features.dungeons.utils.dung.DungeonRoom;
+import io.hamlook.aetheria.features.dungeons.rooms.DungeonRoom;
 
 @RegisterEvents
 public class DungeonMapOverlay extends Overlay {

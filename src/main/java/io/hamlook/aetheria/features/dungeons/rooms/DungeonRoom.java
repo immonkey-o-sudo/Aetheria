@@ -1,4 +1,4 @@
-package io.hamlook.aetheria.features.dungeons.utils.dung;
+package io.hamlook.aetheria.features.dungeons.rooms;
 
 import net.minecraft.util.BlockPos;
 

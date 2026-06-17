@@ -1,4 +1,4 @@
-package io.hamlook.aetheria.features.dungeons.utils.dung;
+package io.hamlook.aetheria.features.dungeons.rooms;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -10,7 +10,6 @@ import io.hamlook.aetheria.features.dungeons.overlays.DungeonMapOverlay;
 import io.hamlook.aetheria.network.NetworkGuard;
 import io.hamlook.aetheria.Resources;
 import io.hamlook.aetheria.features.dungeons.DungeonStats;
-import io.hamlook.aetheria.features.dungeons.rooms.DungeonRoomOverlay;
 import io.hamlook.aetheria.init.RegisterEvents;
 import io.hamlook.aetheria.utils.data.SkyblockData;
 import io.hamlook.aetheria.utils.render.WorldRenderUtils;
@@ -782,6 +781,29 @@ public class DungeonRoomDetector {
         GL11.glPopMatrix();
         GL11.glPopAttrib();
         GL11.glColor4f(1f, 1f, 1f, 1f);
+    }
+
+    public static List<String> getSecretNamesForRoom(String roomName) {
+        List<String> names = new ArrayList<>();
+        if (secretLocationsJson == null || roomName == null || !secretLocationsJson.has(roomName)) return names;
+        try {
+            JsonArray secrets = secretLocationsJson.get(roomName).getAsJsonArray();
+            for (int i = 0; i < secrets.size(); i++) {
+                JsonObject secret = secrets.get(i).getAsJsonObject();
+                if (secret.has("category") && "fairysoul".equals(secret.get("category").getAsString())) {
+                    continue;
+                }
+                if (secret.has("secretName")) {
+                    String secretName = secret.get("secretName").getAsString();
+                    if (!names.contains(secretName)) {
+                        names.add(secretName);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return names;
     }
 }
 
