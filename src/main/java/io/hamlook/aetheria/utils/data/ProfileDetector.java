@@ -1,5 +1,10 @@
 package io.hamlook.aetheria.utils.data;
 
+import io.hamlook.aetheria.features.diana.DianaStats;
+import io.hamlook.aetheria.features.fishing.trophy.TrophyFishStorage;
+import io.hamlook.aetheria.features.mining.powder.PowderStats;
+import io.hamlook.aetheria.features.mining.pristine.PristineStats;
+import io.hamlook.aetheria.features.misc.ghosttracker.GhostStats;
 import io.hamlook.aetheria.features.misc.pet.CurrentPetTracker;
 import io.hamlook.aetheria.features.misc.pet.PetCache;
 import io.hamlook.aetheria.features.storage.data.StorageData;
@@ -24,6 +29,11 @@ public class ProfileDetector {
             if (!oldProfile.isEmpty()) {
                 CurrentPetTracker.getInstance().save();
                 PetCache.getInstance().save();
+                TrophyFishStorage.getInstance().save();
+                PowderStats.getInstance().save();
+                PristineStats.getInstance().save();
+                GhostStats.getInstance().save();
+                DianaStats.getInstance().save();
                 StorageData.saveContainers();
             }
 
@@ -31,6 +41,11 @@ public class ProfileDetector {
 
             CurrentPetTracker.getInstance().load();
             PetCache.getInstance().load();
+            TrophyFishStorage.getInstance().load();
+            PowderStats.getInstance().load();
+            PristineStats.getInstance().load();
+            GhostStats.getInstance().load();
+            DianaStats.getInstance().load();
             StorageData.containers.clear();
             StorageData.loadContainers();
         }

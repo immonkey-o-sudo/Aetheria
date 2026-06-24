@@ -1,6 +1,7 @@
 package io.hamlook.aetheria.utils.chat;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiChat;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.StringUtils;
@@ -26,6 +27,11 @@ public class ChatUtils {
 
     public static String clean(ClientChatReceivedEvent event) {
         return StringUtils.stripControlCodes(event.message.getFormattedText()).trim();
+    }
+
+    public static boolean isChatOpen() {
+        Minecraft mc = Minecraft.getMinecraft();
+        return mc != null && mc.currentScreen instanceof GuiChat;
     }
 
     public static boolean isFromServer(ClientChatReceivedEvent event) {
