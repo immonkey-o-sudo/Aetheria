@@ -35,6 +35,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.opengl.GL11;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -166,13 +167,14 @@ public class DungeonMapOverlay extends Overlay {
         if(infos.isEmpty()){
             Aetheria.logger.info("Empty Tab List??");
         }
+
+        List<String> usersToCheck = new ArrayList<>();
         for (NetworkPlayerInfo info : infos) {
             String raw = tab.getPlayerName(info);
             String stripped = ColorUtils.stripColor(raw != null ? raw : "").trim();
             if(stripped.isEmpty()){
                 continue;
             }
-
 
             if(ATHRConfig.feature.debug.dungeonMapDebug) {
                 StringBuilder builder = new StringBuilder();
@@ -182,20 +184,11 @@ public class DungeonMapOverlay extends Overlay {
                 });
                 ChatUtils.sendMessage("Players in Cur World: " + builder);
             }
+
             Matcher matcher = PLAYER_REGEX.matcher(stripped.trim());
             if (matcher.lookingAt()) {
                 String username = matcher.group(1);
-
-                EntityPlayer player = Minecraft.getMinecraft().theWorld.getPlayerEntityByName(username);
-                if (player == null) {
-                    ChatUtils.sendMessage("Player is null for: " + username);
-                    if(ATHRConfig.feature.debug.dungeonMapDebug){
-                        ChatUtils.sendMessage("§7[§6DEBUG§7] §cCould not Find Player for username: " + username);
-                    }
-                    Aetheria.logger.info("Player Null for: " + username + " | " + stripped);
-                    continue;
-                }
-                players.add(player);
+                usersToCheck.add(username);
             }else{
                 if(stripped.contains("[") && stripped.contains("]")) {
                     if (ATHRConfig.feature.debug.dungeonMapDebug) {
@@ -203,6 +196,32 @@ public class DungeonMapOverlay extends Overlay {
                     }
                 }
             }
+        }
+
+        List<EntityPlayer> playerEntities = Minecraft.getMinecraft().theWorld.playerEntities;
+
+        for (String username : usersToCheck) {
+            AtomicReference<EntityPlayer> player = new AtomicReference<>(Minecraft.getMinecraft().theWorld.getPlayerEntityByName(username));
+            if (player.get() == null) {
+                playerEntities.forEach(pl -> {
+                    if (pl.getName().equalsIgnoreCase(username)) {  player.set(pl); return; }
+                    String plName = pl.getName().toLowerCase();
+                    String userName = username.toLowerCase();
+                    if(plName.contains(userName) || userName.contains(plName)){
+                        if(ATHRConfig.feature.debug.dungeonMapDebug){
+                            ChatUtils.sendMessage("§7[§6DEBUG§7] Username is Slightly Different from Player Name: " + plName + " | User Name: " + username);
+                        }
+                    }
+                });
+            }
+            if(player.get() == null) {
+                if(ATHRConfig.feature.debug.dungeonMapDebug){
+                    ChatUtils.sendMessage("§7[§6DEBUG§7] §cCould not Find Player for username: " + username);
+                }
+                Aetheria.logger.info("Player Null for: " + username );
+                continue;
+            }
+            players.add(player.get());
         }
     }
 
