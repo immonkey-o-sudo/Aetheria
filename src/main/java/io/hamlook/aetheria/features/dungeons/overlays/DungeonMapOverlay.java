@@ -12,6 +12,7 @@ import io.hamlook.aetheria.utils.data.SkyblockData;
 import io.hamlook.aetheria.utils.overlay.Overlay;
 import net.minecraft.block.material.MapColor;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityOtherPlayerMP;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiPlayerTabOverlay;
@@ -79,9 +80,9 @@ public class DungeonMapOverlay extends Overlay {
         if (!preview && !SkyblockData.isInDungeon() || dungeonRunEnded) return;
         MapData info = getDungeonMap(Minecraft.getMinecraft().thePlayer);
         if (info == null){
-            if(players.isEmpty()) populatePlayers();
             return;
         }
+        if(players.isEmpty()) populatePlayers();
 
         final int baseSize = 128;
 
@@ -178,7 +179,8 @@ public class DungeonMapOverlay extends Overlay {
 
             if(ATHRConfig.feature.debug.dungeonMapDebug) {
                 StringBuilder builder = new StringBuilder();
-                Minecraft.getMinecraft().theWorld.playerEntities.forEach(player -> {
+
+                Minecraft.getMinecraft().theWorld.getEntities(EntityPlayer.class,Objects::nonNull).forEach(player -> {
                     String name = player.getDisplayName().getFormattedText();
                     builder.append(name).append(", \n");
                 });
@@ -198,7 +200,7 @@ public class DungeonMapOverlay extends Overlay {
             }
         }
 
-        List<EntityPlayer> playerEntities = Minecraft.getMinecraft().theWorld.playerEntities;
+        List<EntityPlayer> playerEntities = Minecraft.getMinecraft().theWorld.getEntities(EntityPlayer.class, Objects::nonNull);
 
         for (String username : usersToCheck) {
             AtomicReference<EntityPlayer> player = new AtomicReference<>(Minecraft.getMinecraft().theWorld.getPlayerEntityByName(username));
