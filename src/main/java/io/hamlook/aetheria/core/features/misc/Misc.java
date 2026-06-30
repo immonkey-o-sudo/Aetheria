@@ -108,6 +108,10 @@ public class Misc {
     public PlayerJoinLeaveConfig playerJoinLeave = new PlayerJoinLeaveConfig();
 
     @Expose
+    @Category(name = "Kill Combo", desc = "Kill combo tracker overlay")
+    public KillComboConfig killCombo = new KillComboConfig();
+
+    @Expose
     @Category(name = "Item List", desc = "Settings for the Item List Overlay")
     public ItemListConfig itemList = new ItemListConfig();
 

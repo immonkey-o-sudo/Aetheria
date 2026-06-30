@@ -120,6 +120,7 @@ public class Config {
             case "openItemAbilityTimerEditor": ATHRConfig.openItemAbilityTimerEditor(); break;
             case "openBpsEditor": ATHRConfig.openBpsEditor(); break;
             case "openUptimeEditor": ATHRConfig.openUptimeEditor(); break;
+            case "openKillComboEditor": ATHRConfig.openKillComboEditor(); break;
             case "openGhostEditor": ATHRConfig.openGhostEditor(); break;
             case "resetGhostTracker": ATHRConfig.resetGhostTracker(); break;
             case "chatFiltersGUI": ATHRConfig.openChatFilterUI(); break;

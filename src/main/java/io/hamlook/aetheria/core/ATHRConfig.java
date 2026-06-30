@@ -19,6 +19,7 @@ import io.hamlook.aetheria.features.mining.powder.PowderStats;
 import io.hamlook.aetheria.features.misc.itemlog.ItemPickupLog;
 import io.hamlook.aetheria.features.misc.PerformanceHUD;
 import io.hamlook.aetheria.features.misc.SearchBar;
+import io.hamlook.aetheria.features.misc.killcombo.KillComboOverlay;
 import io.hamlook.aetheria.features.misc.pet.CurrentPetOverlay;
 import io.hamlook.aetheria.features.misc.ghosttracker.GhostOverlay;
 import io.hamlook.aetheria.features.misc.ghosttracker.GhostStats;
@@ -272,6 +273,13 @@ public class ATHRConfig {
         PristineStats.getInstance().reset();
     }
 
+
+    public static void openKillComboEditor() {
+        if (feature == null) return;
+        KillComboOverlay overlay = KillComboOverlay.getInstance();
+        if (overlay == null) return;
+        screenToOpen = new GuiPositionEditor(feature.misc.killCombo.killComboPos, overlay::getOverlayWidth, overlay::getOverlayHeight, () -> overlay.render(true), ATHRConfig::saveConfig, ATHRConfig::saveConfig).withOverlayScale(feature.misc.killCombo.scale).withParent(Minecraft.getMinecraft().currentScreen);
+    }
 
     public static void openUptimeEditor() {
         if (feature == null) return;
