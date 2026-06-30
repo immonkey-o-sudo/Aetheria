@@ -819,6 +819,7 @@ public class StorageRenderer extends Gui {
 
         SContainer activeContainer = containers.get(activeId);
         if (activeContainer == null) return false;
+        if (!containerMatchesSearch(activeContainer)) return false;
 
         ContainerPosition pos = calculateContainerPosition(activeContainer);
         if (!pos.isVisible) return false;

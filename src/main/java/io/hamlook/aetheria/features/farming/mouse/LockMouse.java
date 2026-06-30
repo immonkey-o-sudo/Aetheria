@@ -4,6 +4,7 @@ import io.hamlook.aetheria.Resources;
 import io.hamlook.aetheria.core.ATHRConfig;
 import io.hamlook.aetheria.utils.KeybindHelper;
 import io.hamlook.aetheria.utils.Utils;
+import io.hamlook.aetheria.features.storage.StorageManager;
 import io.hamlook.aetheria.init.RegisterEvents;
 import io.hamlook.aetheria.utils.chat.ChatUtils;
 import net.minecraft.client.Minecraft;
@@ -45,7 +46,7 @@ public class LockMouse {
     @SubscribeEvent
     public void onRenderOverlay(RenderGameOverlayEvent.Post event) {
         if (event.type != RenderGameOverlayEvent.ElementType.ALL) return;
-        if (ATHRConfig.feature == null || !isLocked() || mc.currentScreen != null) return;
+        if (ATHRConfig.feature == null || !isLocked() || mc.currentScreen != null || StorageManager.isOverlayActive()) return;
 
         ScaledResolution sr = new ScaledResolution(mc);
         int w = sr.getScaledWidth();
