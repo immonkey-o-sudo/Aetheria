@@ -35,7 +35,7 @@ public class OptionsMenu extends GuiScreen {
     private static final int ICON_SIZE = 24;
     private static final int ICON_GAP = 10;
     private static final ResourceLocation[] SOCIAL_ICONS = {Resources.DISCORD, Resources.GITHUB, Resources.MODRINTH, Resources.SKYATLAS};
-    private static final String[] SOCIAL_URLS = {"https://discord.gg/HHf5yqSy9R", "https://github.com/aetheria-org/Aetheria", "https://modrinth.com/mod/aetheriamod","https://skyatlas.qzz.io"};
+    private static final String[] SOCIAL_URLS = {"https://discord.gg/HHf5yqSy9R", "https://github.com/aetheria-org/Aetheria", "https://modrinth.com/mod/aetheriamod","https://skyatlas.lol"};
 
     private final List<Particle> particles = new ArrayList<>();
     private float globalTime = 0f;

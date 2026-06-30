@@ -134,7 +134,7 @@ public class Config {
             case "openLicenseLombok": openUrl("https://projectlombok.org/"); break;
             case "openLicenseJbAnnotations": openUrl("https://github.com/JetBrains/java-annotations"); break;
             case "openModrinth": openUrl("https://modrinth.com/mod/aetheriamod"); break;
-            case "openSkyAtlas": openUrl("https://skyatlas.qzz.io"); break;
+            case "openSkyAtlas": openUrl("https://skyatlas.lol"); break;
         }
     }
 }

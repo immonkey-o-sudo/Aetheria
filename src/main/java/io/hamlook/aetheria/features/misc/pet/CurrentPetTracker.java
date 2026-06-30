@@ -5,7 +5,6 @@ import io.hamlook.aetheria.events.SlotClickEvent;
 import io.hamlook.aetheria.init.RegisterInstance;
 import io.hamlook.aetheria.utils.ContainerUtils;
 import io.hamlook.aetheria.utils.chat.ChatUtils;
-import java.io.File;
 import io.hamlook.aetheria.utils.item.ItemUtils;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
@@ -17,6 +16,7 @@ import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
+import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,7 +26,8 @@ public class CurrentPetTracker extends ProfileManagedStorage {
 
     private static final String PETS_CONTAINER = "Pets";
     private static final String ACTIVE_LORE = "Click to despawn";
-
+    private static final String CONVERT_ITEM_NAME = "§aConvert Pet to an Item";
+    private static final int CONVERT_SLOT_INDEX = 50;
     // §cAutopet §eequipped your §7[Lvl 100] §dEnderman§9 ✦§e! §a§lVIEW RULE
     private static final Pattern AUTOPET = Pattern.compile("§r§cAutopet §r§eequipped your §r§7\\[Lvl (\\d+)] §r§(.)([^§]+?)(§r§. ?✦)?§r§e!(?:§r §a§lVIEW RULE)?§r?");
     private static final Pattern LVL_PATTERN = Pattern.compile("^\\[Lvl (\\d+)] (.+)$");
@@ -34,6 +35,7 @@ public class CurrentPetTracker extends ProfileManagedStorage {
     private static final Pattern RARITY_PATTERN = Pattern.compile("§7\\[Lvl \\d+] (§.)");
     @RegisterInstance
     private static CurrentPetTracker INSTANCE;
+    private boolean convertToItemEnabled = false;
     private long ignoreContainerUpdatesUntil = 0L;
     private long lastContainerScan = 0L;
 
@@ -108,6 +110,12 @@ public class CurrentPetTracker extends ProfileManagedStorage {
         for (Slot slot : container.inventorySlots) {
             if (slot.inventory == Minecraft.getMinecraft().thePlayer.inventory) continue;
 
+            if (slot.slotNumber == CONVERT_SLOT_INDEX) {
+                ItemStack s = slot.getStack();
+                convertToItemEnabled = s != null && s.getItem() != null && CONVERT_ITEM_NAME.equals(s.getDisplayName()) && ItemUtils.getLoreLine(s, "§aEnabled") != null;
+                continue;
+            }
+
             ItemStack item = slot.getStack();
             if (item == null || item.getItem() == null) continue;
 
@@ -140,6 +148,13 @@ public class CurrentPetTracker extends ProfileManagedStorage {
 
         String title = ContainerUtils.getTitle(container);
         if (title == null || !title.startsWith(PETS_CONTAINER)) return;
+
+        if (event.getSlot().slotNumber == CONVERT_SLOT_INDEX) {
+            scanContainer(container);
+            return;
+        }
+
+        if (convertToItemEnabled) return;
 
         if (event.getSlot().inventory == Minecraft.getMinecraft().thePlayer.inventory) return;
 

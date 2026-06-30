@@ -38,7 +38,7 @@ import static io.hamlook.aetheria.Resources.*;
 
 public class ConfigEditor extends GuiElement {
     private static final ResourceLocation[] socialsIco = new ResourceLocation[]{DISCORD, GITHUB, MODRINTH, SKYATLAS};
-    private static final String[] socialsLink = new String[]{"https://discord.gg/4zKq2RkSZS", "https://github.com/aetheria-org/Aetheria", "https://modrinth.com/mod/aetheriamod", "https://skyatlas.qzz.io"};
+    private static final String[] socialsLink = new String[]{"https://discord.gg/4zKq2RkSZS", "https://github.com/aetheria-org/Aetheria", "https://modrinth.com/mod/aetheriamod", "https://skyatlas.lol"};
     private static final long SEARCH_REPEAT_DELAY_MS = 500;
     private static final long SEARCH_REPEAT_RATE_MS = 50;
     private static final int TREE_INDENT = 14;
