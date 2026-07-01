@@ -123,7 +123,7 @@ public class UptimeOverlay extends Overlay {
         int titleTicksLeft = expiryTicksLeft - (EXPIRY_SHOW_TICKS - EXPIRY_TITLE_TICKS);
         if (titleTicksLeft <= 0) return;
 
-        ScaledResolution sr = new ScaledResolution(mc);
+        ScaledResolution sr = Overlay.sr;
         float alpha = Math.min(1f, titleTicksLeft / 20f); // fade in for 1s, fade out last 20t
         if (expiryTicksLeft < 20) alpha = expiryTicksLeft / 20f;
         int a = (int) (alpha * 255) & 0xFF;

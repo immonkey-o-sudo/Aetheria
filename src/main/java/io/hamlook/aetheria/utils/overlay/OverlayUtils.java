@@ -8,10 +8,19 @@ import org.lwjgl.input.Keyboard;
 public class OverlayUtils {
 
     private static final Minecraft mc = Minecraft.getMinecraft();
+    private static Boolean tabHeldCache;
+    private static int tabHeldTick = -1;
 
     public static boolean isChatOpen()       { return mc.currentScreen instanceof GuiChat; }
     public static boolean isDebugActive()    { return mc.gameSettings.showDebugInfo; }
-    public static boolean isTabHeld()        { return mc.currentScreen == null && Keyboard.isKeyDown(mc.gameSettings.keyBindPlayerList.getKeyCode()); }
+    public static boolean isTabHeld() {
+        int tick = mc.thePlayer != null ? mc.thePlayer.ticksExisted : -1;
+        if (tick != tabHeldTick) {
+            tabHeldCache = mc.currentScreen == null && Keyboard.isKeyDown(mc.gameSettings.keyBindPlayerList.getKeyCode());
+            tabHeldTick = tick;
+        }
+        return tabHeldCache;
+    }
     public static boolean isStorageActive()  { return StorageManager.isOverlayActive(); }
 
     public static boolean shouldHide() {

@@ -22,7 +22,7 @@ public abstract class SimpleOverlay {
             || OverlayUtils.isStorageActive();
         if (shouldHide) return;
         if (!shouldRender()) return;
-        render(new ScaledResolution(Minecraft.getMinecraft()));
+        render(event.resolution);
     }
 
     protected boolean hideOnChat()   { return true; }

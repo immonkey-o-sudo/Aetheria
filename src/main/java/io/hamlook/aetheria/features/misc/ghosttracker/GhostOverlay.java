@@ -147,7 +147,6 @@ public class GhostOverlay extends Overlay {
         lastW = w;
         lastH = h;
 
-        ScaledResolution sr = new ScaledResolution(mc);
         Position pos = getPosition();
         int x = pos.getAbsX(sr, (int) (w * scale));
         int y = pos.getAbsY(sr, (int) (h * scale));

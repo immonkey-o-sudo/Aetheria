@@ -17,6 +17,7 @@ public abstract class Overlay {
     protected static final int PADDING = 3;
 
     protected static final Minecraft mc = Minecraft.getMinecraft();
+    protected static ScaledResolution sr;
 
     protected int lastW;
     protected int lastH;
@@ -73,6 +74,7 @@ public abstract class Overlay {
     @SubscribeEvent
     public final void onRenderOverlay(RenderGameOverlayEvent.Post event) {
         if (event.type != RenderGameOverlayEvent.ElementType.ALL) return;
+        sr = event.resolution;
         if (ATHRConfig.feature == null || !isEnabled()) return;
         if (applyOverlayHideGate()) {
             boolean shouldHide = (hideOnChat() && OverlayUtils.isChatOpen())
@@ -107,7 +109,6 @@ public abstract class Overlay {
         lastW = w;
         lastH = h;
 
-        ScaledResolution sr = new ScaledResolution(mc);
         Position pos = getPosition();
         int x = pos.getAbsX(sr, (int) (w * scale));
         int y = pos.getAbsY(sr, (int) (h * scale));
