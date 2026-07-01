@@ -102,6 +102,13 @@ public class ItemPickupLog extends Overlay {
         return ATHRConfig.feature.misc.itemPickupLogConfig.itemPickupLog;
     }
 
+    @Override
+    protected boolean hideOnChat()   { return ATHRConfig.feature.misc.itemPickupLogConfig.hideOnChat; }
+    @Override
+    protected boolean hideOnTab()    { return ATHRConfig.feature.misc.itemPickupLogConfig.hideOnTab; }
+    @Override
+    protected boolean hideOnDebug()  { return ATHRConfig.feature.misc.itemPickupLogConfig.hideOnDebug; }
+
     @SubscribeEvent
     public void onGuiOpen(GuiOpenEvent event) {
         if (!SkyblockData.isOnSkyblock()) return;

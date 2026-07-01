@@ -59,6 +59,13 @@ public class CurrentPetOverlay extends Overlay {
     }
 
     @Override
+    protected boolean hideOnChat()   { return ATHRConfig.feature.misc.currentPet.hideOnChat; }
+    @Override
+    protected boolean hideOnTab()    { return ATHRConfig.feature.misc.currentPet.hideOnTab; }
+    @Override
+    protected boolean hideOnDebug()  { return ATHRConfig.feature.misc.currentPet.hideOnDebug; }
+
+    @Override
     protected int getBaseWidth() {
         return SKULL_SIZE + GAP + Minecraft.getMinecraft().fontRendererObj.getStringWidth("§7[Lvl 100] §6Tiger") + PADDING * 2;
     }

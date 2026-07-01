@@ -16,6 +16,8 @@ public abstract class Overlay {
     protected static final int LINE_HEIGHT = 10;
     protected static final int PADDING = 3;
 
+    protected static final Minecraft mc = Minecraft.getMinecraft();
+
     protected int lastW;
     protected int lastH;
 
@@ -72,16 +74,30 @@ public abstract class Overlay {
     public final void onRenderOverlay(RenderGameOverlayEvent.Post event) {
         if (event.type != RenderGameOverlayEvent.ElementType.ALL) return;
         if (ATHRConfig.feature == null || !isEnabled()) return;
+        if (applyOverlayHideGate()) {
+            boolean shouldHide = (hideOnChat() && OverlayUtils.isChatOpen())
+                || (hideOnTab() && OverlayUtils.isTabHeld())
+                || (hideOnDebug() && OverlayUtils.isDebugActive())
+                || OverlayUtils.isStorageActive();
+            if (shouldHide) return;
+        }
         render(false);
     }
 
+    protected boolean applyOverlayHideGate() {
+        return true;
+    }
+
+    protected boolean hideOnChat()   { return true; }
+    protected boolean hideOnTab()    { return true; }
+    protected boolean hideOnDebug()  { return true; }
+
     public void render(boolean preview) {
-        if (!preview && (OverlayUtils.shouldHide() || !extraGuard())) return;
+        if (!preview && !extraGuard()) return;
 
         List<String> lines = getLines(preview);
         if (lines == null || lines.isEmpty()) return;
 
-        Minecraft mc = Minecraft.getMinecraft();
         float scale = getScale();
 
         int w = getBaseWidth();

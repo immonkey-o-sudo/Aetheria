@@ -17,6 +17,21 @@ public class PristineTrackerConfig {
     public boolean pristineTracker = true;
 
     @Expose
+    @ConfigOption(name = "Hide in Chat", desc = "Hide the overlay when the chat GUI is open")
+    @ConfigEditorBoolean
+    public boolean hideOnChat = true;
+
+    @Expose
+    @ConfigOption(name = "Hide on Tab", desc = "Hide the overlay when the tab list is shown")
+    @ConfigEditorBoolean
+    public boolean hideOnTab = true;
+
+    @Expose
+    @ConfigOption(name = "Hide on F3 Debug", desc = "Hide the overlay when the F3 debug screen is open")
+    @ConfigEditorBoolean
+    public boolean hideOnDebug = true;
+
+    @Expose
     @ConfigOption(name = "Show Compacted", desc = "Display gemstones in compacted format (Flawless-Fine-Flawed)")
     @ConfigEditorBoolean
     public boolean showCompacted = false;

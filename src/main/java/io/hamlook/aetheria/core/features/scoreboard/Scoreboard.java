@@ -46,6 +46,11 @@ public class Scoreboard {
     public boolean hideOnTab = true;
 
     @Expose
+    @ConfigOption(name = "Hide on F3 debug", desc = "Hide the scoreboard when the F3 debug screen is open")
+    @ConfigEditorBoolean
+    public boolean hideOnDebug = true;
+
+    @Expose
     @ConfigOption(name = "Edit Position", desc = "Drag to reposition the scoreboard")
     @ConfigEditorButton(runnableId = "openScoreboardEditor", buttonText = "Edit")
     public boolean editPosDummy = false;

@@ -2,19 +2,17 @@ package io.hamlook.aetheria.features.misc
 
 import io.hamlook.aetheria.core.ATHRConfig
 import io.hamlook.aetheria.Resources
-import io.hamlook.aetheria.features.storage.StorageManager
 import io.hamlook.aetheria.utils.render.RenderUtils
+import io.hamlook.aetheria.utils.overlay.SimpleOverlay
 import io.hamlook.aetheria.init.RegisterEvents
 import io.hamlook.aetheria.utils.chat.ChatUtils
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.renderer.GlStateManager
-import net.minecraftforge.client.event.RenderGameOverlayEvent
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import java.awt.Color
 
 @RegisterEvents
-object DVD {
+object DVD : SimpleOverlay() {
 
     private const val ASPECT_RATIO = 0.553
     private val mc = Minecraft.getMinecraft()
@@ -27,11 +25,11 @@ object DVD {
     private var initialized = false
     private var justInitialized = false
 
-    private fun getBoxWidth() = ATHRConfig.feature.misc.dvdSize
+    private fun getBoxWidth() = ATHRConfig.feature.misc.dvd.dvdSize
     private fun getBoxHeight() = (getBoxWidth() * ASPECT_RATIO).toInt()
 
     fun forceCornerHit() {
-        if (!ATHRConfig.feature.misc.dvdScreensaver) {
+        if (!ATHRConfig.feature.misc.dvd.dvdScreensaver) {
             ChatUtils.sendMessage("§cDVD is not enabled!")
             return
         }
@@ -45,17 +43,20 @@ object DVD {
         ChatUtils.sendMessage("§aForcing corner hit...")
     }
 
-    @SubscribeEvent
-    fun onRenderOverlay(event: RenderGameOverlayEvent.Post) {
-        if (event.type != RenderGameOverlayEvent.ElementType.ALL) return
-        if (StorageManager.isOverlayActive()) return
-        if (!ATHRConfig.feature.misc.dvdScreensaver) {
+    override fun shouldRender(): Boolean {
+        if (!ATHRConfig.feature.misc.dvd.dvdScreensaver) {
             initialized = false
-            return
+            return false
         }
+        return true
+    }
 
+    override fun hideOnChat() = ATHRConfig.feature.misc.dvd.hideOnChat
+    override fun hideOnTab() = ATHRConfig.feature.misc.dvd.hideOnTab
+    override fun hideOnDebug() = ATHRConfig.feature.misc.dvd.hideOnDebug
+
+    override fun render(sr: ScaledResolution) {
         if (!initialized) {
-            val sr = ScaledResolution(mc)
             x = sr.scaledWidth / 2.0
             y = sr.scaledHeight / 2.0
             initialized = true
@@ -94,7 +95,6 @@ object DVD {
         val boxWidth = getBoxWidth()
         val boxHeight = getBoxHeight()
 
-        // Clamp position if size changed
         if (x < 0) x = 0.0
         if (y < 0) y = 0.0
         if (x + boxWidth > sr.scaledWidth) x = (sr.scaledWidth - boxWidth).toDouble()

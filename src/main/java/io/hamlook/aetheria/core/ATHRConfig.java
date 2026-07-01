@@ -5,6 +5,7 @@ import io.hamlook.aetheria.core.moulconfig.editors.GuiPositionEditor;
 import io.hamlook.aetheria.core.moulconfig.gui.GuiScreenElementWrapper;
 import io.hamlook.aetheria.core.moulconfig.gui.config.ConfigEditor;
 import io.hamlook.aetheria.features.chat.chatfilters.ui.ChatFilterGUI;
+import io.hamlook.aetheria.features.diana.DianaStats;
 import io.hamlook.aetheria.features.diana.GuiDianaOverlayEditor;
 import io.hamlook.aetheria.features.dungeons.DungeonStats;
 import io.hamlook.aetheria.features.dungeons.overlays.DungeonBreakerOverlay;
@@ -20,6 +21,7 @@ import io.hamlook.aetheria.features.misc.itemlog.ItemPickupLog;
 import io.hamlook.aetheria.features.misc.PerformanceHUD;
 import io.hamlook.aetheria.features.misc.SearchBar;
 import io.hamlook.aetheria.features.misc.killcombo.KillComboOverlay;
+import io.hamlook.aetheria.features.misc.killcombo.KillComboTracker;
 import io.hamlook.aetheria.features.misc.pet.CurrentPetOverlay;
 import io.hamlook.aetheria.features.misc.ghosttracker.GhostOverlay;
 import io.hamlook.aetheria.features.misc.ghosttracker.GhostStats;
@@ -298,6 +300,14 @@ public class ATHRConfig {
     public static void resetGhostTracker() {
         GhostStats.getInstance().reset();
         io.hamlook.aetheria.features.misc.ghosttracker.GhostStats.getInstance().reset();
+    }
+
+    public static void resetKillCombo() {
+        KillComboTracker.getInstance().reset();
+    }
+
+    public static void resetDianaTracker() {
+        DianaStats.getInstance().reset();
     }
 
     public static void openChatFilterUI() {

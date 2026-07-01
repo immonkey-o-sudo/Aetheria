@@ -1,6 +1,7 @@
 package io.hamlook.aetheria.features.dungeons
 
 import io.hamlook.aetheria.core.ATHRConfig
+import io.hamlook.aetheria.utils.overlay.SimpleOverlay
 import io.hamlook.aetheria.init.RegisterEvents
 import io.hamlook.aetheria.utils.SoundUtils
 import io.hamlook.aetheria.utils.Utils
@@ -8,16 +9,14 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.entity.boss.EntityWither
 import net.minecraft.util.EnumChatFormatting
-import net.minecraftforge.client.event.RenderGameOverlayEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import org.lwjgl.opengl.GL11
 import kotlin.math.sqrt
 
 @RegisterEvents
-class CrushAlert {
+class CrushAlert : SimpleOverlay() {
 
-    // Pillar data: (X, Z, Color Name, Color Code)
     private data class Pillar(val x: Double, val z: Double, val name: String, val color: String)
 
     private val pillars = listOf(
@@ -67,13 +66,10 @@ class CrushAlert {
         if (alertActive && !wasActive) SoundUtils.playSound("note.pling", 1.0f, 1.5f)
     }
 
-    @SubscribeEvent
-    fun onRenderOverlay(event: RenderGameOverlayEvent.Post) {
-        if (event.type != RenderGameOverlayEvent.ElementType.ALL) return
-        if (!alertActive || config?.enabled != true) return
+    override fun shouldRender() = alertActive && config?.enabled == true
 
+    override fun render(sr: ScaledResolution) {
         val mc = Minecraft.getMinecraft()
-        val sr = ScaledResolution(mc)
         val fr = mc.fontRendererObj
 
         val pillar = activePillar

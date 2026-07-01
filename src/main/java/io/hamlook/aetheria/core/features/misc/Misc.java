@@ -90,14 +90,8 @@ public class Misc {
     public boolean hoppityHighlight = true;
 
     @Expose
-    @ConfigOption(name = "DVD", desc = "Description(yes)")
-    @ConfigEditorBoolean
-    public boolean dvdScreensaver = false;
-
-    @Expose
-    @ConfigOption(name = "DVD Size", desc = "Size of the DVD logo (width in pixels)")
-    @ConfigEditorSliderAnnotation(minValue = 50, maxValue = 300, minStep = 10)
-    public int dvdSize = 80;
+    @Category(name = "DVD", desc = "Bouncing DVD logo screensaver overlay")
+    public DvdConfig dvd = new DvdConfig();
 
     @Expose
     @Category(name = "Timer", desc = "Countdown timer overlay & /athrtimercommand")

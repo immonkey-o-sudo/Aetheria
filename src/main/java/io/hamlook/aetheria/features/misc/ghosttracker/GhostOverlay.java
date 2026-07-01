@@ -8,7 +8,6 @@ import io.hamlook.aetheria.utils.Position;
 import io.hamlook.aetheria.utils.Utils;
 import io.hamlook.aetheria.utils.data.SkyblockData;
 import io.hamlook.aetheria.utils.overlay.Overlay;
-import io.hamlook.aetheria.utils.overlay.OverlayUtils;
 import io.hamlook.aetheria.utils.time.TimeFormatter;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
@@ -59,6 +58,13 @@ public class GhostOverlay extends Overlay {
     }
 
     @Override
+    protected boolean hideOnChat()   { return ATHRConfig.feature.misc.ghostTrackerConfig.hideOnChat; }
+    @Override
+    protected boolean hideOnTab()    { return ATHRConfig.feature.misc.ghostTrackerConfig.hideOnTab; }
+    @Override
+    protected boolean hideOnDebug()  { return ATHRConfig.feature.misc.ghostTrackerConfig.hideOnDebug; }
+
+    @Override
     public int getBgColor() {
         try {
             String[] parts = ATHRConfig.feature.misc.ghostTrackerConfig.ghostBgColor.split(":");
@@ -79,7 +85,7 @@ public class GhostOverlay extends Overlay {
 
     @Override
     public void render(boolean preview) {
-        if (!preview && (OverlayUtils.shouldHide() || !extraGuard())) return;
+        if (!preview && !extraGuard()) return;
 
         Minecraft mc = Minecraft.getMinecraft();
         float scale = getScale();

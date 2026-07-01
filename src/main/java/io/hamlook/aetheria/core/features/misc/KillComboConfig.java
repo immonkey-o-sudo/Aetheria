@@ -16,6 +16,21 @@ public class KillComboConfig {
     public boolean enabled = true;
 
     @Expose
+    @ConfigOption(name = "Hide in Chat", desc = "Hide the overlay when the chat GUI is open")
+    @ConfigEditorBoolean
+    public boolean hideOnChat = true;
+
+    @Expose
+    @ConfigOption(name = "Hide on Tab", desc = "Hide the overlay when the tab list is shown")
+    @ConfigEditorBoolean
+    public boolean hideOnTab = true;
+
+    @Expose
+    @ConfigOption(name = "Hide on F3 Debug", desc = "Hide the overlay when the F3 debug screen is open")
+    @ConfigEditorBoolean
+    public boolean hideOnDebug = true;
+
+    @Expose
     @ConfigOption(name = "Hide Chat Messages", desc = "Hide kill combo milestone and expire messages from chat")
     @ConfigEditorBoolean
     public boolean hideChatMessages = false;
@@ -50,6 +65,11 @@ public class KillComboConfig {
     @ConfigOption(name = "Edit Position", desc = "Drag to reposition the overlay")
     @ConfigEditorButton(runnableId = "openKillComboEditor", buttonText = "Edit")
     public boolean editPosDummy = false;
+
+    @Expose
+    @ConfigOption(name = "Reset Tracker", desc = "Wipe all tracked kill combo data")
+    @ConfigEditorButton(runnableId = "resetKillCombo", buttonText = "Reset")
+    public boolean resetKillComboDummy = false;
 
     @Expose
     public Position killComboPos = new Position(4, 200);

@@ -13,7 +13,6 @@ import io.hamlook.aetheria.utils.data.TablistParser;
 import io.hamlook.aetheria.utils.overlay.Overlay;
 import io.hamlook.aetheria.utils.overlay.OverlayUtils;
 import lombok.Getter;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 import org.lwjgl.opengl.GL11;
@@ -102,10 +101,9 @@ public class CustomScoreboard extends Overlay {
     @Override public int     getBgColor()    { return ChromaColour.specialToChromaRGB(ATHRConfig.feature.scoreboard.scoreboardBg); }
     @Override public int     getCornerRadius(){ return (int) ATHRConfig.feature.scoreboard.cornerRadius; }
     @Override protected boolean extraGuard() { return isActive(); }
+    @Override protected boolean applyOverlayHideGate() { return false; }
     @Override protected boolean isEnabled()  {
-        return isActive()
-                && !Minecraft.getMinecraft().gameSettings.showDebugInfo
-                && !io.hamlook.aetheria.features.storage.StorageManager.isOverlayActive();
+        return isActive() && !io.hamlook.aetheria.features.storage.StorageManager.isOverlayActive();
     }
 
     private static String formatPowder(long v) {
@@ -125,7 +123,6 @@ public class CustomScoreboard extends Overlay {
     // alignment config: 0=Left, 1=Center, 2=Right
 
     private int xFor(String line, int boxW, int alignment) {
-        Minecraft mc = Minecraft.getMinecraft();
         int w = mc.fontRendererObj.getStringWidth(line);
         switch (alignment) {
             case 1: return PAD_X + (boxW - PAD_X * 2 - w) / 2;
@@ -150,7 +147,7 @@ public class CustomScoreboard extends Overlay {
             if (vanillaTitle == null || vanillaTitle.isEmpty()) {
                 try {
                     net.minecraft.scoreboard.ScoreObjective obj =
-                            Minecraft.getMinecraft().theWorld.getScoreboard().getObjectiveInDisplaySlot(1);
+                            mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(1);
                     if (obj != null) vanillaTitle = obj.getDisplayName();
                 } catch (Exception ignored) {}
             }
@@ -387,7 +384,12 @@ public class CustomScoreboard extends Overlay {
     @Override
     public void render(boolean preview) {
         if (!preview && !extraGuard()) return;
-        if (!preview && ATHRConfig.feature.scoreboard.hideOnTab && OverlayUtils.shouldHide()) return;
+
+        if (!preview && OverlayUtils.isChatOpen()) return;
+        if (!preview && OverlayUtils.isDebugActive()
+                && ATHRConfig.feature.scoreboard.hideOnDebug) return;
+        if (!preview && OverlayUtils.isTabHeld()
+                && ATHRConfig.feature.scoreboard.hideOnTab) return;
 
         List<String> lines = getLines(preview);
         if (lines.isEmpty()) return;
@@ -398,7 +400,6 @@ public class CustomScoreboard extends Overlay {
         if (down && !wasDown) ChatUtils.sendMessage(CustomScoreboardAPI.toJson());
         wasDown = down;
 
-        Minecraft mc   = Minecraft.getMinecraft();
         float scale    = getScale();
         int lh         = LINE_HEIGHT + LINE_GAP;
         int ss         = SUPERSAMPLE;

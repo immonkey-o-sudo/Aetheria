@@ -89,6 +89,13 @@ public class PerformanceHUD extends Overlay {
         return ATHRConfig.feature.misc.performanceHudConfig.performanceHud;
     }
 
+    @Override
+    protected boolean hideOnChat()   { return ATHRConfig.feature.misc.performanceHudConfig.hideOnChat; }
+    @Override
+    protected boolean hideOnTab()    { return ATHRConfig.feature.misc.performanceHudConfig.hideOnTab; }
+    @Override
+    protected boolean hideOnDebug()  { return ATHRConfig.feature.misc.performanceHudConfig.hideOnDebug; }
+
     @SubscribeEvent
     public void onTimeUpdate(PacketReceiveTimeUpdateEvent event) {
         long now = System.currentTimeMillis();

@@ -51,6 +51,13 @@ public class TrophyFishOverlay extends Overlay {
     }
 
     @Override
+    protected boolean hideOnChat()   { return ATHRConfig.feature.fishing.trophyFish.hideOnChat; }
+    @Override
+    protected boolean hideOnTab()    { return ATHRConfig.feature.fishing.trophyFish.hideOnTab; }
+    @Override
+    protected boolean hideOnDebug()  { return ATHRConfig.feature.fishing.trophyFish.hideOnDebug; }
+
+    @Override
     protected boolean extraGuard() {
         if (!ATHRConfig.feature.fishing.trophyFish.trophyOnlyCrimson) return true;
         return SkyblockData.getCurrentLocation() == SkyblockData.Location.CRIMSON_ISLE;

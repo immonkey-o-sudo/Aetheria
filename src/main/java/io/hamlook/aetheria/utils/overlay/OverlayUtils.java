@@ -9,10 +9,12 @@ public class OverlayUtils {
 
     private static final Minecraft mc = Minecraft.getMinecraft();
 
+    public static boolean isChatOpen()       { return mc.currentScreen instanceof GuiChat; }
+    public static boolean isDebugActive()    { return mc.gameSettings.showDebugInfo; }
+    public static boolean isTabHeld()        { return mc.currentScreen == null && Keyboard.isKeyDown(mc.gameSettings.keyBindPlayerList.getKeyCode()); }
+    public static boolean isStorageActive()  { return StorageManager.isOverlayActive(); }
+
     public static boolean shouldHide() {
-        if (mc.gameSettings.showDebugInfo) return true;
-        if (Keyboard.isKeyDown(mc.gameSettings.keyBindPlayerList.getKeyCode())) return true;
-        if (mc.currentScreen instanceof GuiChat) return true;
-        return StorageManager.isOverlayActive();
+        return isChatOpen() || isDebugActive() || isTabHeld() || isStorageActive();
     }
 }

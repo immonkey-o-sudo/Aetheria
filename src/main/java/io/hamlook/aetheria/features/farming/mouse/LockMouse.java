@@ -4,18 +4,17 @@ import io.hamlook.aetheria.Resources;
 import io.hamlook.aetheria.core.ATHRConfig;
 import io.hamlook.aetheria.utils.KeybindHelper;
 import io.hamlook.aetheria.utils.Utils;
-import io.hamlook.aetheria.features.storage.StorageManager;
+import io.hamlook.aetheria.utils.overlay.SimpleOverlay;
 import io.hamlook.aetheria.init.RegisterEvents;
 import io.hamlook.aetheria.utils.chat.ChatUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.util.EnumChatFormatting;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 @RegisterEvents
-public class LockMouse {
+public class LockMouse extends SimpleOverlay {
 
     private static final Minecraft mc = Minecraft.getMinecraft();
     private static final String PREFIX = EnumChatFormatting.GREEN + "[ASM] " + EnumChatFormatting.RESET;
@@ -43,12 +42,13 @@ public class LockMouse {
         keyWasDown = keyDown;
     }
 
-    @SubscribeEvent
-    public void onRenderOverlay(RenderGameOverlayEvent.Post event) {
-        if (event.type != RenderGameOverlayEvent.ElementType.ALL) return;
-        if (ATHRConfig.feature == null || !isLocked() || mc.currentScreen != null || StorageManager.isOverlayActive()) return;
+    @Override
+    public boolean shouldRender() {
+        return isLocked() && mc.currentScreen == null;
+    }
 
-        ScaledResolution sr = new ScaledResolution(mc);
+    @Override
+    public void render(ScaledResolution sr) {
         int w = sr.getScaledWidth();
         int h = sr.getScaledHeight();
 

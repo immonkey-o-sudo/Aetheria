@@ -60,6 +60,13 @@ public class FetchurOverlay extends Overlay {
     }
 
     @Override
+    protected boolean hideOnChat()   { return ATHRConfig.feature.mining.fetchur.hideOnChat; }
+    @Override
+    protected boolean hideOnTab()    { return ATHRConfig.feature.mining.fetchur.hideOnTab; }
+    @Override
+    protected boolean hideOnDebug()  { return ATHRConfig.feature.mining.fetchur.hideOnDebug; }
+
+    @Override
     public List<String> getLines(boolean preview) {
         String item = preview ? "Yellow Stained Glass x20" : FetchurData.getTodaysItem();
         return Collections.singletonList(EnumChatFormatting.GOLD + "Fetchur: " + EnumChatFormatting.YELLOW + item);

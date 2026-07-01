@@ -73,6 +73,13 @@ public class PristineOverlay extends Overlay {
         return ATHRConfig.feature.mining.pristineTrackerConfig.pristineTracker && PristineStats.getInstance().isTrackingEnabled() && SkyblockData.getCurrentLocation() == SkyblockData.Location.CRYSTAL_HOLLOWS;
     }
 
+    @Override
+    protected boolean hideOnChat()   { return ATHRConfig.feature.mining.pristineTrackerConfig.hideOnChat; }
+    @Override
+    protected boolean hideOnTab()    { return ATHRConfig.feature.mining.pristineTrackerConfig.hideOnTab; }
+    @Override
+    protected boolean hideOnDebug()  { return ATHRConfig.feature.mining.pristineTrackerConfig.hideOnDebug; }
+
     private String lineForEntry(int ordinal, PristineData d, PristineStats stats, boolean preview) {
         if (ordinal == 0) {
             return "§d§lPristine Tracker" + (!preview && !stats.isTrackingEnabled() ? " §7[Paused]" : "");

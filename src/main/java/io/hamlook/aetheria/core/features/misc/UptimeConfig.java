@@ -12,6 +12,21 @@ public class UptimeConfig {
     public boolean uptimeEnabled = true;
 
     @Expose
+    @ConfigOption(name = "Hide in Chat", desc = "Hide the overlay when the chat GUI is open")
+    @ConfigEditorBoolean
+    public boolean hideOnChat = true;
+
+    @Expose
+    @ConfigOption(name = "Hide on Tab", desc = "Hide the overlay when the tab list is shown")
+    @ConfigEditorBoolean
+    public boolean hideOnTab = true;
+
+    @Expose
+    @ConfigOption(name = "Hide on F3 Debug", desc = "Hide the overlay when the F3 debug screen is open")
+    @ConfigEditorBoolean
+    public boolean hideOnDebug = true;
+
+    @Expose
     @ConfigOption(name = "Background Color", desc = "Background color of the timer overlay")
     @ConfigEditorColour
     public String uptimeBgColor = "0:136:0:0:0";

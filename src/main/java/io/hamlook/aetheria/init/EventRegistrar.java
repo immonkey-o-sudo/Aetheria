@@ -137,6 +137,13 @@ public class EventRegistrar {
     }
 
     private static Object newInstance(Class<?> clazz) throws Exception {
+        try {
+            Field f = clazz.getDeclaredField("INSTANCE");
+            if (Modifier.isStatic(f.getModifiers()) && Modifier.isFinal(f.getModifiers()) && f.getType() == clazz) {
+                f.setAccessible(true);
+                return f.get(null);
+            }
+        } catch (NoSuchFieldException ignored) {}
         Constructor<?> c = clazz.getDeclaredConstructor();
         c.setAccessible(true);
         return c.newInstance();

@@ -21,6 +21,11 @@ public class Diana {
     public boolean editOverlayPosDummy = false;
 
     @Expose
+    @ConfigOption(name = "Reset Tracker", desc = "Wipe all tracked Diana stats")
+    @ConfigEditorButton(runnableId = "resetDianaTracker", buttonText = "Reset")
+    public boolean resetDianaDummy = false;
+
+    @Expose
     @Category(name = "Event Overlay", desc = "Diana Event HUD – playtime, burrows, and mob rates")
     public EventOverlayConfig eventOverlay = new EventOverlayConfig();
 

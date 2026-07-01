@@ -84,4 +84,8 @@ class BPSOverlay : Overlay(50, 20) {
     override fun getCornerRadius(): Int = config.bpsCornerRadius
     override fun isEnabled(): Boolean =
         config.bpsCalculator && (!config.bpsRequireFarmingIsland || isInFarmingLocation())
+
+    override fun hideOnChat() = config.hideOnChat
+    override fun hideOnTab() = config.hideOnTab
+    override fun hideOnDebug() = config.hideOnDebug
 }

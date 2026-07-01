@@ -57,6 +57,13 @@ public class UptimeOverlay extends Overlay {
     }
 
     @Override
+    protected boolean hideOnChat()   { return ATHRConfig.feature.misc.uptimeConfig.hideOnChat; }
+    @Override
+    protected boolean hideOnTab()    { return ATHRConfig.feature.misc.uptimeConfig.hideOnTab; }
+    @Override
+    protected boolean hideOnDebug()  { return ATHRConfig.feature.misc.uptimeConfig.hideOnDebug; }
+
+    @Override
     public List<String> getLines(boolean preview) {
         List<String> lines = new ArrayList<>();
 

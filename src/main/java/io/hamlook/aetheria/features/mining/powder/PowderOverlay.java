@@ -65,6 +65,13 @@ public class PowderOverlay extends Overlay {
         return ATHRConfig.feature.mining.powderTrackerConfig.powderTracker && PowderStats.getInstance().isTrackingEnabled() && SkyblockData.getCurrentLocation() == SkyblockData.Location.CRYSTAL_HOLLOWS;
     }
 
+    @Override
+    protected boolean hideOnChat()   { return ATHRConfig.feature.mining.powderTrackerConfig.hideOnChat; }
+    @Override
+    protected boolean hideOnTab()    { return ATHRConfig.feature.mining.powderTrackerConfig.hideOnTab; }
+    @Override
+    protected boolean hideOnDebug()  { return ATHRConfig.feature.mining.powderTrackerConfig.hideOnDebug; }
+
     private String lineForEntry(int ordinal, PowderData d, PowderStats stats, boolean preview) {
         switch (ordinal) {
             case 0:

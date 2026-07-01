@@ -17,8 +17,12 @@ public class MixinGuiIngame_HideScoreboard {
     @Inject(method = "renderScoreboard", at = @At("HEAD"), cancellable = true)
     public void renderScoreboard(ScoreObjective objective, ScaledResolution scaledRes, CallbackInfo ci) {
         if (!CustomScoreboard.isActive()) return;
-        if (ATHRConfig.feature.scoreboard.hideOnTab
-                && OverlayUtils.shouldHide()) return;
+
+        if (OverlayUtils.isChatOpen()) return;
+        if (OverlayUtils.isDebugActive() && ATHRConfig.feature.scoreboard.hideOnDebug) return;
+        if (OverlayUtils.isTabHeld() && ATHRConfig.feature.scoreboard.hideOnTab) return;
+        if (OverlayUtils.isStorageActive()) return;
+
         ci.cancel();
     }
 }

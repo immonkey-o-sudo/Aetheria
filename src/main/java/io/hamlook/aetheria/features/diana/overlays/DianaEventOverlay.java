@@ -54,6 +54,13 @@ public class DianaEventOverlay extends Overlay {
     }
 
     @Override
+    protected boolean hideOnChat()   { return ATHRConfig.feature.diana.eventOverlay.hideOnChat; }
+    @Override
+    protected boolean hideOnTab()    { return ATHRConfig.feature.diana.eventOverlay.hideOnTab; }
+    @Override
+    protected boolean hideOnDebug()  { return ATHRConfig.feature.diana.eventOverlay.hideOnDebug; }
+
+    @Override
     public List<String> getLines(boolean preview) {
         List<String> lines = new ArrayList<>();
 

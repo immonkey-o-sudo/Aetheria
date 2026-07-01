@@ -78,6 +78,13 @@ public class KillComboOverlay extends Overlay {
     }
 
     @Override
+    protected boolean hideOnChat()   { return ATHRConfig.feature.misc.killCombo.hideOnChat; }
+    @Override
+    protected boolean hideOnTab()    { return ATHRConfig.feature.misc.killCombo.hideOnTab; }
+    @Override
+    protected boolean hideOnDebug()  { return ATHRConfig.feature.misc.killCombo.hideOnDebug; }
+
+    @Override
     public List<String> getLines(boolean preview) {
         List<String> lines = new ArrayList<>();
         lines.add("§6§lKill Combo Tracker");
