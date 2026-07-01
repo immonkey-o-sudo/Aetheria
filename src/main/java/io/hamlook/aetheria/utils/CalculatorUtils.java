@@ -3,12 +3,13 @@ package io.hamlook.aetheria.utils;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.*;
 
 // Advanced calculator for math expressions with functions, operators, and multipliers
 public class CalculatorUtils {
 
-    public static final DecimalFormat FORMAT = new DecimalFormat("#,##0.##########");
+    public static final DecimalFormat FORMAT = new DecimalFormat("#,##0.##########", new DecimalFormatSymbols(Locale.US));
     private static final String BINOPS = "+-*/x^%";
     private static final String POSTOPS = "mkbts!";
     private static final String DIGITS = "0123456789";
@@ -28,6 +29,8 @@ public class CalculatorUtils {
             if (c == '.') {
                 if (hasDot) return false;
                 hasDot = true;
+            } else if (c == ',') {
+                // grouping separator in formatted output (e.g. "7,000")
             } else if (c >= '0' && c <= '9') {
                 hasDigit = true;
             } else {
