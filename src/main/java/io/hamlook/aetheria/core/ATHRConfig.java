@@ -64,6 +64,8 @@ public class ATHRConfig {
     private static boolean waypointManagerKeyWasDown = false;
     private static boolean powderToggleKeyWasDown = false;
     private static boolean pristineToggleKeyWasDown = false;
+    private static boolean ghostToggleKeyWasDown = false;
+    private static boolean ghostResetKeyWasDown = false;
     private static boolean registered = false;
 
     private static boolean isKeyOrMouseDown(int keyCode) {
@@ -361,5 +363,15 @@ public class ATHRConfig {
         }
 
         pristineToggleKeyWasDown = feature != null && isKeyOrMouseDown(feature.mining.pristineTrackerConfig.pristineToggleKey);
+
+        if (feature != null && isKeyOrMouseDown(feature.misc.ghostTrackerConfig.ghostToggleKey) && !ghostToggleKeyWasDown && Minecraft.getMinecraft().currentScreen == null) {
+            GhostStats.getInstance().toggleTracking();
+        }
+        ghostToggleKeyWasDown = feature != null && isKeyOrMouseDown(feature.misc.ghostTrackerConfig.ghostToggleKey);
+
+        if (feature != null && isKeyOrMouseDown(feature.misc.ghostTrackerConfig.ghostResetKey) && !ghostResetKeyWasDown && Minecraft.getMinecraft().currentScreen == null) {
+            resetGhostTracker();
+        }
+        ghostResetKeyWasDown = feature != null && isKeyOrMouseDown(feature.misc.ghostTrackerConfig.ghostResetKey);
     }
 }

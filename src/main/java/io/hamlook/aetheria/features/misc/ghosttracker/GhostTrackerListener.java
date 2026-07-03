@@ -1,5 +1,6 @@
 package io.hamlook.aetheria.features.misc.ghosttracker;
 
+import io.hamlook.aetheria.Aetheria;
 import io.hamlook.aetheria.events.ActionBarUpdateEvent;
 import io.hamlook.aetheria.init.RegisterEvents;
 import io.hamlook.aetheria.utils.chat.ChatUtils;
@@ -37,11 +38,23 @@ public class GhostTrackerListener {
     }
 
     private static boolean isValidKillContext() {
-        if (!SkyblockData.isOnSkyblock() || SkyblockData.getCurrentLocation() != SkyblockData.Location.DWARVEN || !SkyblockData.isInMist())
-            return false;
-
+        boolean onSkyblock = SkyblockData.isOnSkyblock();
+        boolean inDwarven = SkyblockData.getCurrentLocation() == SkyblockData.Location.DWARVEN;
+        boolean inMist = SkyblockData.isInMist();
         Minecraft mc = Minecraft.getMinecraft();
-        return mc.thePlayer.posY <= 100; // Only track kills below y100in the mist
+        boolean posYValid = mc.thePlayer != null && mc.thePlayer.posY <= 100;
+
+        if (!onSkyblock || !inDwarven || !inMist) {
+            Aetheria.logger.info("[GhostTracker] Kill context invalid: onSkyblock=" + onSkyblock + " inDwarven=" + inDwarven + " inMist=" + inMist);
+            return false;
+        }
+
+        if (!posYValid) {
+            Aetheria.logger.info("[GhostTracker] Kill context invalid: posY=" + (mc.thePlayer != null ? mc.thePlayer.posY : "player null"));
+            return false;
+        }
+
+        return true;
     }
 
     private static void handleKillDetection(Matcher matcher) throws Exception {
@@ -49,6 +62,7 @@ public class GhostTrackerListener {
         float currentXp = NUMBER_FORMAT.parse(matcher.group("progress")).floatValue();
 
         if (previousXp == -1f) {
+            Aetheria.logger.info("[GhostTracker] First XP snapshot: currentXp=" + currentXp + " xpGain=" + xpGain);
             previousXp = currentXp;
             return;
         }
@@ -56,15 +70,26 @@ public class GhostTrackerListener {
         float xpDelta = currentXp - previousXp;
         previousXp = currentXp;
 
-        if (xpDelta <= 0 || xpGain >= 1000) return; // count as ghost kill
+        Aetheria.logger.info("[GhostTracker] Kill Detection: xpGain=" + xpGain + " currentXp=" + currentXp + " xpDelta=" + xpDelta);
+
+        if (xpDelta <= 0 || xpGain >= 1000) {
+            Aetheria.logger.info("[GhostTracker] Kill rejected: xpDelta <= 0 (" + (xpDelta <= 0) + ") || xpGain >= 1000 (" + (xpGain >= 1000) + ")");
+            return;
+        }
 
         int killsGained = Math.round(xpDelta / xpGain);
-        if (killsGained <= 0 || killsGained > 15) return;
+        Aetheria.logger.info("[GhostTracker] Calculated killsGained=" + killsGained);
+
+        if (killsGained <= 0 || killsGained > 15) {
+            Aetheria.logger.info("[GhostTracker] Kill rejected: killsGained <= 0 (" + (killsGained <= 0) + ") || killsGained > 15 (" + (killsGained > 15) + ")");
+            return;
+        }
 
         GhostStats gs = GhostStats.getInstance();
         gs.addKill(killsGained);
         gs.addXp((long) (xpGain * killsGained));
         PurseTracker.recordKill();
+        Aetheria.logger.info("[GhostTracker] Kill recorded: killsGained=" + killsGained + " totalKills=" + gs.totalKills);
     }
 
     @SubscribeEvent
@@ -90,6 +115,7 @@ public class GhostTrackerListener {
         if (isPlayerOrPartyMessage(msg)) return;
 
         if (GhostTrackerConstants.COIN_DROP_MESSAGE.equals(event.message.getFormattedText())) {
+            Aetheria.logger.info("[GhostTracker] Coin drop detected");
             GhostStats.getInstance().addDrop("Coins");
             return;
         }
@@ -97,19 +123,28 @@ public class GhostTrackerListener {
         Matcher matcher = GhostTrackerConstants.RARE_DROP_PATTERN.matcher(event.message.getFormattedText());
         if (!matcher.find()) return;
 
+        Aetheria.logger.info("[GhostTracker] Rare drop detected: " + event.message.getFormattedText());
         handleRareDrop(matcher);
     }
 
     @SubscribeEvent
     public void onActionBar(ActionBarUpdateEvent event) {
         String msg = event.getText();
+        Aetheria.logger.info("[GhostTracker] ActionBar: " + msg);
         Matcher matcher = GhostTrackerConstants.COMBAT_XP_PATTERN.matcher(msg);
-        if (!matcher.find()) return;
-        if (!isValidKillContext()) return;
+        if (!matcher.find()) {
+            Aetheria.logger.info("[GhostTracker] ActionBar: COMBAT_XP_PATTERN did not match");
+            return;
+        }
+        if (!isValidKillContext()) {
+            Aetheria.logger.info("[GhostTracker] ActionBar: isValidKillContext returned false");
+            return;
+        }
 
         try {
             handleKillDetection(matcher);
         } catch (Exception e) {
+            Aetheria.logger.severe("[GhostTracker] Exception in handleKillDetection: " + e.getMessage());
         }
     }
 }

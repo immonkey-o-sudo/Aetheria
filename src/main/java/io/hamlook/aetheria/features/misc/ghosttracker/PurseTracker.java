@@ -1,5 +1,6 @@
 package io.hamlook.aetheria.features.misc.ghosttracker;
 
+import io.hamlook.aetheria.Aetheria;
 import io.hamlook.aetheria.events.ScavengerGainEvent;
 import io.hamlook.aetheria.utils.data.SkyblockData;
 import net.minecraftforge.common.MinecraftForge;
@@ -16,16 +17,26 @@ public class PurseTracker {
         if (SkyblockData.getScoreboardLines().isEmpty() || !SkyblockData.isInMist()) return;
 
         String purseLine = getPurseLine();
-        if (purseLine == null) return;
+        if (purseLine == null) {
+            Aetheria.logger.fine("[GhostTracker/PurseTracker] No purse line found");
+            return;
+        }
 
         int scavengerGain = parseScavengerGain(purseLine);
         if (scavengerGain == 0) {
             return;
         }
 
+        Aetheria.logger.info("[GhostTracker/PurseTracker] Scavenger gain detected: " + scavengerGain + " (lastRecorded=" + lastRecordedGain + ")");
+
         if (scavengerGain != lastRecordedGain && isValidGain(scavengerGain)) {
+            Aetheria.logger.info("[GhostTracker/PurseTracker] Valid scavenger gain, posting event: " + scavengerGain);
             lastRecordedGain = scavengerGain;
             MinecraftForge.EVENT_BUS.post(new ScavengerGainEvent(scavengerGain));
+        } else if (scavengerGain == lastRecordedGain) {
+            Aetheria.logger.fine("[GhostTracker/PurseTracker] Scavenger gain already recorded: " + scavengerGain);
+        } else {
+            Aetheria.logger.info("[GhostTracker/PurseTracker] Invalid scavenger gain rejected: " + scavengerGain);
         }
     }
 
@@ -43,6 +54,13 @@ public class PurseTracker {
         long timeSinceKill = now - lastKillTime;
         boolean inWindow = timeSinceKill <= KILL_WINDOW_MS;
         boolean inRange = scavengerGain >= GhostTrackerConstants.MIN_SCAVENGER_GAIN && scavengerGain <= GhostTrackerConstants.MAX_SCAVENGER_GAIN;
+
+        if (!inRange) {
+            Aetheria.logger.info("[GhostTracker/PurseTracker] Scavenger gain out of range: " + scavengerGain + " (min=" + GhostTrackerConstants.MIN_SCAVENGER_GAIN + " max=" + GhostTrackerConstants.MAX_SCAVENGER_GAIN + ")");
+        }
+        if (!inWindow) {
+            Aetheria.logger.info("[GhostTracker/PurseTracker] Scavenger gain outside kill window: timeSinceKill=" + timeSinceKill + "ms (max=" + KILL_WINDOW_MS + "ms)");
+        }
 
         return inRange && inWindow;
     }
