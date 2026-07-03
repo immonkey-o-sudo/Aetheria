@@ -1,5 +1,6 @@
 package io.hamlook.aetheria.features.misc.SkyblockExp;
 
+import io.hamlook.aetheria.Aetheria;
 import io.hamlook.aetheria.events.ActionBarUpdateEvent;
 import io.hamlook.aetheria.events.ActionBarXpGainEvent;
 import io.hamlook.aetheria.init.RegisterEvents;
@@ -29,6 +30,10 @@ public class ActionBarDispatcher {
 
         String stripped = StringUtils.stripControlCodes(event.message.getUnformattedText());
         String formatted = event.message.getFormattedText();
+
+        if (stripped.contains("Combat")) {
+            Aetheria.logger.info("[ActionBarDispatcher] Posting ActionBarUpdateEvent with Combat: " + stripped);
+        }
 
         MinecraftForge.EVENT_BUS.post(new ActionBarUpdateEvent(stripped));
 
