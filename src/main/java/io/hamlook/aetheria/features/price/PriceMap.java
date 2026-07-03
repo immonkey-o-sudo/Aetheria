@@ -15,6 +15,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +27,7 @@ public class PriceMap {
     @Getter
     private static final PriceData priceData = new PriceData();
 
-    public static volatile int fetchFailCount = 0;
+    public static int fetchFailCount = 0;
     public static final int MAX_RETRIES = 5;
 
     public static BazaarEntry getLatestBZPrice(String id) {
@@ -92,7 +93,6 @@ public class PriceMap {
                                 priceData.auction.clear();
                                 if (fetched.bazaar != null) priceData.bazaar.putAll(fetched.bazaar);
                                 if (fetched.auction != null) priceData.auction.putAll(fetched.auction);
-                                Aetheria.logger.info("[PriceDetector] Loaded " + (priceData.bazaar.size() + priceData.auction.size()) + " items from DB");
                                 priceData.bazaar.forEach((id, am) -> Aetheria.logger.info("[PriceDetector] Loaded " + am.size() + " entries of " + id));
                                 priceData.auction.forEach((id, am) -> Aetheria.logger.info("[PriceDetector] Loaded " + am.size() + " entries of " + id));
 
@@ -105,6 +105,7 @@ public class PriceMap {
                 }
             } catch (Exception e) {
                 Aetheria.logger.info("[PriceDetector] Failed to fetch prices: " + e.getMessage());
+                Aetheria.logger.info(Arrays.toString(e.getStackTrace()));
                 fetchFailCount++;
             }
         }).start();
