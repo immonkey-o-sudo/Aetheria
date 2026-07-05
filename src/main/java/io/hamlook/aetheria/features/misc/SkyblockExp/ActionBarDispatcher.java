@@ -24,6 +24,10 @@ public class ActionBarDispatcher {
 
     private String lastXpAmount = null;
 
+    public ActionBarDispatcher() {
+        Aetheria.logger.info("[ActionBarDispatcher] Initialized");
+    }
+
     @SubscribeEvent
     public void onActionBar(ClientChatReceivedEvent event) {
         if (event.type != ACTION_BAR_TYPE) return;
@@ -31,8 +35,9 @@ public class ActionBarDispatcher {
         String stripped = StringUtils.stripControlCodes(event.message.getUnformattedText());
         String formatted = event.message.getFormattedText();
 
-        if (stripped.contains("Combat")) {
-            Aetheria.logger.info("[ActionBarDispatcher] Posting ActionBarUpdateEvent with Combat: " + stripped);
+        // Only log when in mist
+        boolean inMist = io.hamlook.aetheria.utils.data.SkyblockData.isInMist();
+            Aetheria.logger.fine("[ActionBarDispatcher] onActionBar called with: " + stripped);
         }
 
         MinecraftForge.EVENT_BUS.post(new ActionBarUpdateEvent(stripped));
