@@ -22,6 +22,9 @@ public class ActionBarDispatcher {
 
     private static final Pattern SB_XP_FORMATTED = Pattern.compile("(\\+.*?SkyBlock XP)");
 
+    public static String lastActionBarFormatted = "";
+    public static String lastActionBarStripped = "";
+
     private String lastXpAmount = null;
 
     public ActionBarDispatcher() {
@@ -33,6 +36,9 @@ public class ActionBarDispatcher {
 
         String stripped = StringUtils.stripControlCodes(event.message.getUnformattedText());
         String formatted = event.message.getFormattedText();
+
+        lastActionBarFormatted = formatted;
+        lastActionBarStripped = stripped;
 
         MinecraftForge.EVENT_BUS.post(new ActionBarUpdateEvent(stripped));
 

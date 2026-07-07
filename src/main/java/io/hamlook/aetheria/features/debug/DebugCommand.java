@@ -1,6 +1,7 @@
 package io.hamlook.aetheria.features.debug;
 
 import io.hamlook.aetheria.command.ASMCommand;
+import io.hamlook.aetheria.features.misc.SkyblockExp.ActionBarDispatcher;
 import io.hamlook.aetheria.init.RegisterCommand;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiPlayerTabOverlay;
@@ -90,7 +91,7 @@ public class DebugCommand extends ASMCommand {
 
     @Override
     public String getUsage() {
-        return "/athrdebug <tablist|tabfooter>";
+        return "/athrdebug <tablist|tabfooter|actionbar>";
     }
 
     @Override
@@ -112,15 +113,26 @@ public class DebugCommand extends ASMCommand {
             case "tabfooter":
                 copyTabFooter(sender);
                 break;
+            case "actionbar":
+                String raw = ActionBarDispatcher.lastActionBarFormatted;
+                String stripped = ActionBarDispatcher.lastActionBarStripped;
+                if (raw.isEmpty()) {
+                    sender.addChatMessage(new ChatComponentText(PREFIX + EnumChatFormatting.YELLOW + "No action bar text received yet."));
+                    return;
+                }
+                sender.addChatMessage(new ChatComponentText(PREFIX + "=== ACTION BAR ==="));
+                sender.addChatMessage(new ChatComponentText(raw));
+                sender.addChatMessage(new ChatComponentText(PREFIX + EnumChatFormatting.GRAY + "Stripped: " + EnumChatFormatting.RESET + stripped));
+                break;
             default:
-                sender.addChatMessage(new ChatComponentText(PREFIX + EnumChatFormatting.RED + "Unknown subcommand. Use: tablist, tabfooter"));
+                sender.addChatMessage(new ChatComponentText(PREFIX + EnumChatFormatting.RED + "Unknown subcommand. Use: tablist, tabfooter, actionbar"));
         }
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
-        if (args.length == 1) return Arrays.asList("tablist", "tabfooter");
+        if (args.length == 1) return Arrays.asList("tablist", "tabfooter", "actionbar");
         return Collections.emptyList();
     }
 }
