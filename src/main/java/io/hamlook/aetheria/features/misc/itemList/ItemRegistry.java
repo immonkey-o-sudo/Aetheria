@@ -6,7 +6,6 @@ import io.hamlook.aetheria.Aetheria;
 import io.hamlook.aetheria.core.ATHRConfig;
 import io.hamlook.aetheria.features.profile.data.ItemData;
 import io.hamlook.aetheria.network.NetworkGuard;
-import net.minecraft.item.ItemStack;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -17,7 +16,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,7 +26,7 @@ public class ItemRegistry {
     public static volatile Map<String, ItemFamily> familyRegistry = new LinkedHashMap<>();
     public static volatile boolean isLoaded = false;
 
-    public static Queue<ItemStack> preloadQueue = new ConcurrentLinkedQueue<>();
+    private static volatile Map<String, String> skullTextureCache = Collections.emptyMap();
 
     private static final Gson GSON = new Gson();
 
@@ -182,6 +180,10 @@ public class ItemRegistry {
                         long familyStart = System.currentTimeMillis();
                         buildFamilies();
                         Aetheria.logger.info("[ATHR-DEBUG] Families built in " + (System.currentTimeMillis() - familyStart) + "ms.");
+
+                        Aetheria.logger.info("[ATHR-DEBUG] Building skull texture cache...");
+                        buildSkullTextureCache();
+                        Aetheria.logger.info("[ATHR-DEBUG] Skull texture cache built with " + skullTextureCache.size() + " entries.");
 
                         Aetheria.logger.info("[ATHR-DEBUG] --- TOTAL INITIALIZATION TIME: " + (System.currentTimeMillis() - threadStart) + "ms ---");
                     } else {
@@ -372,18 +374,62 @@ public class ItemRegistry {
         return 3;
     }
 
+    private static final Map<String, Integer> ROMAN_MAP = new LinkedHashMap<>();
+    static {
+        ROMAN_MAP.put("X", 10); ROMAN_MAP.put("IX", 9); ROMAN_MAP.put("VIII", 8); ROMAN_MAP.put("VII", 7);
+        ROMAN_MAP.put("VI", 6); ROMAN_MAP.put("V", 5); ROMAN_MAP.put("IV", 4); ROMAN_MAP.put("III", 3);
+        ROMAN_MAP.put("II", 2); ROMAN_MAP.put("I", 1);
+    }
+
     private static int romanToInt(String name) {
         String[] parts = name.trim().split("\\s+");
         String r = parts[parts.length - 1].toUpperCase();
         try {
             return Integer.parseInt(r);
         } catch (NumberFormatException e) {
-            Map<String, Integer> map = new LinkedHashMap<>();
-            map.put("X", 10); map.put("IX", 9); map.put("VIII", 8); map.put("VII", 7);
-            map.put("VI", 6); map.put("V", 5); map.put("IV", 4); map.put("III", 3);
-            map.put("II", 2); map.put("I", 1);
-            return map.getOrDefault(r, 99);
+            return ROMAN_MAP.getOrDefault(r, 99);
         }
+    }
+
+    public static Collection<SkyblockItem> getAllItems() {
+        return Collections.unmodifiableCollection(itemRegistry.values());
+    }
+
+    public static Map<String, String> getSkullTextureMap() {
+        return skullTextureCache;
+    }
+
+    private static String extractTextureHash(String base64Texture) {
+        if (base64Texture == null || base64Texture.isEmpty()) return null;
+        try {
+            String decoded = new String(Base64.getDecoder().decode(base64Texture));
+            int ti = decoded.indexOf("/texture/");
+            if (ti == -1) return null;
+            ti += "/texture/".length();
+            StringBuilder hash = new StringBuilder();
+            while (ti < decoded.length()) {
+                char c = decoded.charAt(ti++);
+                if (c == '"' || c == '\'' || c == '\\' || c == '?' || c == ' ') break;
+                hash.append(c);
+            }
+            return hash.length() > 0 ? hash.toString() : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static void buildSkullTextureCache() {
+        Map<String, String> map = new LinkedHashMap<>();
+        for (SkyblockItem item : itemRegistry.values()) {
+            if (item.itemid != null && item.itemid.contains("skull") && item.texture != null && !item.texture.isEmpty()) {
+                String hash = extractTextureHash(item.texture);
+                if (hash != null) {
+                    String name = stripColor(item.displayName).trim();
+                    map.put(name, hash);
+                }
+            }
+        }
+        skullTextureCache = map;
     }
 
     public static SkyblockItem getWithItemData(ItemData data) {

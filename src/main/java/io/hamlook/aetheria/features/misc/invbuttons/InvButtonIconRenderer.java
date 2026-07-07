@@ -1,19 +1,15 @@
 package io.hamlook.aetheria.features.misc.invbuttons;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import io.hamlook.aetheria.features.misc.itemList.ItemRegistry;
+import io.hamlook.aetheria.features.misc.itemList.SkyblockItem;
 import io.hamlook.aetheria.utils.Utils;
 import io.hamlook.aetheria.utils.render.ItemRenderUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.Base64;
@@ -23,7 +19,6 @@ import java.util.UUID;
 public class InvButtonIconRenderer {
 
     private static final HashMap<String, ItemStack> skullMap = new HashMap<>();
-    private static final HashMap<String, ItemStack> stackCache = new HashMap<>();
 
     private InvButtonIconRenderer() {
     }
@@ -64,70 +59,13 @@ public class InvButtonIconRenderer {
             return stack;
         }
 
-        // Check stack cache first
-        if (stackCache.containsKey(icon)) return stackCache.get(icon);
-
-        // Build from NEU repo JSON
-        JsonObject json = SkyblockItemCache.getInstance().getItemJson(icon);
-        if (json != null) {
-            ItemStack stack = jsonToStack(json);
-            if (stack != null) {
-                stackCache.put(icon, stack);
-                return stack;
-            }
+        SkyblockItem sbItem = ItemRegistry.getItem(icon);
+        if (sbItem != null) {
+            ItemStack stack = sbItem.getStack();
+            if (stack != null) return stack;
         }
 
         return null;
-    }
-
-    public static ItemStack jsonToStack(JsonObject json) {
-        if (json == null) return null;
-
-        String itemid = json.has("itemid") ? json.get("itemid").getAsString() : null;
-        if (itemid == null) return null;
-
-        Item mcItem = Item.getByNameOrId(itemid);
-        if (mcItem == null) mcItem = Item.getByNameOrId("minecraft:" + itemid.toLowerCase());
-        if (mcItem == null) return null;
-
-        ItemStack stack = new ItemStack(mcItem);
-
-        if (json.has("damage")) {
-            stack.setItemDamage(json.get("damage").getAsInt());
-        }
-
-        if (json.has("nbttag")) {
-            try {
-                NBTTagCompound tag = JsonToNBT.getTagFromJson(json.get("nbttag").getAsString());
-                stack.setTagCompound(tag);
-            } catch (Exception ignored) {
-            }
-        }
-
-        if (json.has("lore")) {
-            NBTTagCompound display = new NBTTagCompound();
-            if (stack.getTagCompound() != null && stack.getTagCompound().hasKey("display")) {
-                display = stack.getTagCompound().getCompoundTag("display");
-            }
-            display.setTag("Lore", processLore(json.get("lore").getAsJsonArray()));
-            NBTTagCompound tag = stack.getTagCompound() != null ? stack.getTagCompound() : new NBTTagCompound();
-            tag.setTag("display", display);
-            stack.setTagCompound(tag);
-        }
-
-        return stack;
-    }
-
-    private static NBTTagList processLore(JsonArray lore) {
-        NBTTagList nbtLore = new NBTTagList();
-        for (JsonElement line : lore) {
-            String lineStr = line.getAsString();
-            // Skip recipe lines (same filter as NEU)
-            if (!lineStr.contains("Click to view recipes!") && !lineStr.contains("Click to view recipe!")) {
-                nbtLore.appendTag(new NBTTagString(lineStr));
-            }
-        }
-        return nbtLore;
     }
 
     private static ItemStack buildSkullStack(String hash) {

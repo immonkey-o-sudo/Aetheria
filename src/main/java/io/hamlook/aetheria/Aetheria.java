@@ -7,7 +7,6 @@ import io.hamlook.aetheria.core.StorageManager;
 import io.hamlook.aetheria.data.ApiHandler;
 import io.hamlook.aetheria.features.capes.CapeManager;
 import io.hamlook.aetheria.features.dungeons.caseopening.CitManager;
-import io.hamlook.aetheria.features.misc.invbuttons.SkyblockItemCache;
 import io.hamlook.aetheria.features.misc.pet.PetCache;
 import io.hamlook.aetheria.features.profile.GuiWaiter;
 import io.hamlook.aetheria.init.EventRegistrar;
@@ -27,7 +26,7 @@ public class Aetheria {
 
     public static final String MODID = "aetheria";
     public static final String NAME = "Aetheria";
-    public static final String VERSION = "1.1.2-alpha";
+    public static final String VERSION = "1.1.3-alpha";
 
     public static ATHRConfig config;
     public static Logger logger;
@@ -47,7 +46,6 @@ public class Aetheria {
         ATHRConfig.register();
         StorageManager.loadAll();
         StorageManager.startAutoSave();
-        SkyblockItemCache.getInstance().loadAsync();
         ItemRegistry.initialise();
         ChatFilterManager.initialise();
         new CitManager();
