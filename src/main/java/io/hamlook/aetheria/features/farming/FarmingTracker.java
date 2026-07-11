@@ -3,15 +3,19 @@ package io.hamlook.aetheria.features.farming;
 import io.hamlook.aetheria.core.ATHRConfig;
 import io.hamlook.aetheria.features.misc.itemlog.ItemPickupLog;
 import io.hamlook.aetheria.init.RegisterEvents;
+import io.hamlook.aetheria.utils.ColorUtils;
 import io.hamlook.aetheria.utils.chat.ChatUtils;
 import io.hamlook.aetheria.utils.data.SkyblockData;
+import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -57,11 +61,9 @@ public class FarmingTracker {
     // display name suggests (e.g. Cocoa Beans, Carrot, Potato, Nether Wart) —
     // worth a quick in-game check before merging if any tracking looks off.
     //
-    // Wild Rose / Moonflower / Sunflower are Garden-only crops and cannot be
-    // farmed in the Barn or on your Private Island. SkyblockData.Location has
-    // no GARDEN entry yet, so with "Require Farming Location" enabled these
-    // three will never register — either disable that setting while farming
-    // flowers, or add GARDEN to the Location enum as a follow-up.
+    // Wild Rose / Moonflower / Sunflower are Garden-only crops. Location.GARDEN
+    // exists but its server prefixes are a PLACEHOLDER (see SkyblockData.java) —
+    // location gating for these three won't work correctly until that's confirmed.
     private static final Crop[] CROPS = new Crop[]{
             new Crop("WHEAT", "ENCHANTED_WHEAT", "Enchanted Wheat", "ENCHANTED_HAY_BLOCK", "Enchanted Hay Bale", "Wheat"),
             // CARROT_ITEM/POTATO_ITEM are Hypixel's legacy vanilla item IDs (pre-1.16 carrot/potato
@@ -88,6 +90,58 @@ public class FarmingTracker {
     /** Exposed so the overlay can build display lines without duplicating this table. */
     public static Crop[] getCrops() {
         return CROPS;
+    }
+
+    /**
+     * One representative icon per crop line (shown once at the start of the
+     * line, not per raw/enchanted/block sub-form). This mod has no general
+     * SkyBlock-ID -> texture registry, so most of these map straight to the
+     * vanilla item Hypixel reuses under the hood (enchanted tiers look
+     * identical to raw crops in-game, just with NBT lore/glint added).
+     * Wild Rose / Moonflower / Sunflower have no vanilla equivalent at all
+     * (Garden-exclusive custom textures) — using the closest-looking vanilla
+     * flower as a stand-in sprite instead, per request.
+     */
+    public static ItemStack getCropIcon(Crop crop) {
+        switch (crop.rawId) {
+            case "WHEAT": return new ItemStack(Items.wheat);
+            case "CARROT_ITEM": return new ItemStack(Items.carrot);
+            case "POTATO_ITEM": return new ItemStack(Items.potato);
+            case "PUMPKIN": return new ItemStack(Item.getItemFromBlock(Blocks.pumpkin));
+            case "MELON": return new ItemStack(Items.melon);
+            case "SUGAR_CANE": return new ItemStack(Items.reeds);
+            case "INK_SACK:3": return new ItemStack(Items.dye, 1, 3); // Cocoa Beans
+            case "CACTUS": return new ItemStack(Item.getItemFromBlock(Blocks.cactus));
+            case "RED_MUSHROOM": return new ItemStack(Item.getItemFromBlock(Blocks.red_mushroom));
+            case "BROWN_MUSHROOM": return new ItemStack(Item.getItemFromBlock(Blocks.brown_mushroom));
+            case "NETHER_STALK": return new ItemStack(Items.nether_wart);
+            case "WILD_ROSE": return new ItemStack(Item.getItemFromBlock(Blocks.double_plant), 1, 4); // Rose Bush
+            case "MOONFLOWER": return new ItemStack(Item.getItemFromBlock(Blocks.red_flower), 1, 1); // Blue Orchid
+            case "SUNFLOWER": return new ItemStack(Item.getItemFromBlock(Blocks.double_plant), 1, 0); // Sunflower
+            default: return null;
+        }
+    }
+
+    // Raw-crop equivalent multipliers, for a single combined "crops/hour" stat
+    // (e.g. 1 Enchanted Melon = 160 Melon, so it contributes 160x its count).
+    //
+    // Both tiers confirmed at 160x via wiki.hypixel.net: Enchanted Wheat is
+    // "crafted with 160 Wheat" (Wheat Collection V) and Enchanted Hay Bale is
+    // "crafted with 160 Enchanted Wheat" (Wheat Collection XI) — the same 160
+    // ratio applies at both the raw->enchanted and enchanted->block tiers.
+    private static final long RAW_TO_ENCHANTED_RATIO = 160L;
+    private static final long ENCHANTED_TO_BLOCK_RATIO = 160L;
+
+    private static final Map<String, Long> RAW_EQUIVALENT = new HashMap<>();
+
+    static {
+        for (Crop crop : CROPS) {
+            RAW_EQUIVALENT.put(crop.rawId, 1L);
+            RAW_EQUIVALENT.put(crop.enchantedId, RAW_TO_ENCHANTED_RATIO);
+            if (crop.blockId != null) {
+                RAW_EQUIVALENT.put(crop.blockId, RAW_TO_ENCHANTED_RATIO * ENCHANTED_TO_BLOCK_RATIO);
+            }
+        }
     }
 
     private static final Map<String, String> RAW_IDS = new HashMap<>();
@@ -170,19 +224,15 @@ public class FarmingTracker {
         // PRICES.put("SOME_NEW_CROP_ID", 100.0);
     }
 
-    // Strip every remaining §-code first (handles duplicated/garbled codes on
-    // rarer drop tiers), then match "...DROP! <player> dropped <qty>x <item>!"
-    private static final Pattern FORMAT_CODE = Pattern.compile("§.");
+    // Drop-line matching happens on the ColorUtils.stripColor()'d text
     private static final Pattern DROP_PATTERN = Pattern.compile("DROP! \\S+ dropped (\\d+)x (.+)!");
 
-    private static final Map<String, Long> counts = new LinkedHashMap<>();
     private static boolean listenerRegistered = false;
 
     // Pauses the coins/hour rate calc after 7s of no crop activity, so
     // AFK/break time doesn't dilute the rate. Mirrors PowderStats' pattern,
     // just with a much shorter threshold suited to farming's rapid drops.
     private static final long INACTIVITY_LIMIT_MS = 7_000L;
-    private static long activeTimeMs = 0L;
     private static boolean timerRunning = false;
     private static boolean timerStartedOnce = false;
     private static boolean inactivityFlagged = false;
@@ -196,7 +246,8 @@ public class FarmingTracker {
             timerStartedOnce = true;
         } else if (!timerRunning) {
             if (inactivityFlagged) {
-                activeTimeMs -= INACTIVITY_LIMIT_MS;
+                FarmingTrackerData.getInstance().setActiveTimeMs(
+                        FarmingTrackerData.getInstance().getActiveTimeMs() - INACTIVITY_LIMIT_MS);
                 inactivityFlagged = false;
             }
             timerStartTime = System.currentTimeMillis();
@@ -208,7 +259,8 @@ public class FarmingTracker {
     private static void timerTick() {
         if (!timerRunning) return;
         long now = System.currentTimeMillis();
-        activeTimeMs += now - timerStartTime;
+        FarmingTrackerData data = FarmingTrackerData.getInstance();
+        data.setActiveTimeMs(data.getActiveTimeMs() + (now - timerStartTime));
         timerStartTime = now;
         if (now - lastActivityTime > INACTIVITY_LIMIT_MS) {
             timerRunning = false;
@@ -226,7 +278,9 @@ public class FarmingTracker {
 
     private static boolean isInFarmingLocation() {
         SkyblockData.Location location = SkyblockData.getCurrentLocation();
-        return location == SkyblockData.Location.BARN || location == SkyblockData.Location.PRIVATE_ISLAND;
+        return location == SkyblockData.Location.BARN
+                || location == SkyblockData.Location.PRIVATE_ISLAND
+                || location == SkyblockData.Location.GARDEN;
     }
 
     private static boolean locationOk() {
@@ -234,8 +288,7 @@ public class FarmingTracker {
     }
 
     public static void reset() {
-        counts.clear();
-        activeTimeMs = 0L;
+        FarmingTrackerData.getInstance().reset();
         timerRunning = false;
         timerStartedOnce = false;
         inactivityFlagged = false;
@@ -256,7 +309,7 @@ public class FarmingTracker {
         if (delta <= 0) return;
         if (!RAW_IDS.containsKey(internalId)) return;
 
-        counts.merge(internalId, (long) delta, Long::sum);
+        FarmingTrackerData.getInstance().getCounts().merge(internalId, (long) delta, Long::sum);
         updateActivity();
     }
 
@@ -266,18 +319,24 @@ public class FarmingTracker {
         if (!SkyblockData.isOnSkyblock()) return;
         if (!locationOk()) return;
 
-        String msg = FORMAT_CODE.matcher(ChatUtils.clean(event)).replaceAll("");
+        String raw = ChatUtils.clean(event);
+        String stripped = ColorUtils.stripColor(raw);
 
         // Guard against whispers, party/guild chat, or any player-authored message
         // that happens to contain drop-like text (e.g. someone pasting/mocking a
         // drop line, or "Party > Steve: lol dropped 99x Enchanted Melon!"). The
         // regex below uses find(), not an anchored full-line match, so without
-        // this it could pick up a fake drop embedded in a longer message. Real
-        // SkyBlock system broadcasts never contain a colon; every whisper/party/
-        // guild/DM format does ("From Steve:", "Party > Steve:", "Guild > Steve:").
-        if (msg.contains(":")) return;
+        // this it could pick up a fake drop embedded in a longer message.
+        // isMsgReceived/isMsgSent need the RAW (still-colored) string, since their
+        // patterns match literal §-codes; isPlayerMessage/isPartyMessage/
+        // getGuildSender need the STRIPPED string, since theirs don't.
+        if (ChatUtils.isPlayerMessage(stripped) || ChatUtils.isPartyMessage(stripped)
+                || ChatUtils.getGuildSender(stripped) != null
+                || ChatUtils.isMsgReceived(raw) || ChatUtils.isMsgSent(raw)) {
+            return;
+        }
 
-        Matcher m = DROP_PATTERN.matcher(msg);
+        Matcher m = DROP_PATTERN.matcher(stripped);
         if (!m.find()) return;
 
         long quantity;
@@ -290,7 +349,7 @@ public class FarmingTracker {
         String id = CHAT_NAME_TO_ID.get(m.group(2));
         if (id == null) return;
 
-        counts.merge(id, quantity, Long::sum);
+        FarmingTrackerData.getInstance().getCounts().merge(id, quantity, Long::sum);
         updateActivity();
     }
 
@@ -304,20 +363,23 @@ public class FarmingTracker {
 
     @SubscribeEvent
     public void onWorldUnload(WorldEvent.Unload event) {
-        reset();
+        if (ATHRConfig.feature == null) return;
+        if (!ATHRConfig.feature.farming.farmingTracker.persistAcrossSessions) {
+            reset();
+        }
     }
 
     public static long getCount(String id) {
-        return counts.getOrDefault(id, 0L);
+        return FarmingTrackerData.getInstance().getCounts().getOrDefault(id, 0L);
     }
 
     public static Map<String, Long> getCounts() {
-        return counts;
+        return FarmingTrackerData.getInstance().getCounts();
     }
 
     public static double currentValue() {
         double total = 0.0;
-        for (Map.Entry<String, Long> entry : counts.entrySet()) {
+        for (Map.Entry<String, Long> entry : FarmingTrackerData.getInstance().getCounts().entrySet()) {
             Double price = PRICES.get(entry.getKey());
             if (price != null && price > 0) total += entry.getValue() * price;
         }
@@ -325,7 +387,22 @@ public class FarmingTracker {
     }
 
     public static double coinsPerHour() {
-        double hours = activeTimeMs / 3_600_000.0;
+        double hours = FarmingTrackerData.getInstance().getActiveTimeMs() / 3_600_000.0;
         return hours <= 0.0 ? 0.0 : currentValue() / hours;
+    }
+
+    /** Total crops earned this session, with enchanted/compacted forms converted back to raw-crop-equivalent count. */
+    public static long totalRawCrops() {
+        long total = 0L;
+        for (Map.Entry<String, Long> entry : FarmingTrackerData.getInstance().getCounts().entrySet()) {
+            Long ratio = RAW_EQUIVALENT.get(entry.getKey());
+            if (ratio != null) total += entry.getValue() * ratio;
+        }
+        return total;
+    }
+
+    public static double cropsPerHour() {
+        double hours = FarmingTrackerData.getInstance().getActiveTimeMs() / 3_600_000.0;
+        return hours <= 0.0 ? 0.0 : totalRawCrops() / hours;
     }
 }
