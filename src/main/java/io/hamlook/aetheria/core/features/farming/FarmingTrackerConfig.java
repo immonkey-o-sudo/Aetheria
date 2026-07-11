@@ -16,9 +16,14 @@ public class FarmingTrackerConfig {
     public boolean enabled = false;
 
     @Expose
-    @ConfigOption(name = "Require Farming Location", desc = "Only track crops while in farming locations (Barn, Private Island)")
+    @ConfigOption(name = "Require Farming Location", desc = "Only track crops while in farming locations (Barn, Private Island, Garden)")
     @ConfigEditorBoolean
     public boolean requireFarmingIsland = true;
+
+    @Expose
+    @ConfigOption(name = "Keep Tracker Across Sessions", desc = "Persist crop counts and value across world unloads / game restarts instead of resetting")
+    @ConfigEditorBoolean
+    public boolean persistAcrossSessions = true;
 
     @Expose
     @ConfigOption(name = "Hide in Chat", desc = "Hide the overlay when the chat GUI is open")
@@ -40,6 +45,7 @@ public class FarmingTrackerConfig {
     @ConfigEditorDraggableList(exampleText = {
             "§a§lFarming Tracker",
             "§76,144,000 coins §7(3.2M/h)",
+            "§b12,480 crops/h",
             "§aWheat: §f2,304 §7E.Wheat: §f12 §7E.Hay Bale: §f1",
             "§aCarrot: §f1,120 §7E.Carrot: §f6",
             "§aPotato: §f980 §7E.Potato: §f4",
@@ -55,7 +61,7 @@ public class FarmingTrackerConfig {
             "§aMoonflower: §f30 §7E.Moonflower: §f1",
             "§aSunflower: §f35 §7E.Sunflower: §f1"
     })
-    public List<Integer> farmingDisplayLines = new ArrayList<>(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15));
+    public List<Integer> farmingDisplayLines = new ArrayList<>(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16));
 
     @Expose
     @ConfigOption(name = "Edit Position", desc = "Drag to reposition the farming tracker overlay")
