@@ -136,6 +136,68 @@ public class PriceMap {
             HARDCODED_PRICES.put("GHOSTLY_BOOTS", 77_000.0);
             HARDCODED_PRICES.put("BAG_OF_CASH", 1_000_000.0);
             HARDCODED_PRICES.put("CROWN_OF_GREED", 1_000_000.0);
+
+            // Farming Tracker crop prices — NPC sell prices (Farm Merchant), not bazaar.
+            // NPC selling is instant with no order/tax overhead, and long-term is more
+            // consistently profitable than bazaar instasell for these crops, so we hardcode
+            // them here rather than falling through to getLatestBZPrice(id).oSell.
+            // Base values verified in-game; each tier above raw is base * 160 (raw -> enchanted
+            // -> block/compacted), matching the game's crafting ratio at every tier.
+            HARDCODED_PRICES.put("WHEAT", 6.0);
+            HARDCODED_PRICES.put("ENCHANTED_WHEAT", 960.0);
+            HARDCODED_PRICES.put("ENCHANTED_HAY_BLOCK", 153_600.0);
+
+            HARDCODED_PRICES.put("CARROT_ITEM", 3.0);
+            HARDCODED_PRICES.put("ENCHANTED_CARROT", 480.0);
+            HARDCODED_PRICES.put("ENCHANTED_GOLDEN_CARROT", 76_800.0);
+
+            HARDCODED_PRICES.put("POTATO_ITEM", 3.0);
+            HARDCODED_PRICES.put("ENCHANTED_POTATO", 480.0);
+            HARDCODED_PRICES.put("ENCHANTED_BAKED_POTATO", 76_800.0);
+
+            HARDCODED_PRICES.put("PUMPKIN", 10.0);
+            HARDCODED_PRICES.put("ENCHANTED_PUMPKIN", 1_600.0);
+            HARDCODED_PRICES.put("POLISHED_PUMPKIN", 256_000.0);
+
+            HARDCODED_PRICES.put("MELON", 2.0);
+            HARDCODED_PRICES.put("ENCHANTED_MELON", 320.0);
+            HARDCODED_PRICES.put("ENCHANTED_MELON_BLOCK", 51_200.0);
+
+            HARDCODED_PRICES.put("SUGAR_CANE", 4.0);
+            HARDCODED_PRICES.put("ENCHANTED_SUGAR", 640.0);
+            HARDCODED_PRICES.put("ENCHANTED_SUGAR_CANE", 102_400.0);
+
+            HARDCODED_PRICES.put("INK_SACK:3", 3.0); // Cocoa Beans
+            HARDCODED_PRICES.put("ENCHANTED_COCOA", 480.0);
+            HARDCODED_PRICES.put("ENCHANTED_COOKIE", 76_800.0);
+
+            HARDCODED_PRICES.put("CACTUS", 4.0);
+            HARDCODED_PRICES.put("ENCHANTED_CACTUS_GREEN", 640.0);
+            HARDCODED_PRICES.put("ENCHANTED_CACTUS", 102_400.0);
+
+            HARDCODED_PRICES.put("RED_MUSHROOM", 10.0);
+            HARDCODED_PRICES.put("ENCHANTED_RED_MUSHROOM", 1_600.0);
+            HARDCODED_PRICES.put("ENCHANTED_RED_MUSHROOM_BLOCK", 256_000.0);
+
+            HARDCODED_PRICES.put("BROWN_MUSHROOM", 10.0);
+            HARDCODED_PRICES.put("ENCHANTED_BROWN_MUSHROOM", 1_600.0);
+            HARDCODED_PRICES.put("ENCHANTED_BROWN_MUSHROOM_BLOCK", 256_000.0);
+
+            HARDCODED_PRICES.put("NETHER_STALK", 4.0);
+            HARDCODED_PRICES.put("ENCHANTED_NETHER_STALK", 640.0);
+            HARDCODED_PRICES.put("MUTANT_NETHER_STALK", 102_400.0);
+
+            HARDCODED_PRICES.put("WILD_ROSE", 4.0);
+            HARDCODED_PRICES.put("ENCHANTED_WILD_ROSE", 640.0);
+            HARDCODED_PRICES.put("COMPACTED_WILD_ROSE", 102_400.0);
+
+            HARDCODED_PRICES.put("MOONFLOWER", 4.0);
+            HARDCODED_PRICES.put("ENCHANTED_MOONFLOWER", 640.0);
+            HARDCODED_PRICES.put("COMPACTED_MOONFLOWER", 102_400.0);
+
+            HARDCODED_PRICES.put("SUNFLOWER", 4.0);
+            HARDCODED_PRICES.put("ENCHANTED_SUNFLOWER", 640.0);
+            HARDCODED_PRICES.put("COMPACTED_SUNFLOWER", 102_400.0);
         }
 
         public static BazaarEntry getLatestBZPrice(String id) {
