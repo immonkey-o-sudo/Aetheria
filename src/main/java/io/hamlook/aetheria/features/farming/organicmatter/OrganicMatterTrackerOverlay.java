@@ -11,6 +11,8 @@ import io.hamlook.aetheria.utils.render.ItemRenderUtils;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import org.lwjgl.opengl.GL11;
 
@@ -26,9 +28,14 @@ public class OrganicMatterTrackerOverlay extends Overlay {
     private static final int ICON_SIZE = 8;
     private static final int ICON_GAP = 2;
 
-    private static final int COUNT_LINES_START = 3;
-    private static final int SESSION_TIMER_ORDINAL = COUNT_LINES_START + OrganicMatterCrop.all().length;
-    private static final int TOTAL_ITEMS_ORDINAL = SESSION_TIMER_ORDINAL + 1;
+    // Green Stained Hardened Clay - used as the icon for every line on this overlay.
+    private static final ItemStack LINE_ICON = new ItemStack(Item.getItemFromBlock(Blocks.stained_hardened_clay), 1, 13);
+
+    private static final int TITLE_ORDINAL = 0;
+    private static final int TOTAL_OM_ORDINAL = 1;
+    private static final int OM_PER_HOUR_ORDINAL = 2;
+    private static final int SESSION_TIMER_ORDINAL = 3;
+    private static final int TOTAL_ITEMS_ORDINAL = 4;
 
     public OrganicMatterTrackerOverlay() {
         super(160, 70);
@@ -67,58 +74,29 @@ public class OrganicMatterTrackerOverlay extends Overlay {
     }
 
     private Entry entryForOrdinal(int ordinal, boolean preview) {
-        if (ordinal == 0) {
+        if (ordinal == TITLE_ORDINAL) {
             String pausedTag = (!preview && OrganicMatterTracker.isPaused()) ? " §7[Paused]" : "";
-            return new Entry(null, "§a§lOrganic Matter Tracker" + pausedTag);
+            return new Entry(LINE_ICON, "§a§lOrganic Matter Tracker" + pausedTag);
         }
-        if (ordinal == 1) {
-            if (preview) return new Entry(null, "§7Total Organic Matter: §f4,830,000");
-            return new Entry(null, "§7Total Organic Matter: §f"
+        if (ordinal == TOTAL_OM_ORDINAL) {
+            if (preview) return new Entry(LINE_ICON, "§aTotal Organic Matter: §f4,830,000");
+            return new Entry(LINE_ICON, "§aTotal Organic Matter: §f"
                     + Utils.shortNumberFormat(OrganicMatterTracker.totalOrganicMatter(), 0));
         }
-        if (ordinal == 2) {
-            if (preview) return new Entry(null, "§b402,500/h organic matter");
-            return new Entry(null, "§b" + Utils.shortNumberFormat(OrganicMatterTracker.organicMatterPerHour(), 0) + "/h organic matter");
+        if (ordinal == OM_PER_HOUR_ORDINAL) {
+            if (preview) return new Entry(LINE_ICON, "§a402,500/h organic matter");
+            return new Entry(LINE_ICON, "§a" + Utils.shortNumberFormat(OrganicMatterTracker.organicMatterPerHour(), 0) + "/h organic matter");
         }
         if (ordinal == SESSION_TIMER_ORDINAL) {
-            if (preview) return new Entry(null, "§7Session: §f42:17");
+            if (preview) return new Entry(LINE_ICON, "§7Session: §f42:17");
             String pausedTag = OrganicMatterTracker.isPaused() ? " §7[Paused]" : "";
-            return new Entry(null, "§7Session: §f" + formatDuration(OrganicMatterTracker.getActiveTimeMs()) + pausedTag);
+            return new Entry(LINE_ICON, "§7Session: §f" + formatDuration(OrganicMatterTracker.getActiveTimeMs()) + pausedTag);
         }
         if (ordinal == TOTAL_ITEMS_ORDINAL) {
-            if (preview) return new Entry(null, "§bTotal: §f108,240 items");
+            if (preview) return new Entry(LINE_ICON, "§bTotal: §f108,240 items");
             long total = OrganicMatterTracker.totalItems();
             if (total <= 0L) return null;
-            return new Entry(null, "§bTotal: §f" + Utils.shortNumberFormat((double) total, 0) + " items");
-        }
-
-        OrganicMatterCrop[] crops = OrganicMatterCrop.all();
-
-        int countIndex = ordinal - COUNT_LINES_START;
-        if (countIndex >= 0 && countIndex < crops.length) {
-            OrganicMatterCrop crop = crops[countIndex];
-            if (!preview && !OrganicMatterTracker.isTracked(crop)) return null;
-
-            ItemStack icon = crop.getIcon();
-
-            if (preview) {
-                return new Entry(icon, "§a" + crop.displayName + ": §f12 §b(4,760/h)");
-            }
-
-            long raw = OrganicMatterTracker.getCount(crop.rawId);
-            long ench = crop.enchantedId != null ? OrganicMatterTracker.getCount(crop.enchantedId) : 0L;
-            long block = crop.blockId != null ? OrganicMatterTracker.getCount(crop.blockId) : 0L;
-
-            if (raw == 0L && ench == 0L && block == 0L) return null;
-
-            List<String> parts = new ArrayList<>();
-            long total = raw + ench + block;
-            parts.add("§a" + crop.displayName + ": §f" + Utils.shortNumberFormat((double) total, 0));
-
-            double rate = OrganicMatterTracker.getCropOmRate(crop);
-            if (rate > 0.0) parts.add("§b(" + Utils.shortNumberFormat(rate, 0) + "/h)");
-
-            return new Entry(icon, String.join(" ", parts));
+            return new Entry(LINE_ICON, "§bTotal: §f" + Utils.shortNumberFormat((double) total, 0) + " items");
         }
 
         return null;

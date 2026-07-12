@@ -60,11 +60,10 @@ public class FarmingTrackerConfig {
             "§aWild Rose: §f40 §7E.Wild Rose: §f2 §b(40/h)",
             "§aMoonflower: §f30 §7E.Moonflower: §f1 §b(30/h)",
             "§aSunflower: §f35 §7E.Sunflower: §f1 §b(35/h)",
-            "§aSeeds: §f640 §b(640/h)",
             "§7Session: §f42:17",
             "§bTotal: §f108,240 crops"
     })
-    public List<Integer> farmingDisplayLines = new ArrayList<>(Arrays.asList(0, 1, 2, 19, 18, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17));
+    public List<Integer> farmingDisplayLines = new ArrayList<>(Arrays.asList(0, 1, 2, 18, 17, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16));
 
     @Expose
     @ConfigOption(name = "Edit Position", desc = "Drag to reposition the farming tracker overlay")

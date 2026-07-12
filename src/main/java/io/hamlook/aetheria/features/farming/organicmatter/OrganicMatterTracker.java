@@ -2,6 +2,8 @@ package io.hamlook.aetheria.features.farming.organicmatter;
 
 import io.hamlook.aetheria.core.ATHRConfig;
 import io.hamlook.aetheria.core.features.farming.OrganicMatterTrackerConfig;
+import io.hamlook.aetheria.features.farming.Crop;
+import io.hamlook.aetheria.features.misc.itemlog.ItemPickupLog;
 import io.hamlook.aetheria.init.RegisterEvents;
 import io.hamlook.aetheria.utils.ColorUtils;
 import io.hamlook.aetheria.utils.chat.ChatUtils;
@@ -28,6 +30,7 @@ public class OrganicMatterTracker {
     private static boolean inactivityFlagged = false;
     private static long timerStartTime = 0L;
     private static long lastActivityTime = 0L;
+    private static boolean listenerRegistered = false;
 
     private static void ensureTimerInitialized() {
         if (timerRunning) return;
@@ -120,6 +123,31 @@ public class OrganicMatterTracker {
         lastActivityTime = 0L;
     }
 
+    private static void ensureListenerRegistered() {
+        if (listenerRegistered) return;
+        ItemPickupLog log = ItemPickupLog.getInstance();
+        if (log == null) return;
+        log.addRichItemChangeListener(OrganicMatterTracker::onItemLogChange);
+        listenerRegistered = true;
+    }
+
+    // Raw (non-enchanted) crops never produce a "DROP!" chat line when they land in
+    // your inventory from farming, so they're picked up here from the item log instead.
+    // Only ids that come from Crop's registry qualify - that excludes enchanted ids,
+    // block/compacted ids, and the special SQUASH/CROPIE/FERMENTO/SEEDS entries, all of
+    // which DO have a "DROP!" message and are already counted in onChat(). Without this
+    // guard, a full sack dumping one of those into the inventory would count it twice.
+    private static void onItemLogChange(String internalId, String displayName, int delta) {
+        if (!isEnabled()) return;
+        if (!locationOk()) return;
+        if (delta <= 0) return;
+        if (Crop.findByRawId(internalId) == null) return;
+        if (!isIdTracked(internalId)) return;
+
+        OrganicMatterTrackerData.getInstance().getCounts().merge(internalId, (long) delta, Long::sum);
+        updateActivity();
+    }
+
     @SubscribeEvent
     public void onChat(ClientChatReceivedEvent event) {
         if (!isEnabled()) return;
@@ -161,6 +189,7 @@ public class OrganicMatterTracker {
     public void onTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         if (!SkyblockData.isOnSkyblock()) return;
+        ensureListenerRegistered();
         timerTick();
     }
 

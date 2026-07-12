@@ -53,27 +53,12 @@ public class OrganicMatterTrackerConfig {
     @ConfigOption(name = "Display Lines", desc = "Choose which lines to show and drag to reorder")
     @ConfigEditorDraggableList(exampleText = {
             "§a§lOrganic Matter Tracker",
-            "§7Total Organic Matter: §f4,830,000",
-            "§b402,500/h organic matter",
-            "§aWheat: §f2,304 §b(2,304/h)",
-            "§aCarrot: §f1,120 §b(325/h)",
-            "§aPotato: §f980 §b(323/h)",
-            "§aPumpkin: §f560 §b(560/h)",
-            "§aMelon: §f92 §b(166/h)",
-            "§aSugar Cane: §f640 §b(320/h)",
-            "§aCocoa Beans: §f300 §b(120/h)",
-            "§aCactus: §f150 §b(75/h)",
-            "§aRed Mushroom: §f80 §b(80/h)",
-            "§aBrown Mushroom: §f75 §b(75/h)",
-            "§aNether Wart: §f420 §b(139/h)",
-            "§aSeeds: §f4,000 §b(4,000/h)",
-            "§aSquash: §f12 §b(120,000/h)",
-            "§aCropie: §f30 §b(75,000/h)",
-            "§aFermento: §f8 §b(160,000/h)",
+            "§aTotal Organic Matter: §f4,830,000",
+            "§a402,500/h organic matter",
             "§7Session: §f42:17",
             "§bTotal: §f108,240 items"
     })
-    public List<Integer> organicMatterDisplayLines = new ArrayList<>(Arrays.asList(0, 1, 2, 19, 18, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17));
+    public List<Integer> organicMatterDisplayLines = new ArrayList<>(Arrays.asList(0, 1, 2, 4, 3));
 
     @Expose
     @ConfigOption(name = "Edit Position", desc = "Drag to reposition the organic matter tracker overlay")

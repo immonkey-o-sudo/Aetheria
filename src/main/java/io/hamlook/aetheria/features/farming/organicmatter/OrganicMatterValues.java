@@ -31,8 +31,9 @@ public class OrganicMatterValues {
         put("ENCHANTED_PUMPKIN", 160);
         put("POLISHED_PUMPKIN", 25_600);
 
-        put("MELON", 1.8);
-        put("ENCHANTED_MELON", 5_120);
+        put("MELON", 0.2);
+        put("ENCHANTED_MELON", 32);
+        put("ENCHANTED_MELON_BLOCK", 5_120);
 
         put("RED_MUSHROOM", 1);
         put("ENCHANTED_RED_MUSHROOM", 160);
