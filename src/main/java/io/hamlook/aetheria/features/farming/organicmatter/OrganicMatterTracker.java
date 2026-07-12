@@ -30,6 +30,7 @@ public class OrganicMatterTracker {
     private static boolean inactivityFlagged = false;
     private static long timerStartTime = 0L;
     private static long lastActivityTime = 0L;
+    private static long sessionActiveTimeMs = 0L;
     private static boolean listenerRegistered = false;
 
     private static void ensureTimerInitialized() {
@@ -55,7 +56,9 @@ public class OrganicMatterTracker {
         if (!timerRunning) return;
         long now = System.currentTimeMillis();
         OrganicMatterTrackerData data = OrganicMatterTrackerData.getInstance();
-        data.setActiveTimeMs(data.getActiveTimeMs() + (now - timerStartTime));
+        long delta = now - timerStartTime;
+        data.setActiveTimeMs(data.getActiveTimeMs() + delta);
+        sessionActiveTimeMs += delta;
         timerStartTime = now;
         if (now - lastActivityTime > INACTIVITY_LIMIT_MS) {
             timerRunning = false;
@@ -69,6 +72,10 @@ public class OrganicMatterTracker {
 
     public static long getActiveTimeMs() {
         return OrganicMatterTrackerData.getInstance().getActiveTimeMs();
+    }
+
+    public static long getSessionTimeMs() {
+        return sessionActiveTimeMs;
     }
 
     private static double activeHours() {
@@ -121,6 +128,7 @@ public class OrganicMatterTracker {
         timerStartedOnce = false;
         inactivityFlagged = false;
         lastActivityTime = 0L;
+        sessionActiveTimeMs = 0L;
     }
 
     private static void ensureListenerRegistered() {
@@ -131,12 +139,6 @@ public class OrganicMatterTracker {
         listenerRegistered = true;
     }
 
-    // Raw (non-enchanted) crops never produce a "DROP!" chat line when they land in
-    // your inventory from farming, so they're picked up here from the item log instead.
-    // Only ids that come from Crop's registry qualify - that excludes enchanted ids,
-    // block/compacted ids, and the special SQUASH/CROPIE/FERMENTO/SEEDS entries, all of
-    // which DO have a "DROP!" message and are already counted in onChat(). Without this
-    // guard, a full sack dumping one of those into the inventory would count it twice.
     private static void onItemLogChange(String internalId, String displayName, int delta) {
         if (!isEnabled()) return;
         if (!locationOk()) return;

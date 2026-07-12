@@ -55,7 +55,7 @@ public class OrganicMatterTrackerConfig {
             "§a§lOrganic Matter Tracker",
             "§aTotal Organic Matter: §f4,830,000",
             "§a402,500/h organic matter",
-            "§7Session: §f42:17",
+            "§1Playtime: §f2h 30m  §1Session: §f45m",
             "§bTotal: §f108,240 items"
     })
     public List<Integer> organicMatterDisplayLines = new ArrayList<>(Arrays.asList(0, 1, 2, 4, 3));

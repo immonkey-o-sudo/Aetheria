@@ -11,8 +11,6 @@ import io.hamlook.aetheria.utils.render.ItemRenderUtils;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import org.lwjgl.opengl.GL11;
 
@@ -27,9 +25,6 @@ public class OrganicMatterTrackerOverlay extends Overlay {
 
     private static final int ICON_SIZE = 8;
     private static final int ICON_GAP = 2;
-
-    // Green Stained Hardened Clay - used as the icon for every line on this overlay.
-    private static final ItemStack LINE_ICON = new ItemStack(Item.getItemFromBlock(Blocks.stained_hardened_clay), 1, 13);
 
     private static final int TITLE_ORDINAL = 0;
     private static final int TOTAL_OM_ORDINAL = 1;
@@ -53,16 +48,6 @@ public class OrganicMatterTrackerOverlay extends Overlay {
                 || location == SkyblockData.Location.GARDEN;
     }
 
-    private static String formatDuration(long ms) {
-        long totalSeconds = ms / 1000;
-        long hours = totalSeconds / 3600;
-        long minutes = (totalSeconds % 3600) / 60;
-        long seconds = totalSeconds % 60;
-        return hours > 0
-                ? String.format("%d:%02d:%02d", hours, minutes, seconds)
-                : String.format("%02d:%02d", minutes, seconds);
-    }
-
     private static final class Entry {
         final ItemStack icon;
         final String text;
@@ -76,27 +61,28 @@ public class OrganicMatterTrackerOverlay extends Overlay {
     private Entry entryForOrdinal(int ordinal, boolean preview) {
         if (ordinal == TITLE_ORDINAL) {
             String pausedTag = (!preview && OrganicMatterTracker.isPaused()) ? " §7[Paused]" : "";
-            return new Entry(LINE_ICON, "§a§lOrganic Matter Tracker" + pausedTag);
+            return new Entry(null, "§a§lOrganic Matter Tracker" + pausedTag);
         }
         if (ordinal == TOTAL_OM_ORDINAL) {
-            if (preview) return new Entry(LINE_ICON, "§aTotal Organic Matter: §f4,830,000");
-            return new Entry(LINE_ICON, "§aTotal Organic Matter: §f"
+            if (preview) return new Entry(null, "§aTotal Organic Matter: §f4,830,000");
+            return new Entry(null, "§aTotal Organic Matter: §f"
                     + Utils.shortNumberFormat(OrganicMatterTracker.totalOrganicMatter(), 0));
         }
         if (ordinal == OM_PER_HOUR_ORDINAL) {
-            if (preview) return new Entry(LINE_ICON, "§a402,500/h organic matter");
-            return new Entry(LINE_ICON, "§a" + Utils.shortNumberFormat(OrganicMatterTracker.organicMatterPerHour(), 0) + "/h organic matter");
+            if (preview) return new Entry(null, "§a402,500/h organic matter");
+            return new Entry(null, "§a" + Utils.shortNumberFormat(OrganicMatterTracker.organicMatterPerHour(), 0) + "/h organic matter");
         }
         if (ordinal == SESSION_TIMER_ORDINAL) {
-            if (preview) return new Entry(LINE_ICON, "§7Session: §f42:17");
+            if (preview) return new Entry(null, "§1Playtime: §f2h 30m  §1Session: §f45m");
             String pausedTag = OrganicMatterTracker.isPaused() ? " §7[Paused]" : "";
-            return new Entry(LINE_ICON, "§7Session: §f" + formatDuration(OrganicMatterTracker.getActiveTimeMs()) + pausedTag);
+            return new Entry(null, "§1Playtime: §f" + Utils.formatDuration(OrganicMatterTracker.getActiveTimeMs())
+                    + "  §1Session: §f" + Utils.formatDuration(OrganicMatterTracker.getSessionTimeMs()) + pausedTag);
         }
         if (ordinal == TOTAL_ITEMS_ORDINAL) {
-            if (preview) return new Entry(LINE_ICON, "§bTotal: §f108,240 items");
+            if (preview) return new Entry(null, "§bTotal: §f108,240 items");
             long total = OrganicMatterTracker.totalItems();
             if (total <= 0L) return null;
-            return new Entry(LINE_ICON, "§bTotal: §f" + Utils.shortNumberFormat((double) total, 0) + " items");
+            return new Entry(null, "§bTotal: §f" + Utils.shortNumberFormat((double) total, 0) + " items");
         }
 
         return null;
