@@ -17,4 +17,8 @@ public class Farming {
     @Expose
     @Category(name = "Farming Tracker", desc = "Track crop value and coins/hour")
     public FarmingTrackerConfig farmingTracker = new FarmingTrackerConfig();
+
+    @Expose
+    @Category(name = "Organic Matter Tracker", desc = "Track Organic Matter and organic matter/hour")
+    public OrganicMatterTrackerConfig organicMatterTracker = new OrganicMatterTrackerConfig();
 }

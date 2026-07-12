@@ -15,6 +15,8 @@ import io.hamlook.aetheria.features.dungeons.rooms.DungeonRoomOverlay;
 import io.hamlook.aetheria.features.farming.BPSOverlay;
 import io.hamlook.aetheria.features.farming.FarmingTracker;
 import io.hamlook.aetheria.features.farming.FarmingTrackerOverlay;
+import io.hamlook.aetheria.features.farming.organicmatter.OrganicMatterTracker;
+import io.hamlook.aetheria.features.farming.organicmatter.OrganicMatterTrackerOverlay;
 import io.hamlook.aetheria.features.fishing.trophy.TrophyFishOverlay;
 import io.hamlook.aetheria.features.mining.fetchur.FetchurOverlay;
 import io.hamlook.aetheria.features.mining.powder.PowderOverlay;
@@ -277,6 +279,17 @@ public class ATHRConfig {
 
     public static void resetFarmingTracker() {
         FarmingTracker.reset();
+    }
+
+    public static void openOrganicMatterTrackerEditor() {
+        if (feature == null) return;
+        OrganicMatterTrackerOverlay overlay = OrganicMatterTrackerOverlay.getInstance();
+        if (overlay == null) return;
+        screenToOpen = new GuiPositionEditor(feature.farming.organicMatterTracker.organicMatterTrackerPosition, overlay::getOverlayWidth, overlay::getOverlayHeight, () -> overlay.render(true), ATHRConfig::saveConfig, ATHRConfig::saveConfig).withOverlayScale(feature.farming.organicMatterTracker.organicMatterTrackerScale).withParent(Minecraft.getMinecraft().currentScreen);
+    }
+
+    public static void resetOrganicMatterTracker() {
+        OrganicMatterTracker.reset();
     }
 
     public static void openPristineEditor() {

@@ -111,6 +111,8 @@ public class Config {
             case "resetPowderTracker": ATHRConfig.resetPowderTracker(); break;
             case "openFarmingTrackerEditor": ATHRConfig.openFarmingTrackerEditor(); break;
             case "resetFarmingTracker": ATHRConfig.resetFarmingTracker(); break;
+            case "openOrganicMatterTrackerEditor": ATHRConfig.openOrganicMatterTrackerEditor(); break;
+            case "resetOrganicMatterTracker": ATHRConfig.resetOrganicMatterTracker(); break;
             case "openPristineEditor": ATHRConfig.openPristineEditor(); break;
             case "resetPristineTracker": ATHRConfig.resetPristineTracker(); break;
             case "openDungeonBreakerEditor": ATHRConfig.openDungeonBreakerEditor(); break;
