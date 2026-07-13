@@ -30,6 +30,7 @@ import io.hamlook.aetheria.features.misc.pet.CurrentPetOverlay;
 import io.hamlook.aetheria.features.misc.ghosttracker.GhostOverlay;
 import io.hamlook.aetheria.features.misc.ghosttracker.GhostStats;
 import io.hamlook.aetheria.features.misc.timer.UptimeOverlay;
+import io.hamlook.aetheria.features.farming.sensitivityreducer.PitchYawOverlay;
 import io.hamlook.aetheria.features.qol.overlays.ItemAbilityTimerOverlay;
 import io.hamlook.aetheria.features.qol.overlays.ItemCooldownOverlay;
 import io.hamlook.aetheria.features.qol.overlays.ItemInvincibilityOverlay;
@@ -316,6 +317,13 @@ public class ATHRConfig {
         UptimeOverlay overlay = UptimeOverlay.getInstance();
         if (overlay == null) return;
         screenToOpen = new GuiPositionEditor(feature.misc.uptimeConfig.uptimePos, overlay::getOverlayWidth, overlay::getOverlayHeight, () -> overlay.render(true), ATHRConfig::saveConfig, ATHRConfig::saveConfig).withOverlayScale(feature.misc.uptimeConfig.uptimeScale).withParent(Minecraft.getMinecraft().currentScreen);
+    }
+
+    public static void openPitchYawEditor() {
+        if (feature == null) return;
+        PitchYawOverlay overlay = PitchYawOverlay.getInstance();
+        if (overlay == null) return;
+        screenToOpen = new GuiPositionEditor(feature.farming.sensitivityReducer.pitchYawOverlayPos, overlay::getOverlayWidth, overlay::getOverlayHeight, () -> overlay.render(true), ATHRConfig::saveConfig, ATHRConfig::saveConfig).withOverlayScale(feature.farming.sensitivityReducer.pitchYawOverlayScale).withParent(Minecraft.getMinecraft().currentScreen);
     }
 
     public static void openGhostEditor() {

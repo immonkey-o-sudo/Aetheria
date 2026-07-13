@@ -36,6 +36,6 @@ public final class SensitivityReducer {
     }
 
     public static float getSensitivityScale() {
-        return Math.max(0.1f, Math.min(1.0f, config().sensitivityPercent / 100f));
+        return Math.max(0.05f, Math.min(1.0f, config().sensitivityPercent / 100f));
     }
 }
