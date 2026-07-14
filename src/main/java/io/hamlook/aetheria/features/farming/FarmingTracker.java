@@ -238,7 +238,7 @@ public class FarmingTracker {
     public static double currentValue() {
         double total = 0.0;
         for (Map.Entry<String, Long> entry : FarmingTrackerData.getInstance().getCounts().entrySet()) {
-            double price = PriceMap.Cached.getPrice(entry.getKey());
+            double price = PriceMap.Cached.getDPrice(entry.getKey());
             if (price > 0) total += entry.getValue() * price;
         }
         return total;
