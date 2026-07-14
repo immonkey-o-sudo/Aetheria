@@ -191,14 +191,6 @@ private boolean shouldntShow() {
     public void drawPane(int screenW, int screenH, int mouseX, int mouseY) {
         Minecraft mc = Minecraft.getMinecraft();
 
-        if (!ItemRegistry.preloadQueue.isEmpty()) {
-            long start = System.currentTimeMillis();
-            while (!ItemRegistry.preloadQueue.isEmpty() && System.currentTimeMillis() - start < 3) {
-                ItemStack stack = ItemRegistry.preloadQueue.poll();
-                if (stack != null) mc.getRenderItem().getItemModelMesher().getItemModel(stack);
-            }
-        }
-
         if (shouldntShow()) return;
         if (ItemRegistry.isLoaded && !wasLoaded) {
             wasLoaded = true;
@@ -421,7 +413,6 @@ private boolean shouldntShow() {
         if (!(event.gui instanceof GuiContainer)) return;
         if (shouldntShow()) return;
 
-        Minecraft mc = Minecraft.getMinecraft();
         int mouseX = KeybindHelper.getScaledEventX(event.gui.width);
         int mouseY = KeybindHelper.getScaledEventY(event.gui.height);
         handleMouseInput(event.gui.width, event.gui.height, mouseX, mouseY, event);

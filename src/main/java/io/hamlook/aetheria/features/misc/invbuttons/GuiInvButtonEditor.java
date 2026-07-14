@@ -4,6 +4,9 @@ import com.google.gson.*;
 import io.hamlook.aetheria.core.moulconfig.gui.GlScissorStack;
 import io.hamlook.aetheria.core.moulconfig.gui.GuiElementTextField;
 import io.hamlook.aetheria.Resources;
+import io.hamlook.aetheria.features.misc.itemList.ItemRegistry;
+import io.hamlook.aetheria.features.misc.itemList.SkyblockItem;
+import io.hamlook.aetheria.utils.ColorUtils;
 import io.hamlook.aetheria.utils.Utils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
@@ -408,15 +411,12 @@ public class GuiInvButtonEditor extends GuiScreen {
             List<String> results = new ArrayList<>();
 
             if (type == 0) {
-                SkyblockItemCache cache = SkyblockItemCache.getInstance();
-                Iterable<String> ids = cache.getAllItemIds();
-                for (String id : ids) {
-                    if (q.isEmpty() || id.toLowerCase().contains(q)) results.add(id);
+                for (SkyblockItem item : ItemRegistry.getAllItems()) {
+                    String displayName = ColorUtils.stripColor(item.displayName).trim().toLowerCase();
+                    if (q.isEmpty() || displayName.contains(q)) results.add(item.skyblockID);
                 }
             } else if (type == 1) {
-                SkyblockItemCache cache = SkyblockItemCache.getInstance();
-                Map<String, String> skulls = cache.getSkullItems();
-                for (Map.Entry<String, String> e : skulls.entrySet()) {
+                for (Map.Entry<String, String> e : ItemRegistry.getSkullTextureMap().entrySet()) {
                     if (q.isEmpty() || e.getKey().toLowerCase().contains(q)) results.add("skull:" + e.getValue());
                 }
             } else {

@@ -1,5 +1,6 @@
 package io.hamlook.aetheria.features.misc.ghosttracker;
 
+import io.hamlook.aetheria.Aetheria;
 import io.hamlook.aetheria.events.ActionBarUpdateEvent;
 import io.hamlook.aetheria.init.RegisterEvents;
 import io.hamlook.aetheria.utils.chat.ChatUtils;
@@ -37,11 +38,13 @@ public class GhostTrackerListener {
     }
 
     private static boolean isValidKillContext() {
-        if (!SkyblockData.isOnSkyblock() || SkyblockData.getCurrentLocation() != SkyblockData.Location.DWARVEN || !SkyblockData.isInMist())
-            return false;
-
+        boolean onSkyblock = SkyblockData.isOnSkyblock();
+        boolean inDwarven = SkyblockData.getCurrentLocation() == SkyblockData.Location.DWARVEN;
+        boolean inMist = SkyblockData.isInMist();
         Minecraft mc = Minecraft.getMinecraft();
-        return mc.thePlayer.posY <= 100; // Only track kills below y100in the mist
+        boolean posYValid = mc.thePlayer != null && mc.thePlayer.posY <= 100;
+
+        return onSkyblock && inDwarven && inMist && posYValid;
     }
 
     private static void handleKillDetection(Matcher matcher) throws Exception {
@@ -56,7 +59,7 @@ public class GhostTrackerListener {
         float xpDelta = currentXp - previousXp;
         previousXp = currentXp;
 
-        if (xpDelta <= 0 || xpGain >= 1000) return; // count as ghost kill
+        if (xpDelta <= 0 || xpGain >= 1000) return;
 
         int killsGained = Math.round(xpDelta / xpGain);
         if (killsGained <= 0 || killsGained > 15) return;
@@ -103,9 +106,15 @@ public class GhostTrackerListener {
     @SubscribeEvent
     public void onActionBar(ActionBarUpdateEvent event) {
         String msg = event.getText();
+        
         Matcher matcher = GhostTrackerConstants.COMBAT_XP_PATTERN.matcher(msg);
-        if (!matcher.find()) return;
-        if (!isValidKillContext()) return;
+        if (!matcher.find()) {
+            return;
+        }
+        
+        if (!isValidKillContext()) {
+            return;
+        }
 
         try {
             handleKillDetection(matcher);

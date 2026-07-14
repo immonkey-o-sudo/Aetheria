@@ -128,13 +128,6 @@ public class SkyblockItem {
             tag.setTag("ench", new NBTTagList());
         }
 
-        if (this.color != null && !this.color.isEmpty()) {
-            try {
-                int rgb = Integer.parseInt(this.color);
-                display.setInteger("color", rgb);
-            } catch (NumberFormatException ignored) {}
-        }
-
         return this.itemStack;
     }
 }

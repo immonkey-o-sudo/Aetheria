@@ -1,5 +1,6 @@
 package io.hamlook.aetheria.features.misc.SkyblockExp;
 
+import io.hamlook.aetheria.Aetheria;
 import io.hamlook.aetheria.events.ActionBarUpdateEvent;
 import io.hamlook.aetheria.events.ActionBarXpGainEvent;
 import io.hamlook.aetheria.init.RegisterEvents;
@@ -21,7 +22,13 @@ public class ActionBarDispatcher {
 
     private static final Pattern SB_XP_FORMATTED = Pattern.compile("(\\+.*?SkyBlock XP)");
 
+    public static String lastActionBarFormatted = "";
+    public static String lastActionBarStripped = "";
+
     private String lastXpAmount = null;
+
+    public ActionBarDispatcher() {
+    }
 
     @SubscribeEvent
     public void onActionBar(ClientChatReceivedEvent event) {
@@ -29,6 +36,9 @@ public class ActionBarDispatcher {
 
         String stripped = StringUtils.stripControlCodes(event.message.getUnformattedText());
         String formatted = event.message.getFormattedText();
+
+        lastActionBarFormatted = formatted;
+        lastActionBarStripped = stripped;
 
         MinecraftForge.EVENT_BUS.post(new ActionBarUpdateEvent(stripped));
 

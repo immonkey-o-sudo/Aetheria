@@ -1,6 +1,7 @@
 package io.hamlook.aetheria.features.misc.ghosttracker;
 
 import com.google.gson.annotations.Expose;
+import io.hamlook.aetheria.Aetheria;
 import io.hamlook.aetheria.core.ATHRConfig;
 import io.hamlook.aetheria.core.GsonBuilder;
 import io.hamlook.aetheria.core.ProfileManagedStorage;
@@ -131,6 +132,16 @@ public class GhostStats extends ProfileManagedStorage implements StorageManager.
         inactivityFlagged = false;
         timerStartTime = 0L;
         lastActivityTime = 0L;
+        save();
+    }
+
+    public void toggleTracking() {
+        timerRunning = !timerRunning;
+        if (timerRunning) {
+            timerStartTime = System.currentTimeMillis();
+            timerStartedOnce = true;
+            lastActivityTime = System.currentTimeMillis();
+        }
         save();
     }
 
