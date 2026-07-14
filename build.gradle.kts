@@ -81,6 +81,7 @@ dependencies {
     shadowImpl("org.spongepowered:mixin:0.7.11-SNAPSHOT") {
         isTransitive = false
     }
+    implementation("org.java-websocket:Java-WebSocket:1.6.0")
     annotationProcessor("org.spongepowered:mixin:0.8.5-SNAPSHOT")
 
     // Kotlin standard library, must be shadowed into the JAR

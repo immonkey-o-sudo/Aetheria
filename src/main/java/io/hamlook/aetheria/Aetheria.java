@@ -1,6 +1,7 @@
 package io.hamlook.aetheria;
 
 import io.hamlook.aetheria.features.chat.chatfilters.ChatFilterManager;
+import io.hamlook.aetheria.features.diana.party.DianaPartyConnector;
 import io.hamlook.aetheria.features.misc.itemList.ItemRegistry;
 import io.hamlook.aetheria.core.ATHRConfig;
 import io.hamlook.aetheria.core.StorageManager;
@@ -50,6 +51,7 @@ public class Aetheria {
         SkyblockItemCache.getInstance().loadAsync();
         ItemRegistry.initialise();
         ChatFilterManager.initialise();
+        DianaPartyConnector.initialise();
         new CitManager();
         if (ATHRConfig.feature.misc.currentPet.showCurrentPet) PetCache.getInstance().warmupTextures();
         MinecraftForge.EVENT_BUS.register(GuiWaiter.INSTANCE);

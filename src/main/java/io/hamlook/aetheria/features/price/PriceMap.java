@@ -44,7 +44,7 @@ public class PriceMap {
                 conn.setReadTimeout(35000);
 
                 int responseCode = conn.getResponseCode();
-                if (responseCode >= 200 && responseCode <= 210) {
+                if (responseCode >= 200 && responseCode <= 210 || responseCode == 304) {
                     Aetheria.logger.info("[PriceDetector] Loaded entries items from DB");
                     fetchFailCount = 0;
                     try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
