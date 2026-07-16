@@ -2,6 +2,8 @@ package io.hamlook.aetheria.features.diana.party;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import io.hamlook.aetheria.repo.CapeAPI;
+import net.minecraft.client.Minecraft;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
@@ -16,7 +18,8 @@ public class DianaPartyClient extends WebSocketClient {
     private final Map<String, CompletableFuture<String>> pendingRequests = new ConcurrentHashMap<>();
 
     public DianaPartyClient() {
-        super(URI.create("wss://capeapi.qzz.io"));
+        super(URI.create(CapeAPI.getWebsocketURL()));
+        addHeader("username", Minecraft.getMinecraft().getSession().getUsername().toLowerCase());
     }
 
     @Override
@@ -28,8 +31,10 @@ public class DianaPartyClient extends WebSocketClient {
     public void onMessage(String message) {
         String requestId = extractID(message);
         if(requestId != null) {
-            if (pendingRequests.containsKey(requestId)) {
-                pendingRequests.remove(requestId).complete(message);
+            CompletableFuture<String> future = pendingRequests.remove(requestId);
+            if (future != null) {
+                future.complete(message);
+                return;
             }
         }
         DianaPartyConnector.process(message);

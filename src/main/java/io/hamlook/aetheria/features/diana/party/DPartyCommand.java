@@ -7,7 +7,6 @@ import io.hamlook.aetheria.command.ASMCommand;
 import io.hamlook.aetheria.init.RegisterCommand;
 import io.hamlook.aetheria.network.NetworkGuard;
 import io.hamlook.aetheria.utils.chat.ChatUtils;
-import io.netty.util.concurrent.CompleteFuture;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.BlockPos;
@@ -31,15 +30,15 @@ public class DPartyCommand extends ASMCommand {
     }
 
     private String getArgs() {
-        return "<join|create|leave|disband>";
+        return "<join|create|leave|disband|transfer>";
     }
 
     @Override
     public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
-        if(args.length == 0) return Arrays.asList("join", "create", "leave", "disband");
+        String[] options = new String[] {"join", "create", "leave", "disband","transfer"};
+        if(args.length == 0) return Arrays.asList(options);
         if(args.length == 1){
             String argument = args[0];
-            String[] options = new String[] {"join", "create", "leave", "disband"};
             return Arrays.stream(options).filter(s -> s.toLowerCase().startsWith(argument.toLowerCase())).collect(Collectors.toList());
         }
         return new ArrayList<>();
@@ -63,9 +62,48 @@ public class DPartyCommand extends ASMCommand {
                 break;
             case "disband":
                 disbandParty();
+                break;
+            case "transfer":
+                transferParty(args);
+                break;
         }
     }
 
+    public void transferParty(String[] args) {
+        if (!DianaPartyConnector.isConnected) {
+            ChatUtils.sendMessage("§cYou are not connected to the api, please try again. If the issue persists, make sure you have API usage allowed");
+            if (NetworkGuard.apiAllowed()) {
+                DianaPartyConnector.connectToAPI();
+            }
+            return;
+        }
+        if (!DianaPartyConnector.isInParty()) {
+            ChatUtils.sendMessage("§cYou are not in a Diana Party.");
+            return;
+        }
+        if (args.length < 2) {
+            ChatUtils.sendMessage("§cPlease enter a valid party member IGN");
+            return;
+        }
+        CompletableFuture<String> future = DianaPartyConnector.transferParty(args[1].toLowerCase());
+        if(future == null){
+            ChatUtils.sendMessage("§cYou are not in a Diana Party.");
+            return;
+        }
+        future.thenAccept(response -> {
+            JsonObject json = JsonParser.parseString(response).getAsJsonObject();
+            JsonObject data = json.getAsJsonObject("data");
+            int code = data.get("code").getAsInt();
+            if(code == 200){
+                String oldCreator =  data.get("old").getAsString();
+                String newCreator =  data.get("new").getAsString();
+                ChatUtils.sendMessage("§aSuccessfully Transferred Diana Party from " + oldCreator + " to " + newCreator);
+            }else {
+                String msg = json.getAsJsonObject("data").get("message").getAsString();
+                ChatUtils.sendMessage("§cError While Transferring Party§7[§c" + code + "§7]: §c" + msg);
+            }
+        });
+    }
     public void disbandParty() {
         if (!DianaPartyConnector.isConnected) {
             ChatUtils.sendMessage("§cYou are not connected to the api, please try again. If the issue persists, make sure you have API usage allowed");

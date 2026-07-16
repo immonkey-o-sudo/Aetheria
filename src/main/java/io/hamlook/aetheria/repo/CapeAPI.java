@@ -18,4 +18,18 @@ public class CapeAPI {
         return url.capeApi + (url.capeApi.endsWith("/") || endpoint.startsWith("/") ? "" : "/") + endpoint;
     }
 
+    public static String getWebsocketURL() {
+        RepoData url = RepoHandler.get(ATHRRepo.KEY_REPO, RepoData.class, new RepoData());
+        String capeAPI = url.capeApi;
+        if(capeAPI.startsWith("http")){
+            capeAPI.replace("http","ws");
+        }
+        if(capeAPI.startsWith("https")){
+            capeAPI.replace("https","wss");
+        }
+        if(capeAPI.endsWith("/")){
+            capeAPI.substring(0,capeAPI.length()-1);
+        }
+        return capeAPI;
+    }
 }

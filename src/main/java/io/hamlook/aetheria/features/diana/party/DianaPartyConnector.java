@@ -117,6 +117,14 @@ public class DianaPartyConnector {
         return partyClient.sendAndRecieve(GSON.toJson(obj));
     }
 
+    public static CompletableFuture<String> transferParty(String member){
+        if(!isConnected) connectToAPI();
+        JsonObject obj = new JsonObject();
+        obj.addProperty("command", "dpartytransfer");
+        obj.addProperty("newCreator",member);
+        return partyClient.sendAndRecieve(GSON.toJson(obj));
+    }
+
     public static CompletableFuture<String> sendMessage(String msg) {
         if(!isConnected) connectToAPI();
 
@@ -124,7 +132,7 @@ public class DianaPartyConnector {
         obj.addProperty("command", "dpartychat");
         obj.addProperty("message", msg);
         //TODO: Maybe Attach Ranks
-        obj.addProperty("player", Minecraft.getMinecraft().getSession().getUsername());
+        obj.addProperty("player", Minecraft.getMinecraft().getSession().getUsername().toLowerCase());
 
         return partyClient.sendAndRecieve(GSON.toJson(obj));
     }
@@ -176,12 +184,19 @@ public class DianaPartyConnector {
 
     //TODO: Process Diana Party Error Stuff
     public static void processError(Exception ex) {
-
+        ChatUtils.sendMessage("§b[D-Party Chat]§c Error in Diana Party Finder: " + ex.getMessage());
+        ChatUtils.sendMessage("§cReconnecting to API.");
+        if (partyClient != null) {
+            partyClient.close(1012, "Restarting");
+        }
+        connectToAPI();
     }
 
     //TODO: Process Diana Party Disconnect Stuff
     public static void processClose(int code, String reason, boolean remote) {
-
+        if(code == 1012){
+            isConnected = false;
+        }
     }
 
 
