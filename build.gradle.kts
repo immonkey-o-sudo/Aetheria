@@ -82,6 +82,7 @@ dependencies {
         isTransitive = false
     }
     shadowImpl("org.java-websocket:Java-WebSocket:1.6.0") { isTransitive = false }
+    shadowImpl("org.slf4j:slf4j-api:1.7.36"){ isTransitive = false }
     annotationProcessor("org.spongepowered:mixin:0.8.5-SNAPSHOT")
 
     // Kotlin standard library, must be shadowed into the JAR
@@ -153,6 +154,7 @@ tasks.shadowJar {
     relocate("kotlin")
     relocate("com.google.gson")
     relocate("org.java_websocket")
+    relocate("org.slf4j")
 }
 
 tasks.assemble.get().dependsOn(tasks.remapJar)
