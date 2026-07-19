@@ -98,6 +98,8 @@ public class Config {
             case "reloadRepo": ATHRConfig.reloadRepo(); break;
             case "openScoreboardEditor": ATHRConfig.openScoreboardEditor(); break;
             case "openWaypointGroupGui": ATHRConfig.openWaypointGroupGui(); break;
+            case "openRareDropTrackerGui": ATHRConfig.openRareDropTrackerGui(); break;
+            case "openRareDropTrackerOverlayEditor": ATHRConfig.openRareDropTrackerOverlayEditor(); break;
             case "openStatsEditor": ATHRConfig.openStatsEditor(); break;
             case "openHudEditor": ATHRConfig.openHudEditor(); break;
             case "openFetchurEditor": ATHRConfig.openFetchurEditor(); break;

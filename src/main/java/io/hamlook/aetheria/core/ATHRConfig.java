@@ -36,6 +36,8 @@ import io.hamlook.aetheria.features.qol.overlays.ItemCooldownOverlay;
 import io.hamlook.aetheria.features.qol.overlays.ItemInvincibilityOverlay;
 import io.hamlook.aetheria.features.scoreboard.CustomScoreboard;
 import io.hamlook.aetheria.features.waypoints.WaypointGroupGui;
+import io.hamlook.aetheria.features.qol.raredroptracker.RareDropTrackerGUI;
+import io.hamlook.aetheria.features.qol.raredroptracker.RareDropTrackerOverlay;
 import io.hamlook.aetheria.repo.ATHRRepo;
 import io.hamlook.aetheria.repo.RepoHandler;
 import io.hamlook.aetheria.OptionsMenu;
@@ -67,6 +69,7 @@ public class ATHRConfig {
     private static File configFile;
     private static int screenTicks = 0;
     private static boolean waypointManagerKeyWasDown = false;
+    private static boolean rareDropTrackerGuiKeyWasDown = false;
     private static boolean powderToggleKeyWasDown = false;
     private static boolean pristineToggleKeyWasDown = false;
     private static boolean ghostToggleKeyWasDown = false;
@@ -134,6 +137,17 @@ public class ATHRConfig {
 
     public static void openWaypointGroupGui() {
         screenToOpen = new GuiScreenElementWrapper(new WaypointGroupGui());
+    }
+
+    public static void openRareDropTrackerGui() {
+        screenToOpen = new GuiScreenElementWrapper(new RareDropTrackerGUI());
+    }
+
+    public static void openRareDropTrackerOverlayEditor() {
+        if (feature == null) return;
+        RareDropTrackerOverlay overlay = RareDropTrackerOverlay.getInstance();
+        if (overlay == null) return;
+        screenToOpen = new GuiPositionEditor(feature.qol.rareDropTracker.overlayPos, overlay::getOverlayWidth, overlay::getOverlayHeight, () -> overlay.render(true), ATHRConfig::saveConfig, ATHRConfig::saveConfig).withOverlayScale(feature.qol.rareDropTracker.overlayScale).withParent(Minecraft.getMinecraft().currentScreen);
     }
 
     public static void openStatsEditor() {
@@ -385,6 +399,11 @@ public class ATHRConfig {
         if (managerKeyDown && !waypointManagerKeyWasDown && Minecraft.getMinecraft().currentScreen == null)
             openWaypointGroupGui();
         waypointManagerKeyWasDown = managerKeyDown;
+
+        boolean rdtKeyDown = feature != null && isKeyOrMouseDown(feature.qol.rareDropTracker.trackerGuiKey);
+        if (rdtKeyDown && !rareDropTrackerGuiKeyWasDown && Minecraft.getMinecraft().currentScreen == null)
+            openRareDropTrackerGui();
+        rareDropTrackerGuiKeyWasDown = rdtKeyDown;
 
         if (feature != null && isKeyOrMouseDown(feature.mining.powderTrackerConfig.powderToggleKey) && !powderToggleKeyWasDown && Minecraft.getMinecraft().currentScreen == null) {
             PowderStats.getInstance().toggleTracking();
