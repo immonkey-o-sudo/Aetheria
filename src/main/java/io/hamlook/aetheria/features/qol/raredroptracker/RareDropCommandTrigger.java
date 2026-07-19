@@ -1,0 +1,69 @@
+package io.hamlook.aetheria.features.qol.raredroptracker;
+
+import io.hamlook.aetheria.init.RegisterEvents;
+import io.hamlook.aetheria.utils.chat.ChatUtils;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraftforge.client.event.GuiScreenEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import org.lwjgl.input.Mouse;
+
+/**
+ * Handles the "click anywhere within 5 seconds" prompt fired after a tracked
+ * Rare Drop Tracker item with a bound command is picked up. The click-to-open
+ * mechanism (dim overlay + hint text, listen for the next left click, run the
+ * command) mirrors the pattern NotEnoughFakepixel uses for its Maddox batphone
+ * "click anywhere on-screen to open Maddox" prompt.
+ */
+@RegisterEvents
+public class RareDropCommandTrigger {
+
+    private static final long WINDOW_MS = 5000L;
+
+    private static String pendingCommand = null;
+    private static long promptStartTime = 0L;
+
+    private RareDropCommandTrigger() {
+    }
+
+    /**
+     * Arms the trigger: the next left click anywhere (while any GUI screen is
+     * open) within {@link #WINDOW_MS} will run the given command.
+     */
+    public static void arm(String command) {
+        pendingCommand = command;
+        promptStartTime = System.currentTimeMillis();
+    }
+
+    private static boolean isActive() {
+        return pendingCommand != null && System.currentTimeMillis() - promptStartTime < WINDOW_MS;
+    }
+
+    @SubscribeEvent
+    public void onDraw(GuiScreenEvent.DrawScreenEvent.Post event) {
+        if (!isActive()) {
+            pendingCommand = null;
+            return;
+        }
+
+        Minecraft mc = Minecraft.getMinecraft();
+        ScaledResolution sr = new ScaledResolution(mc);
+
+        Gui.drawRect(0, 0, sr.getScaledWidth(), sr.getScaledHeight(), 0x38000000);
+
+        String msg = "§dClick anywhere to run your drop command!";
+        int w = mc.fontRendererObj.getStringWidth(msg);
+        mc.fontRendererObj.drawStringWithShadow(msg, (sr.getScaledWidth() - w) / 2f, sr.getScaledHeight() / 2f, -1);
+    }
+
+    @SubscribeEvent
+    public void onMouseInputPost(GuiScreenEvent.MouseInputEvent.Post event) {
+        if (!isActive()) return;
+        if (!Mouse.getEventButtonState() || Mouse.getEventButton() != 0) return;
+
+        String command = pendingCommand;
+        pendingCommand = null;
+        ChatUtils.sendChatCommand(command);
+    }
+}

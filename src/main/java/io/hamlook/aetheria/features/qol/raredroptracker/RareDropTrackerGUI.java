@@ -40,6 +40,7 @@ public class RareDropTrackerGUI extends GuiElement {
     private static final int MAX_H = 260;
     private static final int GOAL_STEP = 1;
     private static final int GOAL_STEP_SHIFT = 10;
+    private static final int MIN_EDIT_FIELD_W = 34;
 
     private static List<String> allNamesCache = null;
     private static Map<String, SkyblockItem> nameToItemCache = null;
@@ -50,6 +51,11 @@ public class RareDropTrackerGUI extends GuiElement {
     private String message = "";
     private int messageColor = 0xAAAAAA;
     private int scrollOffset = 0;
+
+    // Inline row editing (click the goal count to type it, or [CMD] to bind a command)
+    private String editingItemId = null;
+    private String editingField = null; // "goal" or "command"
+    private GuiTextField editField;
 
     private int px, py, pw, ph;
 
@@ -169,6 +175,58 @@ public class RareDropTrackerGUI extends GuiElement {
         messageColor = 0xAAAAAA;
     }
 
+    private void startEditGoal(String id, RareDropTrackerConfig.TrackedItem item) {
+        if (editingItemId != null) commitEdit();
+        editingItemId = id;
+        editingField = "goal";
+        editField = new GuiTextField(1, Minecraft.getMinecraft().fontRendererObj, 0, 0, 0, 0);
+        editField.setMaxStringLength(10);
+        editField.setText(String.valueOf(item.goal));
+        editField.setFocused(true);
+        if (searchField != null) searchField.setFocused(false);
+    }
+
+    private void startEditCommand(String id, RareDropTrackerConfig.TrackedItem item) {
+        if (editingItemId != null) commitEdit();
+        editingItemId = id;
+        editingField = "command";
+        editField = new GuiTextField(2, Minecraft.getMinecraft().fontRendererObj, 0, 0, 0, 0);
+        editField.setMaxStringLength(64);
+        editField.setText(item.command != null ? item.command : "");
+        editField.setFocused(true);
+        if (searchField != null) searchField.setFocused(false);
+    }
+
+    private void commitEdit() {
+        if (editingItemId == null) return;
+        RareDropTrackerConfig config = ATHRConfig.feature.qol.rareDropTracker;
+        RareDropTrackerConfig.TrackedItem item = config.trackedItems.get(editingItemId);
+        if (item != null && editField != null) {
+            if ("goal".equals(editingField)) {
+                try {
+                    item.goal = Math.max(0, Integer.parseInt(editField.getText().trim()));
+                } catch (NumberFormatException ignored) {
+                    // keep the previous goal if the typed value isn't a valid number
+                }
+            } else if ("command".equals(editingField)) {
+                String text = editField.getText().trim();
+                if (text.isEmpty()) {
+                    item.command = null;
+                } else {
+                    item.command = text.startsWith("/") ? text : "/" + text;
+                }
+            }
+            ATHRConfig.saveConfig();
+        }
+        cancelEdit();
+    }
+
+    private void cancelEdit() {
+        editingItemId = null;
+        editingField = null;
+        editField = null;
+    }
+
     private int listTop(int addY) {
         return addY + SF_H + 6 + 12 + 1 + 6 + 12;
     }
@@ -217,7 +275,7 @@ public class RareDropTrackerGUI extends GuiElement {
         Gui.drawRect(px + PAD, curY, px + pw - PAD, curY + 1, 0xff252535);
         curY += 6;
 
-        fr.drawStringWithShadow(EnumChatFormatting.GRAY + "Tracked items: §8(set a goal with -/+, R to reset progress)", px + PAD, curY, -1);
+        fr.drawStringWithShadow(EnumChatFormatting.GRAY + "Tracked items: §8(click count to type a goal, CMD to set a command, e.g. /echest 5 or /storage 3)", px + PAD, curY, -1);
         curY += 12;
 
         RareDropTrackerConfig config = ATHRConfig.feature.qol.rareDropTracker;
@@ -232,7 +290,7 @@ public class RareDropTrackerGUI extends GuiElement {
             int rowY = listTop - scrollOffset;
             for (Map.Entry<String, RareDropTrackerConfig.TrackedItem> e : entries) {
                 if (rowY + ROW_H > listTop && rowY < listBottom) {
-                    drawTrackedRow(fr, rowY, e.getValue(), mouse);
+                    drawTrackedRow(fr, rowY, e.getKey(), e.getValue(), mouse);
                 }
                 rowY += ROW_H;
             }
@@ -243,7 +301,7 @@ public class RareDropTrackerGUI extends GuiElement {
         }
     }
 
-    private void drawTrackedRow(FontRenderer fr, int rowY, RareDropTrackerConfig.TrackedItem item, int[] mouse) {
+    private void drawTrackedRow(FontRenderer fr, int rowY, String id, RareDropTrackerConfig.TrackedItem item, int[] mouse) {
         int rowRight = px + pw - PAD;
 
         String delStr = "§c[X]";
@@ -262,21 +320,49 @@ public class RareDropTrackerGUI extends GuiElement {
         int resetW = fr.getStringWidth(resetStr);
         int resetX = minusX - 3 - resetW;
 
+        boolean hasCommand = item.command != null && !item.command.isEmpty();
+        String cmdStr = hasCommand ? "§a[CMD]" : "§8[CMD]";
+        int cmdW = fr.getStringWidth(cmdStr);
+        int cmdX = resetX - 4 - cmdW;
+
         String progress = item.goal > 0 ? (item.count + "§8/§7" + item.goal) : String.valueOf(item.count);
         String progressStr = "§b" + progress;
-        int progW = fr.getStringWidth(progressStr);
-        int progX = resetX - 6 - progW;
+        int progW = Math.max(fr.getStringWidth(progressStr), MIN_EDIT_FIELD_W);
+        int progX = cmdX - 6 - progW;
 
         int nameMaxWidth = progX - 4 - (px + PAD);
-        String rawName = item.displayName != null ? item.displayName : "";
-        String name = fr.trimStringToWidth(rawName, Math.max(10, nameMaxWidth));
 
-        fr.drawStringWithShadow(EnumChatFormatting.WHITE + name, px + PAD, rowY, -1);
-        fr.drawStringWithShadow(progressStr, progX, rowY, -1);
+        boolean editingGoal = id.equals(editingItemId) && "goal".equals(editingField);
+        boolean editingCmd = id.equals(editingItemId) && "command".equals(editingField);
+
+        if (editingCmd) {
+            positionEditField(px + PAD, rowY - 1, nameMaxWidth, ROW_H - 1);
+            editField.drawTextBox();
+        } else {
+            String rawName = item.displayName != null ? item.displayName : "";
+            String name = fr.trimStringToWidth(rawName, Math.max(10, nameMaxWidth));
+            fr.drawStringWithShadow(EnumChatFormatting.WHITE + name, px + PAD, rowY, -1);
+        }
+
+        if (editingGoal) {
+            positionEditField(progX, rowY - 1, progW, ROW_H - 1);
+            editField.drawTextBox();
+        } else {
+            fr.drawStringWithShadow(progressStr, progX, rowY, -1);
+        }
+
+        drawBracketBtn(cmdStr, cmdX, rowY, cmdW, mouse, fr);
         drawBracketBtn(resetStr, resetX, rowY, resetW, mouse, fr);
         drawBracketBtn(minusStr, minusX, rowY, minusW, mouse, fr);
         drawBracketBtn(plusStr, plusX, rowY, plusW, mouse, fr);
         drawBracketBtn(delStr, delX, rowY, delW, mouse, fr);
+    }
+
+    private void positionEditField(int x, int y, int w, int h) {
+        editField.xPosition = x;
+        editField.yPosition = y;
+        editField.width = Math.max(MIN_EDIT_FIELD_W, w);
+        editField.height = h;
     }
 
     private void drawBracketBtn(String label, int x, int y, int w, int[] mouse, FontRenderer fr) {
@@ -322,6 +408,16 @@ public class RareDropTrackerGUI extends GuiElement {
             return false;
         }
         if (!Mouse.getEventButtonState() || Mouse.getEventButton() != 0) return false;
+
+        if (editingItemId != null && editField != null) {
+            if (inBounds(mouseX, mouseY, editField.xPosition, editField.yPosition, editField.width, editField.height)) {
+                editField.mouseClicked(mouseX, mouseY, 0);
+                return true;
+            }
+            // clicking away from the field saves it, then falls through so the click can still hit another button
+            commitEdit();
+        }
+
         if (searchField == null) return false;
 
         if (searchField.isFocused() && !filteredNames.isEmpty()) {
@@ -371,6 +467,13 @@ public class RareDropTrackerGUI extends GuiElement {
                 int resetW = fr.getStringWidth("[R]");
                 int resetX = minusX - 3 - resetW;
 
+                int cmdW = fr.getStringWidth("[CMD]");
+                int cmdX = resetX - 4 - cmdW;
+
+                String progress = item.goal > 0 ? (item.count + "/" + item.goal) : String.valueOf(item.count);
+                int progW = Math.max(fr.getStringWidth(progress), MIN_EDIT_FIELD_W);
+                int progX = cmdX - 6 - progW;
+
                 if (inBounds(mouseX, mouseY, delX, rowY - 1, delW, ROW_H)) {
                     removeTrackedItem(e.getKey(), item.displayName);
                     return true;
@@ -387,6 +490,14 @@ public class RareDropTrackerGUI extends GuiElement {
                     resetCount(item);
                     return true;
                 }
+                if (inBounds(mouseX, mouseY, cmdX, rowY - 1, cmdW, ROW_H)) {
+                    startEditCommand(e.getKey(), item);
+                    return true;
+                }
+                if (inBounds(mouseX, mouseY, progX, rowY - 1, progW, ROW_H)) {
+                    startEditGoal(e.getKey(), item);
+                    return true;
+                }
             }
             rowY += ROW_H;
         }
@@ -399,6 +510,19 @@ public class RareDropTrackerGUI extends GuiElement {
         if (!Keyboard.getEventKeyState()) return false;
         int key = Keyboard.getEventKey();
         char c = Keyboard.getEventCharacter();
+
+        if (editingItemId != null) {
+            if (key == Keyboard.KEY_ESCAPE) {
+                cancelEdit();
+                return true;
+            }
+            if (key == Keyboard.KEY_RETURN) {
+                commitEdit();
+                return true;
+            }
+            if (editField != null) editField.textboxKeyTyped(c, key);
+            return true;
+        }
 
         if (key == Keyboard.KEY_ESCAPE) {
             Minecraft.getMinecraft().displayGuiScreen(parentScreen);

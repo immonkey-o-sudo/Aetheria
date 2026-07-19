@@ -50,6 +50,11 @@ public class RareDropTrackerConfig {
     @ConfigEditorBoolean
     public boolean playSound = true;
 
+    @Expose
+    @ConfigOption(name = "Command Alert", desc = "If a tracked item has a command set (from the tracker GUI), prompt you to click anywhere within 5 seconds of picking it up to run that command. Example uses: /echest 5 to jump to enderchest slot 5, /storage 3 to open backpack 3.")
+    @ConfigEditorBoolean
+    public boolean commandAlert = true;
+
     // ── overlay ──────────────────────────────────────────────────────────────
     @Expose
     @ConfigOption(name = "Show Overlay", desc = "Show a HUD overlay with the drop counts/goals of your tracked items")
@@ -118,6 +123,11 @@ public class RareDropTrackerConfig {
 
         @Expose
         public int count = 0;
+
+        // Command to run when this item drops, e.g. "/echest 5" or "/storage 3".
+        // Set from the tracker GUI. Null/empty = no command bound.
+        @Expose
+        public String command = null;
 
         public TrackedItem() {
         }
