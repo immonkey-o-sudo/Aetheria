@@ -22,13 +22,13 @@ public class CapeAPI {
         RepoData url = RepoHandler.get(ATHRRepo.KEY_REPO, RepoData.class, new RepoData());
         String capeAPI = url.capeApi;
         if(capeAPI.startsWith("http")){
-            capeAPI.replace("http","ws");
+            capeAPI = capeAPI.replace("http","ws");
         }
         if(capeAPI.startsWith("https")){
-            capeAPI.replace("https","wss");
+            capeAPI = capeAPI.replace("https","wss");
         }
         if(capeAPI.endsWith("/")){
-            capeAPI.substring(0,capeAPI.length()-1);
+            capeAPI = capeAPI.substring(0,capeAPI.length()-1);
         }
         return capeAPI;
     }
