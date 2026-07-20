@@ -15,6 +15,8 @@ import io.hamlook.aetheria.features.dungeons.rooms.DungeonRoomOverlay;
 import io.hamlook.aetheria.features.farming.BPSOverlay;
 import io.hamlook.aetheria.features.farming.FarmingTracker;
 import io.hamlook.aetheria.features.farming.FarmingTrackerOverlay;
+import io.hamlook.aetheria.features.farming.organicmatter.OrganicMatterTracker;
+import io.hamlook.aetheria.features.farming.organicmatter.OrganicMatterTrackerOverlay;
 import io.hamlook.aetheria.features.fishing.trophy.TrophyFishOverlay;
 import io.hamlook.aetheria.features.mining.fetchur.FetchurOverlay;
 import io.hamlook.aetheria.features.mining.powder.PowderOverlay;
@@ -28,11 +30,14 @@ import io.hamlook.aetheria.features.misc.pet.CurrentPetOverlay;
 import io.hamlook.aetheria.features.misc.ghosttracker.GhostOverlay;
 import io.hamlook.aetheria.features.misc.ghosttracker.GhostStats;
 import io.hamlook.aetheria.features.misc.timer.UptimeOverlay;
+import io.hamlook.aetheria.features.farming.sensitivityreducer.PitchYawOverlay;
 import io.hamlook.aetheria.features.qol.overlays.ItemAbilityTimerOverlay;
 import io.hamlook.aetheria.features.qol.overlays.ItemCooldownOverlay;
 import io.hamlook.aetheria.features.qol.overlays.ItemInvincibilityOverlay;
 import io.hamlook.aetheria.features.scoreboard.CustomScoreboard;
 import io.hamlook.aetheria.features.waypoints.WaypointGroupGui;
+import io.hamlook.aetheria.features.qol.raredroptracker.RareDropTrackerGUI;
+import io.hamlook.aetheria.features.qol.raredroptracker.RareDropTrackerOverlay;
 import io.hamlook.aetheria.repo.ATHRRepo;
 import io.hamlook.aetheria.repo.RepoHandler;
 import io.hamlook.aetheria.OptionsMenu;
@@ -64,6 +69,7 @@ public class ATHRConfig {
     private static File configFile;
     private static int screenTicks = 0;
     private static boolean waypointManagerKeyWasDown = false;
+    private static boolean rareDropTrackerGuiKeyWasDown = false;
     private static boolean powderToggleKeyWasDown = false;
     private static boolean pristineToggleKeyWasDown = false;
     private static boolean ghostToggleKeyWasDown = false;
@@ -131,6 +137,17 @@ public class ATHRConfig {
 
     public static void openWaypointGroupGui() {
         screenToOpen = new GuiScreenElementWrapper(new WaypointGroupGui());
+    }
+
+    public static void openRareDropTrackerGui() {
+        screenToOpen = new GuiScreenElementWrapper(new RareDropTrackerGUI());
+    }
+
+    public static void openRareDropTrackerOverlayEditor() {
+        if (feature == null) return;
+        RareDropTrackerOverlay overlay = RareDropTrackerOverlay.getInstance();
+        if (overlay == null) return;
+        screenToOpen = new GuiPositionEditor(feature.qol.rareDropTracker.overlayPos, overlay::getOverlayWidth, overlay::getOverlayHeight, () -> overlay.render(true), ATHRConfig::saveConfig, ATHRConfig::saveConfig).withOverlayScale(feature.qol.rareDropTracker.overlayScale).withParent(Minecraft.getMinecraft().currentScreen);
     }
 
     public static void openStatsEditor() {
@@ -279,6 +296,17 @@ public class ATHRConfig {
         FarmingTracker.reset();
     }
 
+    public static void openOrganicMatterTrackerEditor() {
+        if (feature == null) return;
+        OrganicMatterTrackerOverlay overlay = OrganicMatterTrackerOverlay.getInstance();
+        if (overlay == null) return;
+        screenToOpen = new GuiPositionEditor(feature.farming.organicMatterTracker.organicMatterTrackerPosition, overlay::getOverlayWidth, overlay::getOverlayHeight, () -> overlay.render(true), ATHRConfig::saveConfig, ATHRConfig::saveConfig).withOverlayScale(feature.farming.organicMatterTracker.organicMatterTrackerScale).withParent(Minecraft.getMinecraft().currentScreen);
+    }
+
+    public static void resetOrganicMatterTracker() {
+        OrganicMatterTracker.reset();
+    }
+
     public static void openPristineEditor() {
         if (feature == null) return;
         PristineOverlay overlay = PristineOverlay.getInstance();
@@ -303,6 +331,13 @@ public class ATHRConfig {
         UptimeOverlay overlay = UptimeOverlay.getInstance();
         if (overlay == null) return;
         screenToOpen = new GuiPositionEditor(feature.misc.uptimeConfig.uptimePos, overlay::getOverlayWidth, overlay::getOverlayHeight, () -> overlay.render(true), ATHRConfig::saveConfig, ATHRConfig::saveConfig).withOverlayScale(feature.misc.uptimeConfig.uptimeScale).withParent(Minecraft.getMinecraft().currentScreen);
+    }
+
+    public static void openPitchYawEditor() {
+        if (feature == null) return;
+        PitchYawOverlay overlay = PitchYawOverlay.getInstance();
+        if (overlay == null) return;
+        screenToOpen = new GuiPositionEditor(feature.farming.sensitivityReducer.pitchYawOverlayPos, overlay::getOverlayWidth, overlay::getOverlayHeight, () -> overlay.render(true), ATHRConfig::saveConfig, ATHRConfig::saveConfig).withOverlayScale(feature.farming.sensitivityReducer.pitchYawOverlayScale).withParent(Minecraft.getMinecraft().currentScreen);
     }
 
     public static void openGhostEditor() {
@@ -364,6 +399,11 @@ public class ATHRConfig {
         if (managerKeyDown && !waypointManagerKeyWasDown && Minecraft.getMinecraft().currentScreen == null)
             openWaypointGroupGui();
         waypointManagerKeyWasDown = managerKeyDown;
+
+        boolean rdtKeyDown = feature != null && isKeyOrMouseDown(feature.qol.rareDropTracker.trackerGuiKey);
+        if (rdtKeyDown && !rareDropTrackerGuiKeyWasDown && Minecraft.getMinecraft().currentScreen == null)
+            openRareDropTrackerGui();
+        rareDropTrackerGuiKeyWasDown = rdtKeyDown;
 
         if (feature != null && isKeyOrMouseDown(feature.mining.powderTrackerConfig.powderToggleKey) && !powderToggleKeyWasDown && Minecraft.getMinecraft().currentScreen == null) {
             PowderStats.getInstance().toggleTracking();

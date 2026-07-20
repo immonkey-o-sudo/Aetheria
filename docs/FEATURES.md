@@ -19,6 +19,7 @@
 - **Better Containers** — Improved SkyBlock menu backgrounds with multiple styles and a watermark.
 - **Damage Formatter** — Shortens large damage numbers (e.g., 1,234,567 → 1.2M).
 - **Profile Parser (SkyAtlas)** — Parse your skyblock profiles for SkyAtlas. A web-based profile viewer.
+- **Rare Drop Tracker** — Search the full item database with `/rdt add <name>` (min. 3 letters) and get a chat/title/sound alert the instant you pick up a tracked item. Manage your list with `/rdt list`, `/rdt remove`, and `/rdt clear`.
 
 
 

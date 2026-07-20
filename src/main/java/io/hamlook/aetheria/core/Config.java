@@ -98,6 +98,8 @@ public class Config {
             case "reloadRepo": ATHRConfig.reloadRepo(); break;
             case "openScoreboardEditor": ATHRConfig.openScoreboardEditor(); break;
             case "openWaypointGroupGui": ATHRConfig.openWaypointGroupGui(); break;
+            case "openRareDropTrackerGui": ATHRConfig.openRareDropTrackerGui(); break;
+            case "openRareDropTrackerOverlayEditor": ATHRConfig.openRareDropTrackerOverlayEditor(); break;
             case "openStatsEditor": ATHRConfig.openStatsEditor(); break;
             case "openHudEditor": ATHRConfig.openHudEditor(); break;
             case "openFetchurEditor": ATHRConfig.openFetchurEditor(); break;
@@ -111,6 +113,8 @@ public class Config {
             case "resetPowderTracker": ATHRConfig.resetPowderTracker(); break;
             case "openFarmingTrackerEditor": ATHRConfig.openFarmingTrackerEditor(); break;
             case "resetFarmingTracker": ATHRConfig.resetFarmingTracker(); break;
+            case "openOrganicMatterTrackerEditor": ATHRConfig.openOrganicMatterTrackerEditor(); break;
+            case "resetOrganicMatterTracker": ATHRConfig.resetOrganicMatterTracker(); break;
             case "openPristineEditor": ATHRConfig.openPristineEditor(); break;
             case "resetPristineTracker": ATHRConfig.resetPristineTracker(); break;
             case "openDungeonBreakerEditor": ATHRConfig.openDungeonBreakerEditor(); break;
@@ -122,6 +126,7 @@ public class Config {
             case "openItemAbilityTimerEditor": ATHRConfig.openItemAbilityTimerEditor(); break;
             case "openBpsEditor": ATHRConfig.openBpsEditor(); break;
             case "openUptimeEditor": ATHRConfig.openUptimeEditor(); break;
+            case "openPitchYawEditor": ATHRConfig.openPitchYawEditor(); break;
             case "openKillComboEditor": ATHRConfig.openKillComboEditor(); break;
             case "openGhostEditor": ATHRConfig.openGhostEditor(); break;
             case "resetGhostTracker": ATHRConfig.resetGhostTracker(); break;
