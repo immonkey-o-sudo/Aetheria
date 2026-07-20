@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import io.hamlook.aetheria.Aetheria;
 import io.hamlook.aetheria.network.NetworkGuard;
 import io.hamlook.aetheria.repo.CapeAPI;
+import io.hamlook.aetheria.utils.ElectionUtils;
 import io.hamlook.aetheria.utils.chat.ChatUtils;
 import net.minecraft.client.Minecraft;
 
@@ -27,36 +28,13 @@ public class DianaPartyConnector {
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     public static void checkForDiana() {
-        try {
-            URL url = new URL(CapeAPI.getAPIUrl("/elections"));
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty("User-Agent", "Aetheria/" + Aetheria.VERSION);
-            conn.setConnectTimeout(35000);
-            conn.setReadTimeout(35000);
-            int responseCode = conn.getResponseCode();
-            if(responseCode >= 200 && responseCode <= 210 || responseCode == 304) {
-                String data = conn.getResponseMessage();
-                JsonObject obj = JsonParser.parseString(data).getAsJsonObject();
-                if(obj == null) return;
-                if(obj.has("current")){
-                    String curMayor = obj.get("current").getAsString();
-                    if(curMayor.equals("Diana")) {
-                        isDiana = true;
-                    }
-                }
-                if(obj.has("perks")){
-                    JsonObject perks = obj.get("perks").getAsJsonObject();
-                    if(perks != null && perks.has("current")){
-                        JsonObject currentPerks = perks.get("current").getAsJsonObject();
-                        if(currentPerks != null){
-                            if(currentPerks.size() > 2) isRitual = true;
-                        }
-                    }
-                }
+        if(ElectionUtils.currentMayor.equals("Diana")){
+            isDiana = true;
+        }
+        if(ElectionUtils.perks != null){
+            if(ElectionUtils.perks.perks.contains("Mythological Ritual")){
+                isRitual = true;
             }
-        }catch (Exception e){
-            Aetheria.logger.severe("[D-Party] ERROR: " + e.getMessage());
         }
     }
 
