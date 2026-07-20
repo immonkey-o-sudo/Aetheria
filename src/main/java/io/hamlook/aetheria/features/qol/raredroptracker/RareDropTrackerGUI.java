@@ -182,6 +182,7 @@ public class RareDropTrackerGUI extends GuiElement {
         editField = new GuiTextField(1, Minecraft.getMinecraft().fontRendererObj, 0, 0, 0, 0);
         editField.setMaxStringLength(10);
         editField.setText(String.valueOf(item.goal));
+        selectAllInEditField();
         editField.setFocused(true);
         if (searchField != null) searchField.setFocused(false);
     }
@@ -193,8 +194,17 @@ public class RareDropTrackerGUI extends GuiElement {
         editField = new GuiTextField(2, Minecraft.getMinecraft().fontRendererObj, 0, 0, 0, 0);
         editField.setMaxStringLength(64);
         editField.setText(item.command != null ? item.command : "");
+        selectAllInEditField();
         editField.setFocused(true);
         if (searchField != null) searchField.setFocused(false);
+    }
+
+    // Selects the whole pre-filled value so the first keystroke overwrites it
+    // instead of just being inserted at the end (e.g. typing "13" over an
+    // existing "12" replaces it -> "13", instead of appending -> "1213").
+    private void selectAllInEditField() {
+        editField.setCursorPosition(0);
+        editField.setSelectionPos(editField.getText().length());
     }
 
     private void commitEdit() {

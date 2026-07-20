@@ -69,9 +69,20 @@ public class PitchYawOverlay extends Overlay {
 
         if (mc.thePlayer == null) return lines;
 
-        lines.add(String.format("Pitch: %.4f", mc.thePlayer.rotationPitch));
-        lines.add(String.format("Yaw: %.4f", mc.thePlayer.rotationYaw));
+        lines.add(String.format("Pitch: %.4f", wrapDegrees(mc.thePlayer.rotationPitch)));
+        lines.add(String.format("Yaw: %.4f", wrapDegrees(mc.thePlayer.rotationYaw)));
         return lines;
+    }
+
+    // Vanilla's rotationYaw/rotationPitch aren't bounded to -180..180 - they keep
+    // accumulating the further you turn (e.g. spinning around repeatedly can push
+    // yaw past 180, 360, 720...). Wrap the displayed value into (-180, 180] so it
+    // flips sign once you cross the boundary, instead of just climbing forever.
+    private static float wrapDegrees(float value) {
+        float wrapped = value % 360f;
+        if (wrapped >= 180f) wrapped -= 360f;
+        else if (wrapped < -180f) wrapped += 360f;
+        return wrapped;
     }
 
     // Overridden (rather than relying on the base per-line white rendering) so the
