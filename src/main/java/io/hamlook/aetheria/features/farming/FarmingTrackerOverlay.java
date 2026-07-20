@@ -26,16 +26,9 @@ public class FarmingTrackerOverlay extends Overlay {
     private static final int ICON_SIZE = 8;
     private static final int ICON_GAP = 2;
 
-    // Ordinal layout (must stay in sync with FarmingTrackerConfig's exampleText):
-    //   0        = title
-    //   1        = value/coins-per-hour
-    //   2        = total crops/hour
-    //   3..16    = per-crop count line for Crop.all()[i]  (COUNT_LINES_START + i)
-    //   17       = session timer
-    //   18       = total crops collected this session (raw-crop-equivalent count)
     private static final int COUNT_LINES_START = 3;
-    private static final int SESSION_TIMER_ORDINAL = COUNT_LINES_START + Crop.all().length; // 17
-    private static final int TOTAL_CROPS_ORDINAL = SESSION_TIMER_ORDINAL + 1; // 18
+    private static final int SESSION_TIMER_ORDINAL = COUNT_LINES_START + Crop.all().length;
+    private static final int TOTAL_CROPS_ORDINAL = SESSION_TIMER_ORDINAL + 1;
 
     public FarmingTrackerOverlay() {
         super(160, 70);
@@ -63,7 +56,6 @@ public class FarmingTrackerOverlay extends Overlay {
                 : String.format("%02d:%02d", minutes, seconds);
     }
 
-    /** One rendered line: an optional icon shown once at the start, plus its text. */
     private static final class Entry {
         final ItemStack icon;
         final String text;
@@ -74,8 +66,6 @@ public class FarmingTrackerOverlay extends Overlay {
         }
     }
 
-    // Icon is only non-null for crop-family lines, and shown once at the
-    // start of the line — not once per raw/enchanted/block sub-form within it.
     private Entry entryForOrdinal(int ordinal, boolean preview) {
         if (ordinal == 0) {
             String pausedTag = (!preview && FarmingTracker.isPaused()) ? " §7[Paused]" : "";
@@ -110,7 +100,14 @@ public class FarmingTrackerOverlay extends Overlay {
             ItemStack icon = crop.getIcon();
 
             if (preview) {
-                return new Entry(icon, "§a" + crop.displayName + ": §f12 §7E." + crop.displayName + ": §f3 §b(4,760/h)");
+                List<String> previewParts = new ArrayList<>();
+                previewParts.add("§a" + crop.displayName + ": §f12");
+                if (crop.enchantedId != null) previewParts.add("§7E." + crop.displayName + ": §f3");
+                if (crop.blockId != null && crop.blockDisplayName != null) {
+                    previewParts.add("§7" + crop.blockDisplayName + ": §f1");
+                }
+                previewParts.add("§b(4,760/h)");
+                return new Entry(icon, String.join(" ", previewParts));
             }
 
             long raw = FarmingTracker.getCount(crop.rawId);
@@ -126,8 +123,6 @@ public class FarmingTrackerOverlay extends Overlay {
                 parts.add("§7" + crop.blockDisplayName + ": §f" + Utils.shortNumberFormat((double) block, 0));
             }
 
-            // Combined raw-crop-equivalent rate across all tiers (raw + enchanted +
-            // block folded together via Crop.rawEquivalentOf), not a per-tier rate.
             double rate = FarmingTracker.getCropRate(crop);
             if (rate > 0.0) parts.add("§b(" + Utils.shortNumberFormat(rate, 0) + "/h)");
 
@@ -146,7 +141,6 @@ public class FarmingTrackerOverlay extends Overlay {
         return entries;
     }
 
-    // Kept for Overlay's abstract contract / anything that reads plain text lines.
     @Override
     public List<String> getLines(boolean preview) {
         List<String> lines = new ArrayList<>();
@@ -154,10 +148,6 @@ public class FarmingTrackerOverlay extends Overlay {
         return lines;
     }
 
-    // Full override, not just getLines() — the base Overlay.render() only knows
-    // how to draw plain text, with no hook for icons, so the background-box
-    // sizing and line-drawing loop are reimplemented here to make room for an
-    // icon at the start of each crop line.
     @Override
     public void render(boolean preview) {
         List<Entry> entries = buildEntries(preview);

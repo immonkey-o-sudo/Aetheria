@@ -1,8 +1,9 @@
-package io.hamlook.aetheria.features.farming;
+package io.hamlook.aetheria.features.farming.organicmatter;
 
 import io.hamlook.aetheria.core.ATHRConfig;
+import io.hamlook.aetheria.core.features.farming.OrganicMatterTrackerConfig;
+import io.hamlook.aetheria.features.farming.Crop;
 import io.hamlook.aetheria.features.misc.itemlog.ItemPickupLog;
-import io.hamlook.aetheria.features.price.PriceMap;
 import io.hamlook.aetheria.init.RegisterEvents;
 import io.hamlook.aetheria.utils.ColorUtils;
 import io.hamlook.aetheria.utils.chat.ChatUtils;
@@ -17,26 +18,26 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @RegisterEvents
-public class FarmingTracker {
+public class OrganicMatterTracker {
 
     private static final Pattern DROP_PATTERN = Pattern.compile("DROP! \\S+ dropped (\\d+)x (.+)!");
 
-    private static final double CROPS_PER_HOUR_THRESHOLD = 3_600_000.0;
-
+    private static final double MS_PER_HOUR = 3_600_000.0;
     private static final long INACTIVITY_LIMIT_MS = 7_000L;
 
-    private static boolean listenerRegistered = false;
     private static boolean timerRunning = false;
     private static boolean timerStartedOnce = false;
     private static boolean inactivityFlagged = false;
     private static long timerStartTime = 0L;
     private static long lastActivityTime = 0L;
+    private static long sessionActiveTimeMs = 0L;
+    private static boolean listenerRegistered = false;
 
     private static void ensureTimerInitialized() {
         if (timerRunning) return;
 
         if (timerStartedOnce && inactivityFlagged) {
-            FarmingTrackerData data = FarmingTrackerData.getInstance();
+            OrganicMatterTrackerData data = OrganicMatterTrackerData.getInstance();
             data.setActiveTimeMs(data.getActiveTimeMs() - INACTIVITY_LIMIT_MS);
             inactivityFlagged = false;
         }
@@ -54,8 +55,10 @@ public class FarmingTracker {
     private static void timerTick() {
         if (!timerRunning) return;
         long now = System.currentTimeMillis();
-        FarmingTrackerData data = FarmingTrackerData.getInstance();
-        data.setActiveTimeMs(data.getActiveTimeMs() + (now - timerStartTime));
+        OrganicMatterTrackerData data = OrganicMatterTrackerData.getInstance();
+        long delta = now - timerStartTime;
+        data.setActiveTimeMs(data.getActiveTimeMs() + delta);
+        sessionActiveTimeMs += delta;
         timerStartTime = now;
         if (now - lastActivityTime > INACTIVITY_LIMIT_MS) {
             timerRunning = false;
@@ -68,15 +71,23 @@ public class FarmingTracker {
     }
 
     public static long getActiveTimeMs() {
-        return FarmingTrackerData.getInstance().getActiveTimeMs();
+        return OrganicMatterTrackerData.getInstance().getActiveTimeMs();
+    }
+
+    public static long getSessionTimeMs() {
+        return sessionActiveTimeMs;
     }
 
     private static double activeHours() {
-        return getActiveTimeMs() / CROPS_PER_HOUR_THRESHOLD;
+        return getActiveTimeMs() / MS_PER_HOUR;
+    }
+
+    private static OrganicMatterTrackerConfig config() {
+        return ATHRConfig.feature.farming.organicMatterTracker;
     }
 
     private static boolean isEnabled() {
-        return ATHRConfig.feature != null && ATHRConfig.feature.farming.farmingTracker.enabled;
+        return ATHRConfig.feature != null && config().enabled;
     }
 
     private static boolean isInFarmingLocation() {
@@ -87,22 +98,44 @@ public class FarmingTracker {
     }
 
     private static boolean locationOk() {
-        return !ATHRConfig.feature.farming.farmingTracker.requireFarmingIsland || isInFarmingLocation();
+        return !config().requireFarmingIsland || isInFarmingLocation();
+    }
+
+    public static boolean isTracked(OrganicMatterCrop crop) {
+        OrganicMatterCrop[] all = OrganicMatterCrop.all();
+        int index = -1;
+        for (int i = 0; i < all.length; i++) {
+            if (all[i] == crop) {
+                index = i;
+                break;
+            }
+        }
+        return index >= 0 && config().trackedCrops.contains(index);
+    }
+
+    private static boolean isIdTracked(String id) {
+        if (id == null) return false;
+        for (OrganicMatterCrop crop : OrganicMatterCrop.all()) {
+            if (!isTracked(crop)) continue;
+            if (id.equals(crop.rawId) || id.equals(crop.enchantedId) || id.equals(crop.blockId)) return true;
+        }
+        return false;
     }
 
     public static void reset() {
-        FarmingTrackerData.getInstance().reset();
+        OrganicMatterTrackerData.getInstance().reset();
         timerRunning = false;
         timerStartedOnce = false;
         inactivityFlagged = false;
         lastActivityTime = 0L;
+        sessionActiveTimeMs = 0L;
     }
 
     private static void ensureListenerRegistered() {
         if (listenerRegistered) return;
         ItemPickupLog log = ItemPickupLog.getInstance();
         if (log == null) return;
-        log.addRichItemChangeListener(FarmingTracker::onItemLogChange);
+        log.addRichItemChangeListener(OrganicMatterTracker::onItemLogChange);
         listenerRegistered = true;
     }
 
@@ -111,8 +144,9 @@ public class FarmingTracker {
         if (!locationOk()) return;
         if (delta <= 0) return;
         if (Crop.findByRawId(internalId) == null) return;
+        if (!isIdTracked(internalId)) return;
 
-        FarmingTrackerData.getInstance().getCounts().merge(internalId, (long) delta, Long::sum);
+        OrganicMatterTrackerData.getInstance().getCounts().merge(internalId, (long) delta, Long::sum);
         updateActivity();
     }
 
@@ -141,10 +175,15 @@ public class FarmingTracker {
             return;
         }
 
-        String id = Crop.findByChatName(m.group(2));
-        if (id == null) return;
+        String itemName = m.group(2);
 
-        FarmingTrackerData.getInstance().getCounts().merge(id, quantity, Long::sum);
+        String id = OrganicMatterCrop.findByChatName(itemName);
+
+        if (id == null) id = OrganicMatterCrop.findRawByChatName(itemName);
+        if (id == null) return;
+        if (!isIdTracked(id)) return;
+
+        OrganicMatterTrackerData.getInstance().getCounts().merge(id, quantity, Long::sum);
         updateActivity();
     }
 
@@ -159,63 +198,50 @@ public class FarmingTracker {
     @SubscribeEvent
     public void onWorldUnload(WorldEvent.Unload event) {
         if (ATHRConfig.feature == null) return;
-        if (!ATHRConfig.feature.farming.farmingTracker.persistAcrossSessions) {
+        if (!config().persistAcrossSessions) {
             reset();
         }
     }
 
     public static long getCount(String id) {
-        return FarmingTrackerData.getInstance().getCounts().getOrDefault(id, 0L);
+        return OrganicMatterTrackerData.getInstance().getCounts().getOrDefault(id, 0L);
     }
 
     public static Map<String, Long> getCounts() {
-        return FarmingTrackerData.getInstance().getCounts();
+        return OrganicMatterTrackerData.getInstance().getCounts();
     }
 
-    public static double getCropRate(Crop crop) {
+    public static double totalOrganicMatter() {
+        double total = 0.0;
+        for (Map.Entry<String, Long> entry : OrganicMatterTrackerData.getInstance().getCounts().entrySet()) {
+            total += entry.getValue() * OrganicMatterValues.getValue(entry.getKey());
+        }
+        return total;
+    }
+
+    public static double organicMatterPerHour() {
+        double hours = activeHours();
+        return hours <= 0.0 ? 0.0 : totalOrganicMatter() / hours;
+    }
+
+    public static double getCropOmRate(OrganicMatterCrop crop) {
         double hours = activeHours();
         if (hours <= 0.0) return 0.0;
 
-        long total = 0L;
-        Long rawRatio = Crop.rawEquivalentOf(crop.rawId);
-        if (rawRatio != null) total += getCount(crop.rawId) * rawRatio;
-
-        Long enchRatio = Crop.rawEquivalentOf(crop.enchantedId);
-        if (enchRatio != null) total += getCount(crop.enchantedId) * enchRatio;
-
-        if (crop.blockId != null) {
-            Long blockRatio = Crop.rawEquivalentOf(crop.blockId);
-            if (blockRatio != null) total += getCount(crop.blockId) * blockRatio;
-        }
+        double total = 0.0;
+        total += getCount(crop.rawId) * OrganicMatterValues.getValue(crop.rawId);
+        if (crop.enchantedId != null) total += getCount(crop.enchantedId) * OrganicMatterValues.getValue(crop.enchantedId);
+        if (crop.blockId != null) total += getCount(crop.blockId) * OrganicMatterValues.getValue(crop.blockId);
 
         return total / hours;
     }
 
-    public static double currentValue() {
-        double total = 0.0;
-        for (Map.Entry<String, Long> entry : FarmingTrackerData.getInstance().getCounts().entrySet()) {
-            double price = PriceMap.Cached.getDPrice(entry.getKey());
-            if (price > 0) total += entry.getValue() * price;
-        }
-        return total;
-    }
-
-    public static double coinsPerHour() {
-        double hours = activeHours();
-        return hours <= 0.0 ? 0.0 : currentValue() / hours;
-    }
-
-    public static long totalRawCrops() {
+    public static long totalItems() {
         long total = 0L;
-        for (Map.Entry<String, Long> entry : FarmingTrackerData.getInstance().getCounts().entrySet()) {
-            Long ratio = Crop.rawEquivalentOf(entry.getKey());
-            if (ratio != null) total += entry.getValue() * ratio;
+        for (Map.Entry<String, Long> entry : OrganicMatterTrackerData.getInstance().getCounts().entrySet()) {
+            total += entry.getValue();
         }
         return total;
-    }
-
-    public static double cropsPerHour() {
-        double hours = activeHours();
-        return hours <= 0.0 ? 0.0 : totalRawCrops() / hours;
     }
 }
+

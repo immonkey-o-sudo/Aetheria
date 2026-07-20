@@ -35,6 +35,10 @@ public class Qol {
     @Category(name = "Block Selection Overlay", desc = "Customize the block selection highlight")
     public BlockSelectionConfig blockSelection = new BlockSelectionConfig();
 
+    @Expose
+    @Category(name = "Rare Drop Tracker", desc = "Get alerted the moment a tracked item drops. Search and manage tracked items with /rdt")
+    public RareDropTrackerConfig rareDropTracker = new RareDropTrackerConfig();
+
     // ── standalone options (no accordion) ───────────────────────────────────
     @Expose
     @ConfigOption(name = "Roman Numerals", desc = "Converts Roman numerals to integers in tooltips and tab list")
