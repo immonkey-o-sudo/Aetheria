@@ -312,6 +312,21 @@ public final class RenderUtils {
         GlStateManager.popMatrix();
     }
 
+    // Binds and draws the texture for a :name:/alias emoji token at (x, y) as a
+    // size x size square. Returns false (drawing nothing) if the emoji isn't
+    // known/loaded yet, so callers can fall back to rendering the raw text.
+    public static boolean drawEmoji(String nameOrAlias, float x, float y, float size) {
+        ResourceLocation texture = io.hamlook.aetheria.features.chat.emoji.EmojiManager.getTexture(nameOrAlias);
+        if (texture == null) return false;
+
+        GlStateManager.pushMatrix();
+        GlStateManager.color(1f, 1f, 1f, 1f);
+        Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
+        drawTexturedRect(x, y, size, size, 0, 1, 0, 1, GL11.GL_LINEAR);
+        GlStateManager.popMatrix();
+        return true;
+    }
+
     public static int renderStringTrimWidth(String str, boolean shadow, int x, int y, int width, int color, int maxLines) {
         net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getMinecraft();
         net.minecraft.client.gui.FontRenderer fr = mc.fontRendererObj;
