@@ -102,8 +102,14 @@ public class GuiVideoOverlay extends GuiScreen {
 
     @Override
     protected void keyTyped(char typedChar, int keyCode) throws IOException {
-        VideoOverlaySettings cfg = ATHRConfig.feature.videoOverlay;
-        if (keyCode == Keyboard.KEY_ESCAPE || keyCode == cfg.toggleKeyCode) {
+        // Only Esc closes from in here. Closing on the toggle key too would react to
+        // the *same* keypress that just opened this screen (VideoOverlayFeature's tick
+        // poll opens it, then this event queue still delivers that same key press to
+        // keyTyped a moment later) — causing an instant open-then-close "flicker"
+        // instead of the video actually showing. VideoOverlayFeature's tick poll is
+        // the sole owner of toggling on the hotkey; pressing it again while this
+        // screen is open is handled there.
+        if (keyCode == Keyboard.KEY_ESCAPE) {
             mc.displayGuiScreen(null);
             return;
         }
