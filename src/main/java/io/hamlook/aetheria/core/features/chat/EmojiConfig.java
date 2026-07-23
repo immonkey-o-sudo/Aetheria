@@ -1,9 +1,10 @@
 package io.hamlook.aetheria.core.features.chat;
 
 import com.google.gson.annotations.Expose;
+import io.hamlook.aetheria.core.moulconfig.gui.config.ConfigAnnotations;
 import io.hamlook.aetheria.core.moulconfig.gui.config.ConfigAnnotations.ConfigEditorBoolean;
-import io.hamlook.aetheria.core.moulconfig.gui.config.ConfigAnnotations.ConfigEditorSliderAnnotation;
 import io.hamlook.aetheria.core.moulconfig.gui.config.ConfigAnnotations.ConfigOption;
+import io.hamlook.aetheria.features.chat.emoji.EmojiLinks;
 
 public class EmojiConfig {
 
@@ -18,7 +19,23 @@ public class EmojiConfig {
     public boolean suggestionsEnabled = true;
 
     @Expose
-    @ConfigOption(name = "Emoji Scale", desc = "Size of rendered emoji relative to normal chat text")
-    @ConfigEditorSliderAnnotation(minValue = 0.5f, maxValue = 2f, minStep = 0.1f)
-    public float scale = 1f;
+    @ConfigOption(name = "Emoji Themes", desc = "Choose which emoji theme the emojis use.")
+    @ConfigAnnotations.ConfigEditorDropdown(values = {EmojiLinks.DISCORD_SHEET,EmojiLinks.GOOGLE_SHEET,EmojiLinks.IOS_SHEET})
+    public int emojiTheme = 0;
+
+
+    @Expose
+    @ConfigOption(name = "Suggestion Bar BG", desc = "Choose which color the suggestion bar's background uses")
+    @ConfigAnnotations.ConfigEditorColour
+    public String suggestionBarBG = "0:0:0:178:0";
+
+    @Expose
+    @ConfigOption(name = "Bar Border", desc = "Add a border to the suggestion list")
+    @ConfigEditorBoolean
+    public boolean suggestionsBar = true;
+
+    @Expose
+    @ConfigOption(name = "Suggestion Bar Border", desc = "Choose which color the suggestion bar's border uses")
+    @ConfigAnnotations.ConfigEditorColour
+    public String suggestionBarBorder = "136:136:136:255:0";
 }

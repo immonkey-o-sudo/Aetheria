@@ -1,22 +1,28 @@
 package io.hamlook.aetheria.features.chat.emoji;
 
-import com.google.gson.Gson;
+import com.google.gson.*;
+import com.google.gson.stream.JsonReader;
+import io.hamlook.aetheria.Aetheria;
 import io.hamlook.aetheria.core.ATHRConfig;
 import io.hamlook.aetheria.network.NetworkGuard;
 import io.hamlook.aetheria.repo.ATHRRepo;
-import io.hamlook.aetheria.utils.HttpClient;
+import io.hamlook.aetheria.utils.ElectionUtils;
+import lombok.AllArgsConstructor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.ResourceLocation;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -33,195 +39,278 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class EmojiManager {
 
     private static final String VERSION_URL = ATHRRepo.BASE + "data/emojis_version.json";
-    private static final String MANIFEST_URL = ATHRRepo.BASE + "data/emojis.json";
 
-    private static final File CACHE_DIR = new File(ATHRConfig.configDirectory, "emojis");
-    private static final File MANIFEST_FILE = new File(CACHE_DIR, "emojis.json");
-    private static final File VERSION_FILE = new File(CACHE_DIR, "version.txt");
+    private static final File EMOJI_DIR = new File(ATHRConfig.configDirectory, "emojis");
 
     private static final Gson GSON = new Gson();
-    private static final HttpClient HTTP = new HttpClient();
 
-    // name/alias (lowercase) -> entry. Swapped in as one atomic reference once
-    // fully built so concurrent renders never see a partially-populated map.
-    private static volatile Map<String, EmojiEntry> registry = Collections.emptyMap();
+    private static final Map<String, Emoji> emojis = new ConcurrentHashMap<>();
+    private static final Map<String, String> aliases = new ConcurrentHashMap<>();
 
-    // canonical name -> bound texture location, filled in lazily the first time
-    // a given emoji is actually rendered.
-    private static final Map<String, ResourceLocation> textures = new ConcurrentHashMap<>();
+    private static final AtomicBoolean loaded = new AtomicBoolean(false);
+    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    private static final AtomicBoolean started = new AtomicBoolean(false);
-
-    private EmojiManager() {
-    }
+    public static final String[] EMOJI_THEMES = {EmojiLinks.DISCORD_SHEET,EmojiLinks.GOOGLE_SHEET,EmojiLinks.IOS_SHEET};
 
     public static void init() {
-        if (!started.compareAndSet(false, true)) return;
-        new Thread(EmojiManager::run, "ATHR-EmojiLoader").start();
+        executor.execute(EmojiManager::startInitialisation);
     }
 
-    private static void run() {
-        try {
-            CACHE_DIR.mkdirs();
-            if (NetworkGuard.githubAllowed()) {
-                checkForUpdate();
-            }
-        } catch (Exception e) {
-            System.err.println("[ATHR] Emoji update check failed: " + e.getMessage());
+    public static void startInitialisation() {
+        if(!NetworkGuard.githubAllowed()) return;
+        if(!checkIfUpdateNeeded()){
+            loadSpritesFromFile();
+            registerEmojis();
+            return;
         }
-        loadFromDisk();
-    }
-
-    // Fetches the tiny version file first; only pulls the full (much larger)
-    // manifest down if the version differs from what's cached on disk, or if
-    // we don't have a cached manifest at all yet.
-    private static void checkForUpdate() {
-        try {
-            HttpClient.FetchResult versionRes = HTTP.fetch(VERSION_URL, null);
-            if (versionRes.body() == null) return;
-
-            VersionFile remote = GSON.fromJson(versionRes.body(), VersionFile.class);
-            if (remote == null) return;
-
-            int storedVersion = readStoredVersion();
-            boolean needsDownload = !MANIFEST_FILE.exists() || remote.version != storedVersion;
-            if (!needsDownload) return;
-
-            HttpClient.FetchResult manifestRes = HTTP.fetch(MANIFEST_URL, null);
-            if (manifestRes.body() == null) return;
-
-            Files.write(MANIFEST_FILE.toPath(), manifestRes.body().getBytes(StandardCharsets.UTF_8));
-            Files.write(VERSION_FILE.toPath(), String.valueOf(remote.version).getBytes(StandardCharsets.UTF_8));
-        } catch (Exception e) {
-            System.err.println("[ATHR] Emoji download failed: " + e.getMessage());
+        for(String theme : EMOJI_THEMES){
+            downloadSheet(theme);
+            Aetheria.logger.info("[EMOJI] Downloaded Sheet for " + theme);
         }
+        loadSpritesFromFile();
+        registerEmojis();
+        saveCurrentVersion();
     }
 
-    private static int readStoredVersion() {
+    private static void saveCurrentVersion() {
         try {
-            if (!VERSION_FILE.exists()) return -1;
-            String raw = new String(Files.readAllBytes(VERSION_FILE.toPath()), StandardCharsets.UTF_8).trim();
-            return Integer.parseInt(raw);
-        } catch (Exception e) {
-            return -1;
-        }
-    }
-
-    private static void loadFromDisk() {
-        if (!MANIFEST_FILE.exists()) return;
-        try {
-            String json = new String(Files.readAllBytes(MANIFEST_FILE.toPath()), StandardCharsets.UTF_8);
-            Manifest manifest = GSON.fromJson(json, Manifest.class);
-            if (manifest == null || manifest.emojis == null) return;
-
-            Map<String, EmojiEntry> built = new HashMap<>();
-            for (EmojiEntry entry : manifest.emojis) {
-                if (entry.name == null || entry.name.isEmpty()) continue;
-                built.put(entry.name.toLowerCase(), entry);
-                if (entry.aliases != null) {
-                    for (String alias : entry.aliases) {
-                        if (alias != null && !alias.isEmpty()) built.put(alias.toLowerCase(), entry);
+            URL url = new URL(VERSION_URL);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestProperty("User-Agent", "Aetheria/" + Aetheria.VERSION);
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(10000);
+            if (conn.getResponseCode() == 200) {
+                String json = ElectionUtils.readResponse(conn);
+                JsonObject obj = JsonParser.parseString(json).getAsJsonObject();
+                if (obj != null && obj.has("version")) {
+                    VersionFile vf = new VersionFile();
+                    vf.version = obj.get("version").getAsInt();
+                    File file = new File(EMOJI_DIR, "version.json");
+                    file.getParentFile().mkdirs();
+                    try (java.io.FileWriter w = new java.io.FileWriter(file)) {
+                        GSON.toJson(vf, w);
                     }
                 }
             }
-            registry = built;
         } catch (Exception e) {
-            System.err.println("[ATHR] Emoji manifest parse failed: " + e.getMessage());
+            Aetheria.logger.info("[EMOJI] Failed to save version file: " + e.getMessage());
         }
     }
 
-    public static boolean isLoaded() {
-        return !registry.isEmpty();
-    }
-
-    public static boolean exists(String nameOrAlias) {
-        return nameOrAlias != null && registry.containsKey(nameOrAlias.toLowerCase());
-    }
-
-    public static int getWidth(String nameOrAlias) {
-        EmojiEntry entry = lookup(nameOrAlias);
-        return entry != null ? entry.w : 0;
-    }
-
-    public static int getHeight(String nameOrAlias) {
-        EmojiEntry entry = lookup(nameOrAlias);
-        return entry != null ? entry.h : 0;
-    }
-
-    // Returns the bound GL texture for a :name:/alias token, decoding & registering
-    // it lazily the first time it's needed. Must be called from the client thread
-    // (i.e. from within rendering code).
-    public static ResourceLocation getTexture(String nameOrAlias) {
-        EmojiEntry entry = lookup(nameOrAlias);
-        if (entry == null) return null;
-
-        ResourceLocation cached = textures.get(entry.name);
-        if (cached != null) return cached;
-
+    private static void registerEmojis() {
+        emojis.clear();
+        aliases.clear();
         try {
-            byte[] png = Base64.getDecoder().decode(entry.data);
-            BufferedImage img = ImageIO.read(new ByteArrayInputStream(png));
-            if (img == null) return null;
+            URL url = new URL(EmojiLinks.getEmojiJSON());
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestProperty("User-Agent", "Aetheria");
+            connection.setConnectTimeout(10000);
+            connection.setReadTimeout(10000);
 
-            DynamicTexture tex = new DynamicTexture(img);
-            ResourceLocation loc = Minecraft.getMinecraft().getTextureManager()
-                    .getDynamicTextureLocation("emoji_" + entry.name, tex);
-            textures.put(entry.name, loc);
-            return loc;
-        } catch (Exception e) {
+            int responseCode = connection.getResponseCode();
+            Aetheria.logger.info("[EMOJI] Fetching emoji.json — response code: " + responseCode);
+            if(responseCode == 200){
+                String json = ElectionUtils.readResponse(connection);
+                if(json.isEmpty()){
+                    Aetheria.logger.info("[EMOJI] emoji.json was empty");
+                    return;
+                }
+                JsonArray obj = JsonParser.parseString(json).getAsJsonArray();
+                if(obj == null || obj.isEmpty()){
+                    Aetheria.logger.info("[EMOJI] emoji.json parsed to empty array");
+                    return;
+                }
+                for(JsonElement element : obj){
+                    JsonObject object = element.getAsJsonObject();
+                    if(!object.has("short_name") ||
+                    !object.has("sheet_x") || !object.has("sheet_y")) continue;
+
+                    String shortName = object.get("short_name").getAsString();
+                    int rawX = object.get("sheet_x").getAsInt();
+                    int rawY = object.get("sheet_y").getAsInt();
+
+                    int sheetX = (rawX * (EmojiLinks.SHEET_RESOLUTION + 2)) + 1;
+                    int sheetY = (rawY * (EmojiLinks.SHEET_RESOLUTION + 2)) + 1;
+                    Emoji emoji = new Emoji(shortName,sheetX,sheetY,false);
+                    emojis.put(shortName,emoji);
+                    if(object.has("short_names")){
+                        JsonArray names = object.get("short_names").getAsJsonArray();
+                        for (JsonElement name : names) {
+                            aliases.put(name.getAsString(),shortName);
+                        }
+                    }
+
+                }
+            }
+            if (!emojis.isEmpty()) loaded.set(true);
+            Aetheria.logger.info("[EMOJI] Successfully Loaded " + emojis.size() + " emojis & " + aliases.size() + " aliases.");
+        }catch (Exception e){
+            Aetheria.logger.info("[EMOJI] Failed to load emojis from github");
+            Aetheria.logger.info("[EMOJI] Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private static void loadSpritesFromFile() {
+        Map<String, BufferedImage> images = new HashMap<>();
+        for (String sheet : EMOJI_THEMES) {
+            File spriteFile = EmojiLinks.getSpriteFile(sheet);
+            if (!spriteFile.exists()) {
+                downloadSheet(sheet);
+            }
+            try {
+                BufferedImage sheetImage = ImageIO.read(spriteFile);
+                if (sheetImage == null || sheetImage.getWidth() < 32) continue;
+                images.put(sheet, sheetImage);
+            } catch (IOException e) {
+                Aetheria.logger.info("[EMOJI] Error Loading " + sheet + " from file at path: " + spriteFile.getPath());
+                Aetheria.logger.info("[EMOJI] Error: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+        if (!images.isEmpty()) {
+            Minecraft.getMinecraft().addScheduledTask(() -> {
+                for (Map.Entry<String, BufferedImage> entry : images.entrySet()) {
+                    try {
+                        EmojiLinks.SHEET_SIZE = entry.getValue().getWidth();
+                        DynamicTexture texture = new DynamicTexture(entry.getValue());
+                        ResourceLocation location = EmojiLinks.getSpriteResource(entry.getKey());
+                        Minecraft.getMinecraft().getTextureManager().loadTexture(location, texture);
+                    } catch (Exception e) {
+                        Aetheria.logger.info("[EMOJI] Error uploading texture for " + entry.getKey() + ": " + e.getMessage());
+                    }
+                }
+            });
+        }
+    }
+
+    private static void downloadSheet(String sheet) {
+        String urlSuffix = EmojiLinks.sheetToURL(sheet);
+        try{
+            URL url = new URL(EmojiLinks.getSpriteURL(urlSuffix));
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestProperty("User-Agent", "Aetheria/" + Aetheria.VERSION);
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(10000);
+
+            if(conn.getResponseCode() == 200){
+                BufferedImage image = ImageIO.read(conn.getInputStream());
+                if(image == null || image.getWidth() < 32) return;
+                File path = EmojiLinks.getSpriteFile(sheet);
+                EmojiLinks.SHEET_SIZE = image.getWidth();
+                ImageIO.write(image, "png", path);
+                Aetheria.logger.info("[EMOJI] Successfully downloaded Sheet for " + sheet);
+            }else {
+                Aetheria.logger.info("[EMOJI](" + conn.getResponseCode() + ") Error Downloading " + sheet + " from url: " + url.getPath());
+            }
+        }catch (Exception e){
+            Aetheria.logger.info("[EMOJI] Error Downloading " + sheet + " from url: " + urlSuffix);
+            Aetheria.logger.info("[EMOJI] Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private static boolean spritesCorrupted() {
+        for (String sheet : EMOJI_THEMES) {
+            File file = EmojiLinks.getSpriteFile(sheet);
+            if (!file.exists()) return true;
+            try {
+                BufferedImage img = ImageIO.read(file);
+                if (img == null || img.getWidth() < 32) return true;
+            } catch (IOException e) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean checkIfUpdateNeeded() {
+        if (spritesCorrupted()) return true;
+        VersionFile cachedVersion = loadVersionFile();
+        if(cachedVersion == null) return true;
+        try{
+            URL url = new URL(VERSION_URL);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestProperty("User-Agent", "Aetheria/" + Aetheria.VERSION);
+            conn.setConnectTimeout(15000);
+            conn.setReadTimeout(15000);
+
+            if(conn.getResponseCode() == 200){
+                String json = ElectionUtils.readResponse(conn);
+                JsonObject obj = JsonParser.parseString(json).getAsJsonObject();
+                if(obj == null) return true;
+                if(!obj.has("version")) return  true;
+                return cachedVersion.version != obj.get("version").getAsInt();
+            }
+            return true;
+        }catch(Exception e){
+            Aetheria.logger.info("Error Loading Version from Github: " + e.getMessage());
+            e.printStackTrace();
+            return true;
+        }
+    }
+
+    private static VersionFile loadVersionFile() {
+        File file = new File(EMOJI_DIR,"version.json");
+        if(!file.exists()) return null;
+        try{
+            return GSON.fromJson(new JsonReader(new FileReader(file)),VersionFile.class);
+        }catch(Exception e){
+            Aetheria.logger.info("Error Loading Version from Files: " + e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }
 
-    // Up to `limit` distinct emoji (by canonical name) whose name or an alias
-    // starts with `partial`; falls back to "contains" matches to fill any
-    // remaining slots. Alphabetical within each tier for a stable order.
+    public static boolean isLoaded() {
+        return !emojis.isEmpty() && loaded.get();
+    }
+
+    public static boolean exists(String nameOrAlias) {
+        return nameOrAlias != null &&
+                (emojis.containsKey(nameOrAlias.toLowerCase()) || aliases.containsKey(nameOrAlias.toLowerCase()));
+    }
     public static List<String> search(String partial, int limit) {
+        String lower = partial.toLowerCase();
+        Set<String> seen = new HashSet<>();
         List<String> results = new ArrayList<>();
-        if (partial == null || partial.isEmpty()) return results;
-        String needle = partial.toLowerCase();
 
-        TreeSet<String> prefixNames = new TreeSet<>();
-        TreeSet<String> containsNames = new TreeSet<>();
-
-        for (Map.Entry<String, EmojiEntry> e : registry.entrySet()) {
-            String key = e.getKey();
-            String canonical = e.getValue().name;
-            if (key.startsWith(needle)) {
-                prefixNames.add(canonical);
-            } else if (key.contains(needle)) {
-                containsNames.add(canonical);
+        for (String name : emojis.keySet()) {
+            if (results.size() >= limit) break;
+            if (name.toLowerCase().startsWith(lower)) {
+                results.add(name);
+                seen.add(name);
             }
         }
 
-        for (String name : prefixNames) {
-            if (results.size() >= limit) return results;
-            results.add(name);
+        if (results.size() < limit) {
+            for (Map.Entry<String, String> alias : aliases.entrySet()) {
+                if (results.size() >= limit) break;
+                if (alias.getKey().toLowerCase().startsWith(lower) && !seen.contains(alias.getValue())) {
+                    results.add(alias.getKey());
+                }
+            }
         }
-        for (String name : containsNames) {
-            if (results.size() >= limit) return results;
-            if (!results.contains(name)) results.add(name);
-        }
+
         return results;
     }
 
-    private static EmojiEntry lookup(String nameOrAlias) {
-        return nameOrAlias != null ? registry.get(nameOrAlias.toLowerCase()) : null;
-    }
-
-    private static class Manifest {
-        int version;
-        List<EmojiEntry> emojis;
+    public static Emoji getEmoji(String nameOrAlias) {
+        if(emojis.containsKey(nameOrAlias.toLowerCase())) return emojis.get(nameOrAlias.toLowerCase());
+        if(aliases.containsKey(nameOrAlias.toLowerCase())){
+            return emojis.get(aliases.get(nameOrAlias.toLowerCase()));
+        }
+        return null;
     }
 
     private static class VersionFile {
         int version;
     }
 
-    public static class EmojiEntry {
-        String name;
-        List<String> aliases;
-        int w, h;
-        String data;
+    @AllArgsConstructor
+    public static class Emoji {
+        public String name;
+        public int sheetX,sheetY;
+        public boolean custom;
     }
 }

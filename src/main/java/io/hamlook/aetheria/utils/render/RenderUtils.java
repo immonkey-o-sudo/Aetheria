@@ -1,6 +1,9 @@
 package io.hamlook.aetheria.utils.render;
 
 import io.hamlook.aetheria.Resources;
+import io.hamlook.aetheria.core.ATHRConfig;
+import io.hamlook.aetheria.features.chat.emoji.EmojiLinks;
+import io.hamlook.aetheria.features.chat.emoji.EmojiManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
@@ -41,8 +44,7 @@ public final class RenderUtils {
         GlStateManager.color(1f, 1f, 1f, 1f);
 
         ResourceLocation texture = useGoldTexture ? SEARCH_BAR_TEX_GOLD : SEARCH_BAR_TEX;
-        if (useTexture && drawSearchBarTexture(texture, x, y, w, h)) {
-        } else {
+        if (!useTexture || !drawSearchBarTexture(texture, x, y, w, h)) {
             Gui.drawRect(x, y, x + w, y + h, 0xFF2C2C2C);
             Gui.drawRect(x + 1, y + 1, x + w - 1, y + h - 1, 0xFF111111);
         }
@@ -316,13 +318,20 @@ public final class RenderUtils {
     // size x size square. Returns false (drawing nothing) if the emoji isn't
     // known/loaded yet, so callers can fall back to rendering the raw text.
     public static boolean drawEmoji(String nameOrAlias, float x, float y, float size) {
-        ResourceLocation texture = io.hamlook.aetheria.features.chat.emoji.EmojiManager.getTexture(nameOrAlias);
-        if (texture == null) return false;
+        ResourceLocation texture = EmojiLinks.getSpriteResource(EmojiManager.EMOJI_THEMES[
+                ATHRConfig.feature.chat.emojiConfig.emojiTheme]);
+        EmojiManager.Emoji emoji = EmojiManager.getEmoji(nameOrAlias);
+        if(emoji == null) return false;
 
         GlStateManager.pushMatrix();
         GlStateManager.color(1f, 1f, 1f, 1f);
         Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
-        drawTexturedRect(x, y, size, size, 0, 1, 0, 1, GL11.GL_LINEAR);
+
+        float uMin = (float) emoji.sheetX / EmojiLinks.SHEET_SIZE;
+        float uMax = (float)(emoji.sheetX + EmojiLinks.SHEET_RESOLUTION) / EmojiLinks.SHEET_SIZE;
+        float vMin = (float)emoji.sheetY / EmojiLinks.SHEET_SIZE;
+        float vMax = (float)(emoji.sheetY + EmojiLinks.SHEET_RESOLUTION) / EmojiLinks.SHEET_SIZE;
+        drawTexturedRect(x, y, size, size, uMin, uMax, vMin, vMax, GL11.GL_LINEAR);
         GlStateManager.popMatrix();
         return true;
     }

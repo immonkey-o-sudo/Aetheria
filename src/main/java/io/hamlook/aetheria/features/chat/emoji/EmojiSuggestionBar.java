@@ -1,38 +1,33 @@
 package io.hamlook.aetheria.features.chat.emoji;
 
+import io.hamlook.aetheria.core.ATHRConfig;
+import io.hamlook.aetheria.core.moulconfig.editors.ChromaColour;
 import io.hamlook.aetheria.utils.render.RenderUtils;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiTextField;
 
+import java.awt.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Tracks the ":partial" emoji shortcode the player is currently typing in the
- * chat box and renders a popup with up to {@link #MAX_SUGGESTIONS} matching
- * emoji above the input field. Typing 3+ letters after an un-closed leading
- * colon triggers it; Tab or a click completes with a match.
- */
 public class EmojiSuggestionBar {
 
-    private static final int MAX_SUGGESTIONS = 5;
-    private static final int MIN_LETTERS = 3;
-    private static final int ROW_H = 14;
+    private static final int MAX_SUGGESTIONS = 7;
+    private static final int MIN_LETTERS = 2;
     private static final int ICON_SIZE = 10;
+    private static final int CELL_SIZE = 18;
+    private static final int GAP = 2;
+    private static final int PAD = 4;
 
-    // An un-closed ":name" token: the colon sits at the start of the message or
-    // right after whitespace (so timestamps/URLs like "10:30" don't trigger it),
-    // followed by 3+ word characters, right up to the cursor.
     private static final Pattern PARTIAL_TOKEN = Pattern.compile("(?:^|\\s):([a-zA-Z0-9_]{" + MIN_LETTERS + ",})$");
 
-    private static int tokenStart = -1; // index of the ':' in the input text
+    private static int tokenStart = -1;
     private static List<String> matches = Collections.emptyList();
-
-    // Bounds of the last rendered popup, cached for click hit-testing.
-    private static int boxX, boxY, boxW;
+    private static int boxX, boxY, boxW, boxH;
 
     private EmojiSuggestionBar() {
     }
@@ -68,14 +63,12 @@ public class EmojiSuggestionBar {
         complete(inputField, 0);
     }
 
-    // Replaces the ":partial" the player typed with the full ":name: " of the
-    // chosen match and moves the cursor to just after it.
     public static void complete(GuiTextField inputField, int index) {
         if (index < 0 || index >= matches.size() || tokenStart < 0) return;
 
         String text = inputField.getText();
         int cursor = inputField.getCursorPosition();
-        if (tokenStart > text.length() || cursor > text.length() || tokenStart > cursor) {
+        if (cursor > text.length() || tokenStart > cursor) {
             clear();
             return;
         }
@@ -87,40 +80,57 @@ public class EmojiSuggestionBar {
         clear();
     }
 
-    public static void render(GuiTextField inputField) {
+    public static void render(GuiTextField inputField, int mouseX, int mouseY) {
         if (matches.isEmpty() || inputField == null) return;
 
-        FontRenderer fr = Minecraft.getMinecraft().fontRendererObj;
-
-        int width = 100;
-        for (String name : matches) {
-            width = Math.max(width, fr.getStringWidth(":" + name + ":") + ICON_SIZE + 16);
-        }
-        int height = matches.size() * ROW_H + 4;
-
+        int count = matches.size();
+        boxW = PAD * 2 + count * CELL_SIZE + (count - 1) * GAP;
+        boxH = PAD * 2 + CELL_SIZE;
         boxX = inputField.xPosition;
-        boxY = inputField.yPosition - height - 2;
-        boxW = width;
+        boxY = inputField.yPosition - boxH - 2;
 
-        RenderUtils.drawFloatingRectDark(boxX, boxY, boxW, height);
+        int border = ChromaColour.specialToChromaRGB(ATHRConfig.feature.chat.emojiConfig.suggestionBarBorder);
+        Gui.drawRect(boxX,boxY,boxX+boxW,boxY+boxH, ChromaColour.specialToChromaRGB(ATHRConfig.feature.chat.emojiConfig.suggestionBarBG));
+        if(ATHRConfig.feature.chat.emojiConfig.suggestionsBar) {
+            Gui.drawRect(boxX, boxY, boxX + boxW, boxY + 1, border);
+            Gui.drawRect(boxX, boxY + boxH - 1, boxX + boxW, boxY + boxH, border);
+            Gui.drawRect(boxX, boxY, boxX + 1, boxY + boxH, border);
+            Gui.drawRect(boxX + boxW - 1, boxY, boxX + boxW, boxY + boxH, border);
+        }
+        int hovered = hitTest(mouseX, mouseY);
 
-        int rowY = boxY + 2;
-        for (String name : matches) {
-            RenderUtils.drawEmoji(name, boxX + 4, rowY + 1, ICON_SIZE);
-            fr.drawStringWithShadow(":" + name + ":", boxX + ICON_SIZE + 8, rowY + 3, 0xFFFFFF);
-            rowY += ROW_H;
+        for (int i = 0; i < count; i++) {
+            String name = matches.get(i);
+            int cellX = boxX + PAD + i * (CELL_SIZE + GAP);
+            int cellY = boxY + PAD;
+
+            if (i == hovered) {
+                Gui.drawRect(cellX, cellY, cellX + CELL_SIZE, cellY + CELL_SIZE, 0x40FFFFFF);
+            }
+
+            RenderUtils.drawEmoji(name, cellX + (CELL_SIZE - ICON_SIZE) / 2f, cellY + (CELL_SIZE - ICON_SIZE) / 2f, ICON_SIZE);
+        }
+
+        if (hovered >= 0) {
+            String tooltip = ":" + matches.get(hovered) + ":";
+            FontRenderer fr = Minecraft.getMinecraft().fontRendererObj;
+            int tw = fr.getStringWidth(tooltip);
+            int tx = boxX + (boxW - tw) / 2;
+            int ty = boxY - 11;
+            Gui.drawRect(tx - 2, ty - 1, tx + tw + 2, ty + 9, 0xCC222222);
+            fr.drawString(tooltip, tx, ty, 0xCCCCCC);
         }
     }
 
-    // Returns the match index the given screen coords land on, or -1 if the
-    // popup isn't showing or the click missed it. Only valid right after a
-    // render() call in the same frame (uses the cached box bounds).
     public static int hitTest(int mouseX, int mouseY) {
         if (matches.isEmpty()) return -1;
-        int height = matches.size() * ROW_H + 4;
-        if (mouseX < boxX || mouseX > boxX + boxW || mouseY < boxY || mouseY > boxY + height) return -1;
+        if (mouseX < boxX || mouseX > boxX + boxW || mouseY < boxY || mouseY > boxY + boxH) return -1;
 
-        int index = (mouseY - (boxY + 2)) / ROW_H;
-        return (index >= 0 && index < matches.size()) ? index : -1;
+        int relX = mouseX - (boxX + PAD);
+        int slot = relX / (CELL_SIZE + GAP);
+        if (slot < 0 || slot >= matches.size()) return -1;
+        int slotX = boxX + PAD + slot * (CELL_SIZE + GAP);
+        if (mouseX < slotX || mouseX > slotX + CELL_SIZE) return -1;
+        return slot;
     }
 }

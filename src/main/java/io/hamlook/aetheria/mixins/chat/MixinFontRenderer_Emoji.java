@@ -5,7 +5,7 @@ import io.hamlook.aetheria.features.chat.emoji.EmojiManager;
 import io.hamlook.aetheria.utils.render.RenderUtils;
 import net.minecraft.client.gui.FontRenderer;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -23,69 +23,71 @@ import java.util.regex.Pattern;
 @Mixin(FontRenderer.class)
 public abstract class MixinFontRenderer_Emoji {
 
+    @Unique
     private static final Pattern EMOJI_PATTERN = Pattern.compile(":([a-zA-Z0-9_]{2,}):");
 
-    @Shadow
-    protected abstract int renderString(String text, float x, float y, int color, boolean dropShadow);
+    @Unique
+    private static final ThreadLocal<Boolean> ATHR$processing = ThreadLocal.withInitial(() -> false);
 
-    @Shadow
-    protected abstract void resetStyles();
-
-    @Shadow
-    protected abstract void enableAlpha();
-
-    @Inject(method = "drawString(Ljava/lang/String;FFIZ)I", at = @At("HEAD"), cancellable = true)
-    private void ATHR$drawStringWithEmojis(String text, float x, float y, int color, boolean dropShadow, CallbackInfoReturnable<Integer> cir) {
-        if (ATHRConfig.feature == null || !ATHRConfig.feature.chat.emojiConfig.enabled) return;
-        if (!EmojiManager.isLoaded() || text == null || !text.contains(":")) return;
-
+    @Unique
+    private boolean ATHR$processEmojis(String text, float x, float y, int color, boolean dropShadow, CallbackInfoReturnable<Integer> cir) {
+        if (ATHR$processing.get()) return false;
+        if (ATHRConfig.feature == null || !ATHRConfig.feature.chat.emojiConfig.enabled) return false;
+        if (!EmojiManager.isLoaded() || text == null || !text.contains(":")) return false;
         Matcher matcher = EMOJI_PATTERN.matcher(text);
-        if (!matcher.find()) return;
+        if (!matcher.find()) return false;
         matcher.reset();
 
-        FontRenderer fr = (FontRenderer) (Object) this;
-        float scale = ATHRConfig.feature.chat.emojiConfig.scale;
-        float cursorX = x;
-        int lastEnd = 0;
+        ATHR$processing.set(true);
+        try {
+            FontRenderer fr = (FontRenderer) (Object) this;
+            float cursorX = x;
+            int lastEnd = 0;
 
-        while (matcher.find()) {
-            cursorX = drawPlain(fr, text.substring(lastEnd, matcher.start()), cursorX, y, color, dropShadow);
+            while (matcher.find()) {
+                cursorX = ATHR$drawPlain(fr, text.substring(lastEnd, matcher.start()), cursorX, y, color, dropShadow);
 
-            String key = matcher.group(1);
-            float size = fr.FONT_HEIGHT * scale;
-            float emojiY = y - (size - fr.FONT_HEIGHT) / 2f;
+                String key = matcher.group(1);
+                float size = fr.FONT_HEIGHT;
 
-            if (EmojiManager.exists(key) && RenderUtils.drawEmoji(key, cursorX, emojiY, size)) {
-                resetStyles();
-                enableAlpha();
-                cursorX += size + 1;
-            } else {
-                cursorX = drawPlain(fr, matcher.group(), cursorX, y, color, dropShadow);
+                if (EmojiManager.exists(key) && RenderUtils.drawEmoji(key, cursorX, y, size)) {
+                    cursorX += size + 1;
+                } else {
+                    cursorX = ATHR$drawPlain(fr, matcher.group(), cursorX, y, color, dropShadow);
+                }
+
+                lastEnd = matcher.end();
             }
 
-            lastEnd = matcher.end();
-        }
+            if (lastEnd < text.length()) {
+                cursorX = ATHR$drawPlain(fr, text.substring(lastEnd), cursorX, y, color, dropShadow);
+            }
 
-        if (lastEnd < text.length()) {
-            cursorX = drawPlain(fr, text.substring(lastEnd), cursorX, y, color, dropShadow);
+            cir.setReturnValue(Math.round(cursorX));
+            cir.cancel();
+            return true;
+        } finally {
+            ATHR$processing.set(false);
         }
-
-        cir.setReturnValue((int) cursorX);
-        cir.cancel();
     }
 
-    // Mirrors what the vanilla drawString(...) we cancelled would have done for a
-    // plain (non-emoji) segment: a darkened offset copy for the shadow, then the
-    // real text on top.
-    private float drawPlain(FontRenderer fr, String segment, float x, float y, int color, boolean dropShadow) {
+    @Inject(method = "drawStringWithShadow(Ljava/lang/String;FFI)I", at = @At("HEAD"), cancellable = true)
+    private void ATHR$drawStringWithShadow(String text, float x, float y, int color, CallbackInfoReturnable<Integer> cir) {
+        if (ATHR$processEmojis(text, x, y, color, true, cir)) return;
+    }
+
+    @Inject(method = "drawString(Ljava/lang/String;III)I", at = @At("HEAD"), cancellable = true)
+    private void ATHR$drawStringInt(String text, int x, int y, int color, CallbackInfoReturnable<Integer> cir) {
+        if (ATHR$processEmojis(text, (float) x, (float) y, color, false, cir)) return;
+    }
+
+    @Unique
+    private float ATHR$drawPlain(FontRenderer fr, String segment, float x, float y, int color, boolean dropShadow) {
         if (segment.isEmpty()) return x;
-        resetStyles();
-        enableAlpha();
         if (dropShadow) {
-            renderString(segment, x + 1, y + 1, color, true);
-            renderString(segment, x, y, color, false);
+            fr.drawStringWithShadow(segment, x, y, color);
         } else {
-            renderString(segment, x, y, color, false);
+            fr.drawString(segment, (int) x, (int) y, color);
         }
         return x + fr.getStringWidth(segment);
     }

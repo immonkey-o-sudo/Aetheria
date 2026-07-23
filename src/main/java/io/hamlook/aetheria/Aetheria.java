@@ -1,5 +1,6 @@
 package io.hamlook.aetheria;
 
+import io.hamlook.aetheria.features.chat.chatfilters.ChatFilterManager;
 import io.hamlook.aetheria.features.diana.party.DianaPartyConnector;
 import io.hamlook.aetheria.features.chat.emoji.EmojiManager;
 import io.hamlook.aetheria.features.misc.itemList.ItemRegistry;

@@ -62,6 +62,6 @@ public class MixinGuiChat_EmojiSuggestions {
     @Inject(method = "drawScreen", at = @At("RETURN"))
     private void ATHR$drawSuggestions(int mouseX, int mouseY, float partialTicks, CallbackInfo ci) {
         if (!enabled()) return;
-        EmojiSuggestionBar.render(inputField);
+        EmojiSuggestionBar.render(inputField, mouseX, mouseY);
     }
 }

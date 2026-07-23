@@ -195,7 +195,7 @@ public class ElectionUtils {
        }
    }
 
-    private static String readResponse(HttpURLConnection conn) throws Exception {
+    public static String readResponse(HttpURLConnection conn) throws Exception {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
             StringBuilder sb = new StringBuilder();
             String line;
