@@ -7,7 +7,6 @@ import io.hamlook.aetheria.core.ATHRConfig;
 import io.hamlook.aetheria.network.NetworkGuard;
 import io.hamlook.aetheria.repo.ATHRRepo;
 import io.hamlook.aetheria.utils.ElectionUtils;
-import lombok.AllArgsConstructor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.ResourceLocation;
@@ -46,11 +45,14 @@ public class EmojiManager {
 
     private static final Map<String, Emoji> emojis = new ConcurrentHashMap<>();
     private static final Map<String, String> aliases = new ConcurrentHashMap<>();
+    private static final Map<String, CustomEmoji> customEmojis = new ConcurrentHashMap<>();
+    private static final Map<String, String> customAliases = new ConcurrentHashMap<>();
+    private static final Map<String, Integer> sheetSizes = new ConcurrentHashMap<>();
 
     private static final AtomicBoolean loaded = new AtomicBoolean(false);
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    public static final String[] EMOJI_THEMES = {EmojiLinks.DISCORD_SHEET,EmojiLinks.GOOGLE_SHEET,EmojiLinks.IOS_SHEET};
+    public static final String[] EMOJI_THEMES = {EmojiLinks.DISCORD_SHEET,EmojiLinks.GOOGLE_SHEET,EmojiLinks.IOS_SHEET, EmojiLinks.CUSTOM_SHEET};
 
     public static void init() {
         executor.execute(EmojiManager::startInitialisation);
@@ -100,6 +102,8 @@ public class EmojiManager {
     private static void registerEmojis() {
         emojis.clear();
         aliases.clear();
+        customEmojis.clear();
+        customAliases.clear();
         try {
             URL url = new URL(EmojiLinks.getEmojiJSON());
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -131,7 +135,7 @@ public class EmojiManager {
 
                     int sheetX = (rawX * (EmojiLinks.SHEET_RESOLUTION + 2)) + 1;
                     int sheetY = (rawY * (EmojiLinks.SHEET_RESOLUTION + 2)) + 1;
-                    Emoji emoji = new Emoji(shortName,sheetX,sheetY,false);
+                    Emoji emoji = new Emoji(shortName, sheetX, sheetY);
                     emojis.put(shortName,emoji);
                     if(object.has("short_names")){
                         JsonArray names = object.get("short_names").getAsJsonArray();
@@ -143,11 +147,68 @@ public class EmojiManager {
                 }
             }
             if (!emojis.isEmpty()) loaded.set(true);
-            Aetheria.logger.info("[EMOJI] Successfully Loaded " + emojis.size() + " emojis & " + aliases.size() + " aliases.");
         }catch (Exception e){
             Aetheria.logger.info("[EMOJI] Failed to load emojis from github");
             Aetheria.logger.info("[EMOJI] Error: " + e.getMessage());
             e.printStackTrace();
+        }
+        loadCustomEmojis();
+        Aetheria.logger.info("[EMOJI] Successfully Loaded " + emojis.size() + " emojis, " + aliases.size() + " aliases, & " + customEmojis.size() + " custom emojis.");
+    }
+
+    private static void loadCustomEmojis() {
+        try {
+            URL url = new URL(EmojiLinks.getCustomEmojiJSON());
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestProperty("User-Agent", "Aetheria");
+            connection.setConnectTimeout(10000);
+            connection.setReadTimeout(10000);
+
+            int responseCode = connection.getResponseCode();
+            if (responseCode == 200) {
+                String json = ElectionUtils.readResponse(connection);
+                if (json.isEmpty()) return;
+                JsonArray arr = JsonParser.parseString(json).getAsJsonArray();
+                if (arr == null || arr.isEmpty()) return;
+
+                int customCount = 0;
+                for (JsonElement element : arr) {
+                    JsonObject object = element.getAsJsonObject();
+                    if (!object.has("short_name") || !object.has("sprite_coords")) continue;
+
+                    String shortName = object.get("short_name").getAsString();
+                    JsonArray coordsArr = object.get("sprite_coords").getAsJsonArray();
+                    List<SpritePos> sprites = new ArrayList<>();
+                    for (JsonElement coord : coordsArr) {
+                        JsonObject c = coord.getAsJsonObject();
+                        sprites.add(new SpritePos(c.get("x").getAsInt(), c.get("y").getAsInt()));
+                    }
+                    int width = object.get("width").getAsInt();
+                    int height = object.get("height").getAsInt();
+                    boolean animated = object.has("animated") && object.get("animated").getAsBoolean();
+                    int frametime = animated && object.has("frametime") ? object.get("frametime").getAsInt() : 0;
+
+                    CustomEmoji emoji = new CustomEmoji();
+                    emoji.shortcode = shortName;
+                    emoji.sprites = sprites;
+                    emoji.width = width;
+                    emoji.height = height;
+                    emoji.animated = animated;
+                    emoji.frametime = frametime;
+                    customEmojis.put(shortName, emoji);
+                    customCount++;
+
+                    if (object.has("short_names")) {
+                        JsonArray names = object.get("short_names").getAsJsonArray();
+                        for (JsonElement alias : names) {
+                            customAliases.put(alias.getAsString(), shortName);
+                        }
+                    }
+                }
+                if (!customEmojis.isEmpty()) loaded.set(true);
+            }
+        } catch (Exception e) {
+            Aetheria.logger.info("[EMOJI] Failed to load custom emojis: " + e.getMessage());
         }
     }
 
@@ -172,9 +233,12 @@ public class EmojiManager {
             Minecraft.getMinecraft().addScheduledTask(() -> {
                 for (Map.Entry<String, BufferedImage> entry : images.entrySet()) {
                     try {
-                        EmojiLinks.SHEET_SIZE = entry.getValue().getWidth();
-                        DynamicTexture texture = new DynamicTexture(entry.getValue());
-                        ResourceLocation location = EmojiLinks.getSpriteResource(entry.getKey());
+                        String sheetName = entry.getKey();
+                        BufferedImage img = entry.getValue();
+                        sheetSizes.put(sheetName, img.getWidth());
+                        EmojiLinks.SHEET_SIZE = img.getWidth();
+                        DynamicTexture texture = new DynamicTexture(img);
+                        ResourceLocation location = EmojiLinks.getSpriteResource(sheetName);
                         Minecraft.getMinecraft().getTextureManager().loadTexture(location, texture);
                     } catch (Exception e) {
                         Aetheria.logger.info("[EMOJI] Error uploading texture for " + entry.getKey() + ": " + e.getMessage());
@@ -198,6 +262,7 @@ public class EmojiManager {
                 if(image == null || image.getWidth() < 32) return;
                 File path = EmojiLinks.getSpriteFile(sheet);
                 EmojiLinks.SHEET_SIZE = image.getWidth();
+                sheetSizes.put(sheet, image.getWidth());
                 ImageIO.write(image, "png", path);
                 Aetheria.logger.info("[EMOJI] Successfully downloaded Sheet for " + sheet);
             }else {
@@ -267,8 +332,10 @@ public class EmojiManager {
     }
 
     public static boolean exists(String nameOrAlias) {
-        return nameOrAlias != null &&
-                (emojis.containsKey(nameOrAlias.toLowerCase()) || aliases.containsKey(nameOrAlias.toLowerCase()));
+        String lower = nameOrAlias != null ? nameOrAlias.toLowerCase() : null;
+        return lower != null && (
+                emojis.containsKey(lower) || aliases.containsKey(lower) ||
+                customEmojis.containsKey(lower) || customAliases.containsKey(lower));
     }
     public static List<String> search(String partial, int limit) {
         String lower = partial.toLowerCase();
@@ -283,11 +350,30 @@ public class EmojiManager {
             }
         }
 
+        for (String name : customEmojis.keySet()) {
+            if (results.size() >= limit) break;
+            if (name.toLowerCase().startsWith(lower) && !seen.contains(name)) {
+                results.add(name);
+                seen.add(name);
+            }
+        }
+
         if (results.size() < limit) {
             for (Map.Entry<String, String> alias : aliases.entrySet()) {
                 if (results.size() >= limit) break;
                 if (alias.getKey().toLowerCase().startsWith(lower) && !seen.contains(alias.getValue())) {
                     results.add(alias.getKey());
+                    seen.add(alias.getValue());
+                }
+            }
+        }
+
+        if (results.size() < limit) {
+            for (Map.Entry<String, String> alias : customAliases.entrySet()) {
+                if (results.size() >= limit) break;
+                if (alias.getKey().toLowerCase().startsWith(lower) && !seen.contains(alias.getValue())) {
+                    results.add(alias.getKey());
+                    seen.add(alias.getValue());
                 }
             }
         }
@@ -296,21 +382,43 @@ public class EmojiManager {
     }
 
     public static Emoji getEmoji(String nameOrAlias) {
-        if(emojis.containsKey(nameOrAlias.toLowerCase())) return emojis.get(nameOrAlias.toLowerCase());
-        if(aliases.containsKey(nameOrAlias.toLowerCase())){
-            return emojis.get(aliases.get(nameOrAlias.toLowerCase()));
-        }
+        String lower = nameOrAlias.toLowerCase();
+        if (emojis.containsKey(lower)) return emojis.get(lower);
+        if (aliases.containsKey(lower)) return emojis.get(aliases.get(lower));
         return null;
+    }
+
+    public static CustomEmoji getCustomEmoji(String nameOrAlias) {
+        String lower = nameOrAlias.toLowerCase();
+        if (customEmojis.containsKey(lower)) return customEmojis.get(lower);
+        if (customAliases.containsKey(lower)) return customEmojis.get(customAliases.get(lower));
+        return null;
+    }
+
+    public static int getSheetWidth(String sheetName) {
+        return sheetSizes.getOrDefault(sheetName, EmojiLinks.SHEET_SIZE);
+    }
+
+    public static int getAnimationTime() {
+        return (int)(System.currentTimeMillis() % 86400000);
     }
 
     private static class VersionFile {
         int version;
     }
 
-    @AllArgsConstructor
     public static class Emoji {
         public String name;
-        public int sheetX,sheetY;
-        public boolean custom;
+        public int sheetX, sheetY;
+
+        public Emoji(String name, int sheetX, int sheetY) {
+            this.name = name;
+            this.sheetX = sheetX;
+            this.sheetY = sheetY;
+        }
+
+        public SpritePos getSpritePos() {
+            return new SpritePos(sheetX, sheetY);
+        }
     }
 }

@@ -2,8 +2,10 @@ package io.hamlook.aetheria.utils.render;
 
 import io.hamlook.aetheria.Resources;
 import io.hamlook.aetheria.core.ATHRConfig;
+import io.hamlook.aetheria.features.chat.emoji.CustomEmoji;
 import io.hamlook.aetheria.features.chat.emoji.EmojiLinks;
 import io.hamlook.aetheria.features.chat.emoji.EmojiManager;
+import io.hamlook.aetheria.features.chat.emoji.SpritePos;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
@@ -318,22 +320,51 @@ public final class RenderUtils {
     // size x size square. Returns false (drawing nothing) if the emoji isn't
     // known/loaded yet, so callers can fall back to rendering the raw text.
     public static boolean drawEmoji(String nameOrAlias, float x, float y, float size) {
-        ResourceLocation texture = EmojiLinks.getSpriteResource(EmojiManager.EMOJI_THEMES[
-                ATHRConfig.feature.chat.emojiConfig.emojiTheme]);
         EmojiManager.Emoji emoji = EmojiManager.getEmoji(nameOrAlias);
-        if(emoji == null) return false;
+        if (emoji != null) {
+            String sheetName = EmojiManager.EMOJI_THEMES[ATHRConfig.feature.chat.emojiConfig.emojiTheme];
+            ResourceLocation texture = EmojiLinks.getSpriteResource(sheetName);
+            int sheetW = EmojiManager.getSheetWidth(sheetName);
 
-        GlStateManager.pushMatrix();
-        GlStateManager.color(1f, 1f, 1f, 1f);
-        Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
+            GlStateManager.pushMatrix();
+            GlStateManager.color(1f, 1f, 1f, 1f);
+            Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
 
-        float uMin = (float) emoji.sheetX / EmojiLinks.SHEET_SIZE;
-        float uMax = (float)(emoji.sheetX + EmojiLinks.SHEET_RESOLUTION) / EmojiLinks.SHEET_SIZE;
-        float vMin = (float)emoji.sheetY / EmojiLinks.SHEET_SIZE;
-        float vMax = (float)(emoji.sheetY + EmojiLinks.SHEET_RESOLUTION) / EmojiLinks.SHEET_SIZE;
-        drawTexturedRect(x, y, size, size, uMin, uMax, vMin, vMax, GL11.GL_LINEAR);
-        GlStateManager.popMatrix();
-        return true;
+            float uMin = (float) emoji.sheetX / sheetW;
+            float uMax = (float)(emoji.sheetX + EmojiLinks.SHEET_RESOLUTION) / sheetW;
+            float vMin = (float) emoji.sheetY / sheetW;
+            float vMax = (float)(emoji.sheetY + EmojiLinks.SHEET_RESOLUTION) / sheetW;
+            drawTexturedRect(x, y, size, size, uMin, uMax, vMin, vMax, GL11.GL_LINEAR);
+            GlStateManager.popMatrix();
+            return true;
+        }
+
+        CustomEmoji customEmoji = EmojiManager.getCustomEmoji(nameOrAlias);
+        if (customEmoji != null) {
+            ResourceLocation texture = EmojiLinks.getSpriteResource(EmojiLinks.CUSTOM_SHEET);
+            int sheetW = EmojiManager.getSheetWidth(EmojiLinks.CUSTOM_SHEET);
+
+            int frameIndex = 0;
+            if (customEmoji.animated && customEmoji.frametime > 0) {
+                int elapsed = EmojiManager.getAnimationTime();
+                frameIndex = Math.floorDiv(elapsed, customEmoji.frametime) % customEmoji.sprites.size();
+            }
+            SpritePos pos = customEmoji.sprites.get(frameIndex);
+
+            GlStateManager.pushMatrix();
+            GlStateManager.color(1f, 1f, 1f, 1f);
+            Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
+
+            float uMin = (float) pos.x / sheetW;
+            float uMax = (float)(pos.x + customEmoji.width) / sheetW;
+            float vMin = (float) pos.y / sheetW;
+            float vMax = (float)(pos.y + customEmoji.height) / sheetW;
+            drawTexturedRect(x, y, size, size, uMin, uMax, vMin, vMax, GL11.GL_LINEAR);
+            GlStateManager.popMatrix();
+            return true;
+        }
+
+        return false;
     }
 
     public static int renderStringTrimWidth(String str, boolean shadow, int x, int y, int width, int color, int maxLines) {

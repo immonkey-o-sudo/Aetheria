@@ -27,7 +27,7 @@ public class EmojiConfig {
     @Expose
     @ConfigOption(name = "Suggestion Bar BG", desc = "Choose which color the suggestion bar's background uses")
     @ConfigAnnotations.ConfigEditorColour
-    public String suggestionBarBG = "0:0:0:178:0";
+    public String suggestionBarBG = "0:120:255:255:255";
 
     @Expose
     @ConfigOption(name = "Bar Border", desc = "Add a border to the suggestion list")
@@ -37,5 +37,5 @@ public class EmojiConfig {
     @Expose
     @ConfigOption(name = "Suggestion Bar Border", desc = "Choose which color the suggestion bar's border uses")
     @ConfigAnnotations.ConfigEditorColour
-    public String suggestionBarBorder = "136:136:136:255:0";
+    public String suggestionBarBorder = "0:255:255:255:255";
 }
