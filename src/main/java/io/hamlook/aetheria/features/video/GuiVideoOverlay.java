@@ -4,8 +4,8 @@ import net.minecraft.client.audio.SoundCategory;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.VertexFormats;
 import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
@@ -90,7 +90,7 @@ public class GuiVideoOverlay extends GuiScreen {
 
         Tessellator tessellator = Tessellator.getInstance();
         WorldRenderer wr = tessellator.getWorldRenderer();
-        wr.begin(GL11.GL_QUADS, VertexFormats.POSITION_TEX);
+        wr.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
         wr.pos(x0, y0 + drawH, 0).tex(0, 1).endVertex();
         wr.pos(x0 + drawW, y0 + drawH, 0).tex(1, 1).endVertex();
         wr.pos(x0 + drawW, y0, 0).tex(1, 0).endVertex();
