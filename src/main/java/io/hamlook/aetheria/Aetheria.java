@@ -14,6 +14,7 @@ import io.hamlook.aetheria.features.profile.GuiWaiter;
 import io.hamlook.aetheria.init.EventRegistrar;
 import io.hamlook.aetheria.repo.ATHRRepo;
 import io.hamlook.aetheria.repo.RepoHandler;
+import io.hamlook.aetheria.features.video.VideoOverlayFeature;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -56,6 +57,7 @@ public class Aetheria {
         if (ATHRConfig.feature.misc.currentPet.showCurrentPet) PetCache.getInstance().warmupTextures();
         MinecraftForge.EVENT_BUS.register(GuiWaiter.INSTANCE);
         MinecraftForge.EVENT_BUS.register(this);
+        MinecraftForge.EVENT_BUS.register(new VideoOverlayFeature());
         EventRegistrar.registerAll();
     }
 

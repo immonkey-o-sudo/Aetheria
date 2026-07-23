@@ -92,6 +92,13 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.30")
     runtimeOnly("me.djtheredstoner:DevAuth-forge-legacy:1.2.1")
     shadowImpl("com.google.code.gson:gson:2.10.1") { isTransitive = false }
+
+    // Video Overlay feature: headless VLC playback + native discovery.
+    // Requires a 64-bit VLC install on the user's machine (libvlc is
+    // discovered at runtime, not bundled — see docs/VIDEO_OVERLAY.md).
+    shadowImpl("uk.co.caprica:vlcj:4.8.2")
+    shadowImpl("net.java.dev.jna:jna:5.13.0") { isTransitive = false }
+    shadowImpl("net.java.dev.jna:jna-platform:5.13.0") { isTransitive = false }
 }
 
 // Tasks:
@@ -155,6 +162,9 @@ tasks.shadowJar {
     relocate("com.google.gson")
     relocate("org.java_websocket")
     relocate("org.slf4j")
+    // Do NOT relocate uk.co.caprica.vlcj or com.sun.jna / com.sun.jna.*:
+    // JNA resolves native bindings by fully-qualified class name at runtime,
+    // and relocating it will break libvlc discovery.
 }
 
 tasks.assemble.get().dependsOn(tasks.remapJar)
