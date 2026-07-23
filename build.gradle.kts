@@ -96,9 +96,12 @@ dependencies {
     // Video Overlay feature: headless VLC playback + native discovery.
     // Requires a 64-bit VLC install on the user's machine (libvlc is
     // discovered at runtime, not bundled — see docs/VIDEO_OVERLAY.md).
-    shadowImpl("uk.co.caprica:vlcj:4.8.2")
-    shadowImpl("net.java.dev.jna:jna:5.13.0") { isTransitive = false }
-    shadowImpl("net.java.dev.jna:jna-platform:5.13.0") { isTransitive = false }
+    // NOTE: vlcj 4.8.0+ is compiled for JDK 11 (class file 55.0) and will NOT
+    // load under this project's Java 8 toolchain (required by legacy Forge/
+    // LaunchWrapper). 4.7.3 is the last release built against Java 8.
+    shadowImpl("uk.co.caprica:vlcj:4.7.3")
+    shadowImpl("net.java.dev.jna:jna:5.12.1") { isTransitive = false }
+    shadowImpl("net.java.dev.jna:jna-platform:5.12.1") { isTransitive = false }
 }
 
 // Tasks:
