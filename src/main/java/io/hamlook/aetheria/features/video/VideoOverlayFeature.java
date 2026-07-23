@@ -1,5 +1,6 @@
 package io.hamlook.aetheria.features.video;
 
+import io.hamlook.aetheria.core.ATHRConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -27,7 +28,7 @@ public class VideoOverlayFeature {
         Minecraft mc = Minecraft.getMinecraft();
         if (mc.thePlayer == null) return; // not in-world yet
 
-        int toggleKey = VideoOverlayConfig.get().toggleKeyCode;
+        int toggleKey = ATHRConfig.feature.videoOverlay.toggleKeyCode;
         boolean down = toggleKey != Keyboard.KEY_NONE && Keyboard.isKeyDown(toggleKey);
 
         if (down && !keyWasDown) {
@@ -40,11 +41,11 @@ public class VideoOverlayFeature {
         if (mc.currentScreen instanceof GuiVideoOverlay) {
             mc.displayGuiScreen(null); // back to fullscreen gameplay
         } else if (mc.currentScreen == null) {
-            String url = VideoOverlayConfig.get().videoUrl;
+            String url = ATHRConfig.feature.videoOverlay.videoUrl;
             if (url == null || url.trim().isEmpty()) {
                 if (mc.thePlayer != null) {
                     mc.thePlayer.addChatMessage(new net.minecraft.util.ChatComponentText(
-                            "\u00a7c[Aetheria] Set a video URL in config/Aetheria/video-overlay.json first."));
+                            "\u00a7c[Aetheria] Set a Video URL in the Aetheria config \u00a77(Video Overlay category)\u00a7c first."));
                 }
                 return;
             }

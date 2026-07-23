@@ -18,6 +18,7 @@ import io.hamlook.aetheria.core.features.farming.Farming;
 import io.hamlook.aetheria.core.features.scoreboard.Scoreboard;
 import io.hamlook.aetheria.core.features.storage.Storage;
 import io.hamlook.aetheria.core.features.network.NetworkConfig;
+import io.hamlook.aetheria.core.features.video.VideoOverlaySettings;
 import io.hamlook.aetheria.features.capes.CapeManager;
 
 import java.awt.*;
@@ -84,6 +85,10 @@ public class Config {
     @Expose
     @Category(name = "Privacy", desc = "Manage network calls")
     public final NetworkConfig network = new NetworkConfig();
+
+    @Expose
+    @Category(name = "Video Overlay", desc = "Fullscreen video overlay playback settings")
+    public final VideoOverlaySettings videoOverlay = new VideoOverlaySettings();
 
     @Expose
     @Category(name = "Debug", desc = "Debug tools")

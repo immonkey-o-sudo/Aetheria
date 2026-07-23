@@ -1,5 +1,6 @@
 package io.hamlook.aetheria.features.video;
 
+import io.hamlook.aetheria.core.ATHRConfig;
 import uk.co.caprica.vlcj.factory.MediaPlayerFactory;
 import uk.co.caprica.vlcj.player.base.MediaPlayer;
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter;
@@ -82,7 +83,7 @@ public class VideoPlayer {
         mediaPlayer.events().addMediaPlayerEventListener(new MediaPlayerEventAdapter() {
             @Override
             public void finished(MediaPlayer mp) {
-                if (VideoOverlayConfig.get().loop) {
+                if (ATHRConfig.feature.videoOverlay.loop) {
                     mp.controls().play();
                 }
             }
@@ -97,7 +98,7 @@ public class VideoPlayer {
     public void playUrlBlocking(String rawUrl) throws Exception {
         String direct = VideoStreamResolver.resolve(rawUrl);
         ensureStarted();
-        mediaPlayer.audio().setVolume(clampVolume(VideoOverlayConfig.get().volume));
+        mediaPlayer.audio().setVolume(clampVolume(ATHRConfig.feature.videoOverlay.volume));
         mediaPlayer.media().play(direct);
     }
 

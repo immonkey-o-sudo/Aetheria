@@ -1,5 +1,7 @@
 package io.hamlook.aetheria.features.video;
 
+import io.hamlook.aetheria.core.ATHRConfig;
+import io.hamlook.aetheria.core.features.video.VideoOverlaySettings;
 import net.minecraft.client.audio.SoundCategory;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
@@ -31,7 +33,7 @@ public class GuiVideoOverlay extends GuiScreen {
     @Override
     public void initGui() {
         super.initGui();
-        VideoOverlayConfig cfg = VideoOverlayConfig.get();
+        VideoOverlaySettings cfg = ATHRConfig.feature.videoOverlay;
 
         if (cfg.muteGameWhileFullscreen) {
             previousMasterVolume = mc.gameSettings.getSoundLevel(SoundCategory.MASTER);
@@ -100,7 +102,7 @@ public class GuiVideoOverlay extends GuiScreen {
 
     @Override
     protected void keyTyped(char typedChar, int keyCode) throws IOException {
-        VideoOverlayConfig cfg = VideoOverlayConfig.get();
+        VideoOverlaySettings cfg = ATHRConfig.feature.videoOverlay;
         if (keyCode == Keyboard.KEY_ESCAPE || keyCode == cfg.toggleKeyCode) {
             mc.displayGuiScreen(null);
             return;
@@ -118,7 +120,7 @@ public class GuiVideoOverlay extends GuiScreen {
     @Override
     public void onGuiClosed() {
         super.onGuiClosed();
-        VideoOverlayConfig cfg = VideoOverlayConfig.get();
+        VideoOverlaySettings cfg = ATHRConfig.feature.videoOverlay;
         VideoPlayer.get().pause();
         if (cfg.muteGameWhileFullscreen) {
             mc.gameSettings.setSoundLevel(SoundCategory.MASTER, previousMasterVolume);
