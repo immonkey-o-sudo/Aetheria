@@ -29,6 +29,7 @@ public class GuiVideoOverlay extends GuiScreen {
     private final VideoFrameTexture texture = new VideoFrameTexture();
     private float previousMasterVolume = 1.0f;
     private boolean startAttempted = false;
+    private volatile String startError = null;
 
     @Override
     public void initGui() {
@@ -45,8 +46,21 @@ public class GuiVideoOverlay extends GuiScreen {
             new Thread(() -> {
                 try {
                     VideoPlayer.get().playUrlBlocking(cfg.videoUrl);
-                } catch (Exception e) {
-                    System.err.println("[ATHR/VideoOverlay] Failed to start playback: " + e.getMessage());
+                } catch (Throwable t) {
+                    // Throwable, not just Exception: native-library failures from vlcj/JNA
+                    // (e.g. NoSuchMethodError from a JNA version conflict with another mod)
+                    // surface as Errors, which "catch (Exception e)" silently lets escape to
+                    // the thread's default uncaught-exception handler — leaving the screen
+                    // stuck on "Loading video..." forever with zero in-game feedback. Catch
+                    // and surface it instead.
+                    String summary = t.getClass().getSimpleName() + (t.getMessage() != null ? ": " + t.getMessage() : "");
+                    System.err.println("[ATHR/VideoOverlay] Failed to start playback: " + summary);
+                    startError = summary;
+                    if (mc.thePlayer != null) {
+                        mc.thePlayer.addChatMessage(new net.minecraft.util.ChatComponentText(
+                                "\u00a7c[Aetheria] Video playback failed to start: \u00a77" + summary
+                                        + "\u00a7c (see latest.log for the full stack trace)"));
+                    }
                 }
             }, "ATHR-VideoOverlay-Start").start();
         } else {
@@ -61,6 +75,9 @@ public class GuiVideoOverlay extends GuiScreen {
 
         if (texture.hasFrame()) {
             drawVideoQuad();
+        } else if (startError != null) {
+            drawCenteredString(fontRendererObj, "\u00a7cVideo failed to start", width / 2, height / 2 - 10, 0xFFFFFF);
+            drawCenteredString(fontRendererObj, startError, width / 2, height / 2 + 4, 0xFFAAAA);
         } else {
             String msg = "Loading video...";
             drawCenteredString(fontRendererObj, msg, width / 2, height / 2, 0xFFFFFF);
