@@ -1,150 +1,71 @@
 package io.hamlook.aetheria.features.video;
 
-import io.hamlook.aetheria.core.ATHRConfig;
-import uk.co.caprica.vlcj.factory.MediaPlayerFactory;
-import uk.co.caprica.vlcj.player.base.MediaPlayer;
-import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter;
-import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer;
-import uk.co.caprica.vlcj.player.embedded.videosurface.callback.BufferFormatCallback;
-import uk.co.caprica.vlcj.player.embedded.videosurface.callback.RenderCallback;
-import uk.co.caprica.vlcj.player.embedded.videosurface.callback.format.RV32BufferFormat;
-import uk.co.caprica.vlcj.player.embedded.videosurface.CallbackVideoSurface;
-import uk.co.caprica.vlcj.player.embedded.videosurface.VideoSurfaceAdapters;
-import uk.co.caprica.vlcj.player.embedded.videosurface.callback.BufferFormat;
-
-import java.nio.ByteBuffer;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
 /**
- * Headless (no native window) VLC player. Frames are delivered as raw BGRA
- * byte buffers via {@link RenderCallback}, which {@link VideoFrameTexture}
- * uploads straight into an OpenGL texture each Minecraft frame.
+ * Facade used by the rest of the video-overlay feature. Delegates to a
+ * {@link VideoEngine} implementation ({@link VlcVideoEngine}) that is loaded
+ * through {@link VideoFeatureClassLoader} — an isolated classloader that
+ * guarantees this mod's own bundled vlcj/JNA classes are used, regardless of
+ * whatever (older, incompatible) JNA version Forge/Minecraft/another mod may
+ * already have put on the shared classpath. See {@link VideoFeatureClassLoader}
+ * for the full explanation.
  * <p>
- * Requires a system install of 64-bit VLC (libvlc discovered automatically
- * by vlcj's NativeDiscovery) — this class does not bundle VLC itself.
+ * Nothing outside this class should reference {@code VlcVideoEngine} or any
+ * vlcj/JNA type directly — always go through this facade (or the plain
+ * {@link VideoEngine} interface) so the isolation boundary stays intact.
  */
 public class VideoPlayer {
 
-    private MediaPlayerFactory factory;
-    private EmbeddedMediaPlayer mediaPlayer;
-
-    private volatile byte[] frontBuffer = new byte[0];
-    private final AtomicInteger width = new AtomicInteger(0);
-    private final AtomicInteger height = new AtomicInteger(0);
-    private final AtomicBoolean frameDirty = new AtomicBoolean(false);
-    private final Object bufferLock = new Object();
-
     private static VideoPlayer instance;
+
+    private final VideoEngine engine;
 
     public static VideoPlayer get() {
         if (instance == null) instance = new VideoPlayer();
         return instance;
     }
 
-    private void ensureStarted() {
-        if (mediaPlayer != null) return;
+    private VideoPlayer() {
+        this.engine = loadEngine();
+    }
 
-        factory = new MediaPlayerFactory();
-        CallbackVideoSurface surface = new CallbackVideoSurface(
-                new BufferFormatCallback() {
-                    @Override
-                    public BufferFormat getBufferFormat(int sourceWidth, int sourceHeight) {
-                        width.set(sourceWidth);
-                        height.set(sourceHeight);
-                        return new RV32BufferFormat(sourceWidth, sourceHeight);
-                    }
-
-                    @Override
-                    public void allocatedBuffers(ByteBuffer[] buffers) {
-                        // no-op, we copy out in the render callback instead of holding these directly
-                    }
-                },
-                new RenderCallback() {
-                    @Override
-                    public void display(MediaPlayer mediaPlayer, ByteBuffer[] nativeBuffers, BufferFormat bufferFormat) {
-                        ByteBuffer buf = nativeBuffers[0];
-                        int size = buf.remaining();
-                        byte[] copy = new byte[size];
-                        buf.get(copy);
-                        synchronized (bufferLock) {
-                            frontBuffer = copy;
-                        }
-                        frameDirty.set(true);
-                    }
-                },
-                true,
-                VideoSurfaceAdapters.getVideoSurfaceAdapter()
-        );
-
-        mediaPlayer = factory.mediaPlayers().newEmbeddedMediaPlayer();
-        mediaPlayer.videoSurface().set(surface);
-
-        mediaPlayer.events().addMediaPlayerEventListener(new MediaPlayerEventAdapter() {
-            @Override
-            public void finished(MediaPlayer mp) {
-                if (ATHRConfig.feature.videoOverlay.loop) {
-                    mp.controls().play();
-                }
-            }
-            @Override
-            public void error(MediaPlayer mp) {
-                System.err.println("[ATHR/VideoOverlay] VLC reported a playback error.");
-            }
-        });
+    private static VideoEngine loadEngine() {
+        try {
+            Class<?> engineClass = VideoFeatureClassLoader.get()
+                    .loadClass("io.hamlook.aetheria.features.video.VlcVideoEngine");
+            return (VideoEngine) engineClass.getDeclaredConstructor().newInstance();
+        } catch (ReflectiveOperationException | LinkageError e) {
+            throw new IllegalStateException("Failed to load the isolated video playback engine", e);
+        }
     }
 
     /** Resolves (if needed) and starts playback of the given URL. Blocking network/process call — run off-thread. */
     public void playUrlBlocking(String rawUrl) throws Exception {
-        String direct = VideoStreamResolver.resolve(rawUrl);
-        ensureStarted();
-        mediaPlayer.audio().setVolume(clampVolume(ATHRConfig.feature.videoOverlay.volume));
-        mediaPlayer.media().play(direct);
+        engine.playUrlBlocking(rawUrl);
     }
 
     public void setVolume(int percent) {
-        if (mediaPlayer != null) mediaPlayer.audio().setVolume(clampVolume(percent));
+        engine.setVolume(percent);
     }
 
     public void pause() {
-        if (mediaPlayer != null) mediaPlayer.controls().setPause(true);
+        engine.pause();
     }
 
     public void resume() {
-        if (mediaPlayer != null) mediaPlayer.controls().setPause(false);
+        engine.resume();
     }
 
     public boolean isPlaying() {
-        return mediaPlayer != null && mediaPlayer.status().isPlaying();
-    }
-
-    private static int clampVolume(int v) {
-        return Math.max(0, Math.min(100, v));
+        return engine.isPlaying();
     }
 
     /** @return true if a new frame was consumed (caller should re-upload the texture). */
     public boolean pollFrame(FrameConsumer consumer) {
-        if (!frameDirty.compareAndSet(true, false)) return false;
-        byte[] snapshot;
-        synchronized (bufferLock) {
-            snapshot = frontBuffer;
-        }
-        int w = width.get(), h = height.get();
-        if (w <= 0 || h <= 0 || snapshot.length < w * h * 4) return false;
-        consumer.accept(snapshot, w, h);
-        return true;
+        return engine.pollFrame(consumer::accept);
     }
 
     public void shutdown() {
-        if (mediaPlayer != null) {
-            mediaPlayer.controls().stop();
-            mediaPlayer.release();
-            mediaPlayer = null;
-        }
-        if (factory != null) {
-            factory.release();
-            factory = null;
-        }
+        engine.shutdown();
     }
 
     public interface FrameConsumer {
