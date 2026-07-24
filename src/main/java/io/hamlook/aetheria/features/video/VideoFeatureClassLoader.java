@@ -36,6 +36,22 @@ final class VideoFeatureClassLoader extends URLClassLoader {
             "uk.co.caprica.vlcj.",
     };
 
+    // VlcVideoEngine itself must ALSO be defined by this isolated loader — not just
+    // matched by the prefixes above — because a class's *own* internal references
+    // (e.g. VlcVideoEngine's "MediaPlayerFactory factory" field) resolve through
+    // whichever loader *defined that class*, not through whichever loader was asked
+    // to look it up. If VlcVideoEngine were left to the normal prefix check, its name
+    // ("io.hamlook.aetheria.features.video.VlcVideoEngine") wouldn't match either
+    // prefix, so it would fall through to the parent classloader — which already
+    // has an ordinary copy of it sitting in the same mod jar and would load it
+    // immediately. At that point VlcVideoEngine's own vlcj/JNA field types would
+    // resolve via the *parent*, completely bypassing this isolation and landing
+    // right back on Forge's legacy JNA. Listing it here explicitly is what actually
+    // routes it (and therefore everything it touches) through the isolated loader.
+    private static final String[] CHILD_FIRST_EXACT = {
+            "io.hamlook.aetheria.features.video.VlcVideoEngine",
+    };
+
     private static volatile VideoFeatureClassLoader instance;
 
     static VideoFeatureClassLoader get() {
@@ -107,6 +123,9 @@ final class VideoFeatureClassLoader extends URLClassLoader {
     }
 
     private static boolean isChildFirst(String name) {
+        for (String exact : CHILD_FIRST_EXACT) {
+            if (name.equals(exact)) return true;
+        }
         for (String prefix : CHILD_FIRST_PREFIXES) {
             if (name.startsWith(prefix)) return true;
         }
