@@ -51,6 +51,27 @@ final class VideoFeatureClassLoader extends URLClassLoader {
         return result;
     }
 
+    /**
+     * Discards the current isolated classloader (and every class it defined,
+     * including {@code LibC}/{@code Native}) so the next {@link #get()} starts
+     * completely fresh. Necessary because once a class's static initializer
+     * throws once, the JVM permanently marks that class as broken for the rest
+     * of that classloader's life — every later reference just reports a generic
+     * {@code NoClassDefFoundError: Could not initialize class X} instead of the
+     * real cause, even on an otherwise-clean retry. Without this, one failed
+     * playback attempt would permanently mask the real error for the rest of
+     * the game session.
+     */
+    static synchronized void reset() {
+        if (instance != null) {
+            try {
+                instance.close();
+            } catch (Exception ignored) {
+            }
+            instance = null;
+        }
+    }
+
     private VideoFeatureClassLoader() {
         super(new URL[]{ownJarUrl()}, VideoFeatureClassLoader.class.getClassLoader());
     }

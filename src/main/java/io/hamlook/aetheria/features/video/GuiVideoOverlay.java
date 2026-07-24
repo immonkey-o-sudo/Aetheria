@@ -55,6 +55,7 @@ public class GuiVideoOverlay extends GuiScreen {
                     // and surface it instead.
                     String summary = t.getClass().getSimpleName() + (t.getMessage() != null ? ": " + t.getMessage() : "");
                     System.err.println("[ATHR/VideoOverlay] Failed to start playback: " + summary);
+                    t.printStackTrace();
                     startError = summary;
                     if (mc.thePlayer != null) {
                         mc.thePlayer.addChatMessage(new net.minecraft.util.ChatComponentText(

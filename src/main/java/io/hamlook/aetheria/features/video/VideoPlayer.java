@@ -17,7 +17,7 @@ public class VideoPlayer {
 
     private static VideoPlayer instance;
 
-    private final VideoEngine engine;
+    private VideoEngine engine;
 
     public static VideoPlayer get() {
         if (instance == null) instance = new VideoPlayer();
@@ -40,7 +40,18 @@ public class VideoPlayer {
 
     /** Resolves (if needed) and starts playback of the given URL. Blocking network/process call — run off-thread. */
     public void playUrlBlocking(String rawUrl) throws Exception {
-        engine.playUrlBlocking(rawUrl);
+        try {
+            engine.playUrlBlocking(rawUrl);
+        } catch (Throwable t) {
+            // Discard the (now possibly poisoned) engine and its classloader so the
+            // *next* attempt starts clean instead of getting a masked
+            // NoClassDefFoundError forever after one failure — see
+            // VideoFeatureClassLoader.reset() for why this is necessary.
+            VideoFeatureClassLoader.reset();
+            engine = loadEngine();
+            if (t instanceof Exception) throw (Exception) t;
+            throw new Exception(t);
+        }
     }
 
     public void setVolume(int percent) {
